@@ -3,11 +3,11 @@
 namespace ImageComparisonViewer.MainTabControl.Views
 {
     /// <summary>
-    /// MainTabContentSingle.xaml の相互作用ロジック
+    /// TabContentDouble.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainTabContentSingle : UserControl
+    public partial class TabContentDouble : UserControl
     {
-        public MainTabContentSingle()
+        public TabContentDouble()
         {
             InitializeComponent();
         }

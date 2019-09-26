@@ -9,10 +9,12 @@ namespace ImageComparisonViewer.MainTabControl
     public class MainTabControlModule : IModule
     {
         // Tabに登録するViews
-        private static Type[] TabContentViewsType { get; } = new[]
+        private static readonly Type[] _tabContentViewsType = new[]
         {
-            typeof(MainTabContentSingle),
-            typeof(MainTabContentSettings),
+            typeof(TabContentSingle),
+            typeof(TabContentDouble),
+            typeof(TabContentTriple),
+            typeof(TabContentSettings),
         };
 
         public void OnInitialized(IContainerProvider containerProvider)
@@ -20,7 +22,7 @@ namespace ImageComparisonViewer.MainTabControl
             var regionManager = containerProvider.Resolve<IRegionManager>();
             var region = regionManager.Regions["MainTabContentRegion"];
 
-            foreach (var type in TabContentViewsType)
+            foreach (var type in _tabContentViewsType)
             {
                 var view = containerProvider.Resolve(type);
                 region.Add(view);
