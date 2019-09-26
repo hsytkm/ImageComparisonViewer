@@ -8,7 +8,14 @@
         mc:Ignorable="d"
         Title="ImageComparisonViewer"
         Height="300" Width="400">
-    <Grid>
 
+    <Window.Resources>
+        <ResourceDictionary Source="Styles/MainTabControlStyle.xaml" />
+    </Window.Resources>
+
+    <Grid>
+        <TabControl Style="{StaticResource MainTabControlStyle}"
+                    prism:RegionManager.RegionName="MainTabContentRegion" />
     </Grid>
+
 </Window>

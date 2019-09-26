@@ -22,7 +22,7 @@ namespace ImageComparisonViewer
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
-            //moduleCatalog.AddModule<TabItem.TabItemModule>();
+            moduleCatalog.AddModule<MainTabControl.MainTabControlModule>();
         }
 
     }
