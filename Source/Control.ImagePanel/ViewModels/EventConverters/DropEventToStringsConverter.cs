@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
-namespace ImageComparisonViewer.MainTabControl.ViewModels.EventConverters
+namespace Control.ImagePanel.ViewModels.EventConverters
 {
     /// <summary>
     /// Dropイベント(dynamicはDragEventArgs想定)

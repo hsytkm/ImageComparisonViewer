@@ -10,6 +10,7 @@
         <Button x:Name="DirectorySelectButton"
                 Margin="1,0"
                 Padding="7,2"
+                Foreground="{StaticResource ForegroundBrushKey}"
                 Background="Transparent"
                 Click="DirectorySelectButton_Click" />
 

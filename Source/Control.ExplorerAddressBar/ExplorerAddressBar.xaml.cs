@@ -39,7 +39,13 @@ namespace Control.ExplorerAddressBar
                 typeof(ExplorerAddressBar),
                 new FrameworkPropertyMetadata(
                     _defaultDirectory,
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    (d, e) =>
+                    {
+                        if (!(d is ExplorerAddressBar eab)) return;
+                        if (!(e.NewValue is string path)) return;
+                        AddViewNodes(eab, path);
+                    }));
 
         public string SelectedDirectory
         {
@@ -206,33 +212,37 @@ namespace Control.ExplorerAddressBar
         }
 
         #endregion
-
-        // メタ情報クラスからView用のTabを読み出し
-        private void AddViewNodes(string directoryPath)
+        
+        /// <summary>
+        /// Viewのディレクトリノードを更新
+        /// </summary>
+        /// <param name="eab"></param>
+        /// <param name="sourcePath"></param>
+        private static void AddViewNodes(ExplorerAddressBar eab, string sourcePath)
         {
-            if (string.IsNullOrEmpty(directoryPath)) return;
+            if (!ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
+                return;
+
+            if (string.IsNullOrEmpty(sourcePath)) return;
+            var path = DirectoryNode.EmendFullPath(sourcePath);
 
             var views = new List<DirectoryPathNode>();
-            var directoryNodes = DirectoryNode.GetDirectoryNodes(directoryPath);
 
             // Viewを順に作成してRegionに登録
-            foreach (var directoryNode in directoryNodes)
+            foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
             {
-                views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(path)));
+                views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(eab, path)));
             }
 
-            NodeItemsControl.ItemsSource = views;
-            SelectedDirectory = directoryPath;
+            itemsControl.ItemsSource = views;
+            eab.SelectedDirectory = path;
         }
 
         /// <summary>
-        /// バーの余白部クリックでテキストボックスを表示する
+        /// バーの余白部クリックで入力用のテキストボックスを表示する
         /// </summary>
-        private void GroundMargin_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // テキスト入力のため表示させる
+        private void GroundMargin_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
             SetTextBoxVisibility(true);
-        }
 
         /// <summary>
         /// テキストボックスの表示切り替え(Property <-> TextBox)
@@ -242,38 +252,35 @@ namespace Control.ExplorerAddressBar
             // テキストボックスの表示文字列は、表示時に設定/非表示時にクリア
             if (isVisible)
             {
+                // Property -> TextBox
                 if (DirectoryPathTextBox.Visibility != Visibility.Visible)
                 {
-                    // Property -> TextBox
                     DirectoryPathTextBox.Visibility = Visibility.Visible;
                     DirectoryPathTextBox.Text = SelectedDirectory;
                 }
             }
             else
             {
+                // TextBox -> Property
                 if (DirectoryPathTextBox.Visibility != Visibility.Collapsed)
                 {
-                    // TextBox -> Property
                     DirectoryPathTextBox.Visibility = Visibility.Collapsed;
 
                     // 入力のディレクトリが存在したら採用
                     var path = DirectoryNode.EmendFullPath(DirectoryPathTextBox.Text);
                     if (Directory.Exists(path))
-                        AddViewNodes(path);
+                        AddViewNodes(this, path);
                 }
             }
         }
 
         /// <summary>
-        /// Enterキー押下でパスを確定させる(TextBox -> Property)
+        /// Enterキー押下でテキストの入力PATHを確定させる(TextBox -> Property)
         /// </summary>
         private void DirectoryPathTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (Keyboard.IsKeyDown(Key.Enter))
-            {
-                // キー押下でテキスト内容を確定させる
                 SetTextBoxVisibility(false);
-            }
         }
 
     }

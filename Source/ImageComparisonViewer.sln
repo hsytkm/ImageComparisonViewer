@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.Core"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ExplorerAddressBar", "Control.ExplorerAddressBar\Control.ExplorerAddressBar.csproj", "{E0006C08-8A3F-41FA-A0FE-B00425E15E67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.ImagePanel", "Control.ImagePanel\Control.ImagePanel.csproj", "{C3C0905E-2B33-498A-BBD8-4A0085B80009}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ImagePanel", "Control.ImagePanel\Control.ImagePanel.csproj", "{C3C0905E-2B33-498A-BBD8-4A0085B80009}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Resources", "Control.Resources\Control.Resources.csproj", "{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

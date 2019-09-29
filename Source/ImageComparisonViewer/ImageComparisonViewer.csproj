@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Control.Resources\Control.Resources.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.MainTabControl\ImageComparisonViewer.MainTabControl.csproj" />
   </ItemGroup>
 

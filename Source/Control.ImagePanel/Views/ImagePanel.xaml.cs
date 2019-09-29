@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace Control.ImagePanel
+namespace Control.ImagePanel.Views
 {
     /// <summary>
     /// Interaction logic for ImagePanel.xaml

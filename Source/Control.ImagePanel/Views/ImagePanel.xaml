@@ -1,0 +1,31 @@
+<UserControl x:Class="Control.ImagePanel.Views.ImagePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:r="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.NETCore"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:vme="clr-namespace:Control.ImagePanel.ViewModels.EventConverters"
+             xmlns:ceab="clr-namespace:Control.ExplorerAddressBar;assembly=Control.ExplorerAddressBar"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <StackPanel Background="Gray"
+                AllowDrop="True" >
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Drop">
+                <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneTime}">
+                    <vme:DropEventToStringsConverter/>
+                </r:EventToReactiveProperty>
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+
+        <ceab:ExplorerAddressBar VerticalAlignment="Top"
+                                 SelectedDirectory="{Binding DirectoryPath, Mode=TwoWay}"/>
+
+        <TextBlock Text="{Binding DirectoryPath, Mode=OneWay}"/>
+        
+    </StackPanel>
+</UserControl>

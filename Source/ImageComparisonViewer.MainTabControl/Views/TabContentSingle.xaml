@@ -7,21 +7,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:prism="http://prismlibrary.com/"
              xmlns:vme="clr-namespace:ImageComparisonViewer.MainTabControl.ViewModels.EventConverters"
-             xmlns:cip="clr-namespace:Control.ImagePanel;assembly=Control.ImagePanel"
+             xmlns:cip="clr-namespace:Control.ImagePanel.Views;assembly=Control.ImagePanel"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <Grid Background="Transparent" 
-          AllowDrop="True" >
-        <i:Interaction.Triggers>
-            <i:EventTrigger EventName="Drop">
-                <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneTime}">
-                    <vme:DropEventToStringsConverter/>
-                </r:EventToReactiveProperty>
-            </i:EventTrigger>
-        </i:Interaction.Triggers>
-
+    <Grid Background="Transparent" >
+        
         <cip:ImagePanel />
 
         <!--
