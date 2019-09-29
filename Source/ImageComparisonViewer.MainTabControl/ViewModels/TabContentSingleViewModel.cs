@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.MainTabControl.ViewModels.Bases;
+using Prism.Regions;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -13,7 +14,8 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels
         private readonly static string _title = "Single";
         private readonly static int _index = 1;
 
-        public TabContentSingleViewModel() : base(_title, _index)
+        public TabContentSingleViewModel(IRegionManager regionManager)
+            : base(regionManager, _title, _index)
         {
             Debug.WriteLine($"{nameof(TabContentSingleViewModel): ctor}");
         }

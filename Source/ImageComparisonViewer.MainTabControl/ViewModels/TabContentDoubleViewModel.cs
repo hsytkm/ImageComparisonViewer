@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.MainTabControl.ViewModels.Bases;
+using Prism.Regions;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -13,26 +14,10 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels
         private readonly static string _title = "Double";
         private readonly static int _index = 2;
 
-        /// <summary>
-        /// 画像Drop時のイベント通知
-        /// </summary>
-        public ReactiveProperty<IReadOnlyList<string>> DropEvent { get; } =
-            new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None);
-
-        public TabContentDoubleViewModel() : base(_title, _index)
+        public TabContentDoubleViewModel(IRegionManager regionManager)
+            : base(regionManager, _title, _index)
         {
             Debug.WriteLine($"{nameof(TabContentDoubleViewModel): ctor}");
-
-            DropEvent
-                .Subscribe(paths =>
-                {
-                    foreach (var path in paths)
-                    {
-                        Debug.WriteLine(path);
-                    }
-                })
-                .AddTo(CompositeDisposable);
-
         }
 
     }

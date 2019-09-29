@@ -32,7 +32,7 @@ namespace Control.ExplorerAddressBar
         #region SelectedDirectoryProperty(TwoWay)
 
         // 選択ディレクトリ
-        private readonly DependencyProperty SelectedDirectoryProperty =
+        private static readonly DependencyProperty SelectedDirectoryProperty =
             DependencyProperty.Register(
                 nameof(SelectedDirectory),
                 typeof(string),
@@ -55,7 +55,7 @@ namespace Control.ExplorerAddressBar
 
         #endregion
 
-        public ExplorerAddressBar() //IContainerExtension container, IRegionManager regionManager)
+        public ExplorerAddressBar()
         {
             InitializeComponent();
 

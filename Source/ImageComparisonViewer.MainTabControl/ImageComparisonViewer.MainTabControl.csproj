@@ -36,10 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModels\EventConverters\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Control.ImagePanel\Control.ImagePanel.csproj" />
   </ItemGroup>
 

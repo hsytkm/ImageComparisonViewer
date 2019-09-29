@@ -1,4 +1,8 @@
-﻿using System.Windows.Controls;
+﻿using Control.ImagePanel.Views;
+using ImageComparisonViewer.MainTabControl.Common;
+using Prism.Ioc;
+using Prism.Regions;
+using System.Windows.Controls;
 
 namespace ImageComparisonViewer.MainTabControl.Views
 {
@@ -7,9 +11,17 @@ namespace ImageComparisonViewer.MainTabControl.Views
     /// </summary>
     public partial class TabContentTriple : UserControl
     {
-        public TabContentTriple()
+        private static readonly int _contentCount = 3;
+
+        public TabContentTriple(IContainerExtension container, IRegionManager regionManager)
         {
             InitializeComponent();
+
+            foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
+            {
+                regionManager.RegisterViewWithRegion(name,
+                    () => container.Resolve<ImagePanel>());
+            }
         }
     }
 }
