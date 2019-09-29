@@ -39,6 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Control.ImagePanel\Control.ImagePanel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="Views\TabContentTriple.xaml">
       <SubType>Designer</SubType>
     </Page>

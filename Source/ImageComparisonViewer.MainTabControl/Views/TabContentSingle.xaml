@@ -6,8 +6,9 @@
              xmlns:r="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.NETCore"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:prism="http://prismlibrary.com/"
-             prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:vme="clr-namespace:ImageComparisonViewer.MainTabControl.ViewModels.EventConverters"
+             xmlns:cip="clr-namespace:Control.ImagePanel;assembly=Control.ImagePanel"
+             prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
@@ -21,8 +22,13 @@
             </i:EventTrigger>
         </i:Interaction.Triggers>
 
+        <cip:ImagePanel />
+
+        <!--
         <TextBlock Text="{Binding Title, Mode=OneTime}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center" />
+        -->
+
     </Grid>
 </UserControl>

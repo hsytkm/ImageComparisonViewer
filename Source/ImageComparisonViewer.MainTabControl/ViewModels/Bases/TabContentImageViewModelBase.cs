@@ -1,6 +1,6 @@
 ﻿namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
-    class TabContentImageViewModelBase : TabContentViewModelBase
+    abstract class TabContentImageViewModelBase : TabContentViewModelBase
     {
         public int Index { get; }
 

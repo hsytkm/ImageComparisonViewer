@@ -8,7 +8,7 @@ using System.Reactive.Disposables;
 
 namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
-    class TabContentViewModelBase : BindableBase, IActiveAware, INavigationAware, IDisposable
+    abstract class TabContentViewModelBase : BindableBase, IActiveAware, INavigationAware, IDisposable
     {
         public string Title { get; }
 
