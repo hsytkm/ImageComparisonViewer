@@ -17,11 +17,7 @@ namespace ImageComparisonViewer.MainTabControl.Views
         {
             InitializeComponent();
 
-            foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
-            {
-                regionManager.RegisterViewWithRegion(name,
-                    () => container.Resolve<ImagePanel>());
-            }
+            TabContentDouble.RegisterImagePanelViewsWithRegion(container, regionManager, _contentCount);
         }
     }
 }

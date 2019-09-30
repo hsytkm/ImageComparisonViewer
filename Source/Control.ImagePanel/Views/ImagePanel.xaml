@@ -23,9 +23,9 @@
         </i:Interaction.Triggers>
 
         <ceab:ExplorerAddressBar VerticalAlignment="Top"
-                                 SelectedDirectory="{Binding DirectoryPath, Mode=TwoWay}"/>
+                                 SelectedDirectory="{Binding DirectoryPath.Value, Mode=TwoWay}"/>
 
-        <TextBlock Text="{Binding DirectoryPath, Mode=OneWay}"/>
+        <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
         
     </StackPanel>
 </UserControl>

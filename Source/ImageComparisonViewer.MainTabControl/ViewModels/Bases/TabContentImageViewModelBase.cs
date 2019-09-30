@@ -1,6 +1,9 @@
-﻿using ImageComparisonViewer.MainTabControl.Common;
+﻿using Control.ImagePanel.Views;
+using ImageComparisonViewer.Core;
+using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
@@ -13,18 +16,20 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
     abstract class TabContentImageViewModelBase : TabContentViewModelBase
     {
-        public int ContentCount { get; }
+        private readonly int _contentCount;
 
         private readonly IRegionManager _regionManager;
+        private readonly ImageSources _imageSources;
 
         public DelegateCommand SwapImagesInnerCommand { get; }
         public DelegateCommand SwapImagesOuterCommand { get; }
 
-        public TabContentImageViewModelBase(IRegionManager regionManager, string title, int index)
+        public TabContentImageViewModelBase(IContainerExtension container, IRegionManager regionManager, string title, int index)
             : base (title)
         {
             _regionManager = regionManager;
-            ContentCount = index;
+            _contentCount = index;
+            _imageSources = container.Resolve<ImageSources>();
 
             SwapImagesInnerCommand = new DelegateCommand(SwapImageViewModelsInnerTrack);
             //_applicationCommands.SwapInnerTrackCommand.RegisterCommand(SwapImagesInnerCommand);
@@ -42,25 +47,27 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             if (e2.Value)
             {
                 // アクティブ化時
-                for (int i = 0; i < ContentCount; i++)
+                foreach (var view in GetImageContentViews())
                 {
-                    foreach (var view in GetImageContentViews())
+                    // ここで各ImagePanelのソース画像を更新する
+                    if (view is ImagePanel imagePanel)
                     {
-                        // ◆ここで各ImagePanelのソース画像達を指定したい
-                        //if (view.DataContext is Control.ImagePanel.ViewModels.ImagePanelViewModel vmodel)
-                        {
-                            Debug.WriteLine("");
-                            //vmodel.UpdateImageSource(i);
-                        }
+                        imagePanel.UpdateImageSource();
                     }
                 }
             }
             else
             {
-                // 非アクティブ化時
-                // ◆ここで各ImagePanelのソース画像達を入れ替えたい
-                //MainImages.AdaptImageListTracks(ContentCount);
+                // 非アクティブ化時に溜まった回転情報をModelに通知する
+                AdaptImageListTracks();
             }
+        }
+
+        // 画像の回転をModelに通知する
+        private void AdaptImageListTracks()
+        {
+            _imageSources.AdaptImageListTracks(_contentCount, _innerTrackCounter);
+            _innerTrackCounter = 0;
         }
 
         #region  GetRegionView
@@ -70,7 +77,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         /// </summary>
         /// <returns></returns>
         private IEnumerable<FrameworkElement> GetImageContentViews() =>
-            RegionNames.GetImageContentRegionNames(ContentCount)
+            RegionNames.GetImageContentRegionNames(_contentCount)
                 .Select(name => _regionManager.Regions[name].Views.Cast<FrameworkElement>().FirstOrDefault());
 
         #endregion
@@ -78,19 +85,19 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         #region  SwapImageViewModels
 
         private readonly int ImageSourcesLength = 3; //◆未確認
-        private int InnerTrackCounter;
+        private int _innerTrackCounter;
 
-        private void IncremanetInnerTrackCounter() =>
-            InnerTrackCounter = (InnerTrackCounter + 1) % ImageSourcesLength;
-        private void DecremanetInnerTrackCounter() =>
-            InnerTrackCounter = (InnerTrackCounter - 1) % ImageSourcesLength;
+        private void IncrementInnerTrackCounter() =>
+            _innerTrackCounter = (_innerTrackCounter + 1) % ImageSourcesLength;
+        private void DecrementInnerTrackCounter() =>
+            _innerTrackCounter = (_innerTrackCounter - 1) % ImageSourcesLength;
 
         /// <summary>
         /// 画像(ViewModel)を内回りで入れ替え
         /// </summary>
         private void SwapImageViewModelsInnerTrack()
         {
-            if (ContentCount <= 1) return;  // 回転する必要なし
+            if (_contentCount <= 1) return;  // 回転する必要なし
             var views = GetImageContentViews().ToList();
 
             var tail = views[^1].DataContext;
@@ -100,7 +107,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             }
             views[0].DataContext = tail;
 
-            IncremanetInnerTrackCounter();
+            IncrementInnerTrackCounter();
         }
 
         /// <summary>
@@ -108,7 +115,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         /// </summary>
         private void SwapImageViewModelsOuterTrack()
         {
-            if (ContentCount <= 1) return;  // 回転する必要なし
+            if (_contentCount <= 1) return;  // 回転する必要なし
             var views = GetImageContentViews().ToList();
 
             var head = views[0].DataContext;
@@ -118,7 +125,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             }
             views[^1].DataContext = head;
 
-            DecremanetInnerTrackCounter();
+            DecrementInnerTrackCounter();
         }
 
         #endregion

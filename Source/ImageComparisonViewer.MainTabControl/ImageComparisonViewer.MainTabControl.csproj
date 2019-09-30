@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Control.ImagePanel\Control.ImagePanel.csproj" />
+    <ProjectReference Include="..\ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

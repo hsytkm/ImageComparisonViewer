@@ -14,9 +14,8 @@ namespace Control.ExplorerAddressBar
     /// </summary>
     public partial class ExplorerAddressBar : UserControl
     {
-        private static readonly string _defaultDirectory =
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            //Environment.GetEnvironmentVariable("SystemDrive") ?? $"C{Path.VolumeSeparatorChar}{Path.DirectorySeparatorChar}";
+        private static readonly string _defaultDirectory = default!;
+            //Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
         private double _nodeBarVisibleWidth;    // NodeBarの表示幅
         private double _nodeBarUnlimitedWidth;  // NodeBarの制限なし幅(理想幅)
@@ -43,8 +42,17 @@ namespace Control.ExplorerAddressBar
                     (d, e) =>
                     {
                         if (!(d is ExplorerAddressBar eab)) return;
-                        if (!(e.NewValue is string path)) return;
-                        AddViewNodes(eab, path);
+
+                        if (e.NewValue is null)
+                        {
+                            // 画像グループ回転時にnullならクリア
+                            if (ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
+                                itemsControl.ItemsSource = null;
+                        }
+                        else if (e.NewValue is string path)
+                        {
+                            AddViewNodes(eab, path);
+                        }
                     }));
 
         public string SelectedDirectory
@@ -223,7 +231,9 @@ namespace Control.ExplorerAddressBar
             if (!ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
                 return;
 
-            if (string.IsNullOrEmpty(sourcePath)) return;
+            if (string.IsNullOrEmpty(sourcePath))
+                throw new ArgumentException(nameof(sourcePath));
+
             var path = DirectoryNode.EmendFullPath(sourcePath);
 
             var views = new List<DirectoryPathNode>();

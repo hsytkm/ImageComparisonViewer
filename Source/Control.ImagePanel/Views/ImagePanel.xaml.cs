@@ -1,3 +1,4 @@
+using Control.ImagePanel.ViewModels;
 using System.Windows.Controls;
 
 namespace Control.ImagePanel.Views
@@ -7,9 +8,27 @@ namespace Control.ImagePanel.Views
     /// </summary>
     public partial class ImagePanel : UserControl
     {
-        public ImagePanel()
+        private readonly int _contentIndex;
+
+
+        public ImagePanel(int contentIndex)
         {
             InitializeComponent();
+
+            _contentIndex = contentIndex;
+
+            // ◆ViewModelのコンストラクタに引数渡したい…
+            UpdateImageSource();
+
         }
+
+        public void UpdateImageSource()
+        {
+            if (DataContext is ImagePanelViewModel vmodel)
+            {
+                vmodel.SetContentIndex(_contentIndex);
+            }
+        }
+
     }
 }
