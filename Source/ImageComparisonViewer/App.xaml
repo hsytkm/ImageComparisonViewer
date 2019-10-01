@@ -5,7 +5,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Control.Resources;component/Themes/DarkPurple.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/ImageComparisonViewer.Common;component/Themes/DarkPurple.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

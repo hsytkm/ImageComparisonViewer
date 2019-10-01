@@ -13,7 +13,7 @@
         <ResourceDictionary>
             <vc:InverseVisibilityConverter x:Key="InvVisibilityConverter" />
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Control.Resources;component/Themes/DarkPurple.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/ImageComparisonViewer.Common;component/Themes/DarkPurple.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

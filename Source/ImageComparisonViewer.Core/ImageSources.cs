@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+﻿using ImageComparisonViewer.Common.Extensions;
+using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -75,36 +76,22 @@ namespace ImageComparisonViewer.Core
             if (contentCount <= 1) return;      // ループの概念ない
             var tailIndex = contentCount - 1;
 
-            var list = DirectriesPath;
-            if (tailIndex > list.Count - 1)
+            var sourceList = DirectriesPath;
+            if (tailIndex > sourceList.Count - 1)
                 throw new ArgumentOutOfRangeException(nameof(tailIndex));
 
             // 周回する分は捨てる
             rightShiftCount %= contentCount;
 
-            Debug.WriteLine("◆拡張メソッドに置換したい");
-            if (rightShiftCount > 0)
+            if (rightShiftCount != 0)
             {
-                for (int i = 0; i < rightShiftCount; i++)
+                // 対象画像数のみ回転させる
+                Span<string> sourceSpan = sourceList.ToArray().AsSpan().Slice(0, tailIndex + 1);
+                Span<string> sortedSpan = sourceSpan.RightShift(rightShiftCount);
+
+                for (int i = 0; i < sortedSpan.Length; i++)
                 {
-                    var tail = list[tailIndex];
-                    for (int j = tailIndex; j > 0; j--)
-                    {
-                        list[j] = list[j - 1];
-                    }
-                    list[0] = tail;
-                }
-            }
-            else if (rightShiftCount < 0)
-            {
-                for (int i = 0; i < -rightShiftCount; i++)
-                {
-                    var head = list[0];
-                    for (int j = 0; j < tailIndex; j++)
-                    {
-                        list[j] = list[j + 1];
-                    }
-                    list[tailIndex] = head;
+                    sourceList[i] = sortedSpan[i];
                 }
             }
             //Debug.WriteLine($"Model: {list[0]}, {list[1]}, {list[2]}");

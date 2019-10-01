@@ -11,9 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ExplorerAddressBar"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ImagePanel", "Control.ImagePanel\Control.ImagePanel.csproj", "{C3C0905E-2B33-498A-BBD8-4A0085B80009}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.Resources", "Control.Resources\Control.Resources.csproj", "{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.Core", "ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj", "{3432943A-8C71-4ACB-A208-3F3D3652D488}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageComparisonViewer.Core", "ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj", "{3432943A-8C71-4ACB-A208-3F3D3652D488}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageComparisonViewer.Common", "ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj", "{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,14 +37,14 @@ Global
 		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C470FE1B-62FC-4ABA-84B3-D02EC2C6BD54}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

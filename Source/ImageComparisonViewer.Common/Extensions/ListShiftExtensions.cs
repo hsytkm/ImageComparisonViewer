@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ImageComparisonViewer.MainTabControl.Common
+namespace ImageComparisonViewer.Common.Extensions
 {
-    static class ListTExtensions
+#if false
+    public static class ListShiftExtensions
     {
         /// <summary>
         /// リスト要素を右周りシフト
@@ -74,4 +75,5 @@ namespace ImageComparisonViewer.MainTabControl.Common
         }
 
     }
+#endif
 }

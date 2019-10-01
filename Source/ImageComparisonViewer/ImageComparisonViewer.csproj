@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Control.ImagePanel\Control.ImagePanel.csproj" />
-    <ProjectReference Include="..\Control.Resources\Control.Resources.csproj" />
+    <ProjectReference Include="..\ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.MainTabControl\ImageComparisonViewer.MainTabControl.csproj" />
   </ItemGroup>

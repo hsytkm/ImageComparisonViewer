@@ -1,4 +1,5 @@
 ﻿using Control.ImagePanel.Views;
+using ImageComparisonViewer.Common.Extensions;
 using ImageComparisonViewer.Core;
 using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Commands;
@@ -121,9 +122,11 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             if (_contentCount <= 1) return;  // 回転する必要なし
             if (rightShift == 0) return;
 
-            var views = GetImageContentViews().ToList();
-            var vmodels = views.Select(x => x.DataContext).ToList().RightShift(rightShift);
-            for (int i = 0; i < views.Count; i++)
+            var views = GetImageContentViews().ToArray();
+            var vmodels = views.Select(x => x.DataContext).ToArray().AsSpan()
+                .RightShift(rightShift);
+
+            for (int i = 0; i < views.Length; i++)
             {
                 views[i].DataContext = vmodels[i];
             }
