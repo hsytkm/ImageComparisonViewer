@@ -1,4 +1,5 @@
 using Control.ImagePanel.ViewModels;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Control.ImagePanel.Views
@@ -8,26 +9,65 @@ namespace Control.ImagePanel.Views
     /// </summary>
     public partial class ImagePanel : UserControl
     {
-        private readonly int _contentIndex;
+        #region ContentIndexProperty
 
+        // 画像コンテンツ番号
+        private static readonly DependencyProperty ContentIndexProperty =
+            DependencyProperty.Register(
+                nameof(ContentIndex),
+                typeof(int),
+                typeof(ImagePanel),
+                new FrameworkPropertyMetadata(
+                    -1,
+                    FrameworkPropertyMetadataOptions.None,
+                    (d, e) =>
+                    {
+                        if (d is ImagePanel view && view.DataContext is ImagePanelViewModel vmodel)
+                        {
+                            if (e.NewValue is int index)
+                                vmodel.ContentIndex = index;
+                        }
+                    }));
 
-        public ImagePanel(int contentIndex)
+        public int ContentIndex
         {
-            InitializeComponent();
-
-            _contentIndex = contentIndex;
-
-            // ◆ViewModelのコンストラクタに引数渡したい…
-            UpdateImageSource();
-
+            get => (int)GetValue(ContentIndexProperty);
+            set => SetValue(ContentIndexProperty, value);
         }
 
-        public void UpdateImageSource()
+        #endregion
+
+        #region IsActiveProperty
+
+        // ViewのActiveフラグ(TabControlから伝搬)
+        private static readonly DependencyProperty IsActiveProperty =
+            DependencyProperty.Register(
+                nameof(IsActive),
+                typeof(bool),
+                typeof(ImagePanel),
+                new FrameworkPropertyMetadata(
+                    false,
+                    FrameworkPropertyMetadataOptions.None,
+                    (d, e) =>
+                    {
+                        if (d is ImagePanel view && view.DataContext is ImagePanelViewModel vmodel)
+                        {
+                            if (e.NewValue is bool isActive)
+                                vmodel.IsActive.Value = isActive;
+                        }
+                    }));
+
+        public bool IsActive
         {
-            if (DataContext is ImagePanelViewModel vmodel)
-            {
-                vmodel.SetContentIndex(_contentIndex);
-            }
+            get => (bool)GetValue(IsActiveProperty);
+            set => SetValue(IsActiveProperty, value);
+        }
+
+        #endregion
+
+        public ImagePanel()
+        {
+            InitializeComponent();
         }
 
     }

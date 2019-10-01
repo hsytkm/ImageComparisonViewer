@@ -45,9 +45,8 @@ namespace Control.ExplorerAddressBar
 
                         if (e.NewValue is null)
                         {
-                            // 画像グループ回転時にnullならクリア
-                            if (ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
-                                itemsControl.ItemsSource = null;
+                            // Viewをクリアするためにコールする
+                            AddViewNodes(eab, sourcePath: "");
                         }
                         else if (e.NewValue is string path)
                         {
@@ -231,21 +230,26 @@ namespace Control.ExplorerAddressBar
             if (!ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
                 return;
 
+            // 無効文字ならViewをクリア
             if (string.IsNullOrEmpty(sourcePath))
-                throw new ArgumentException(nameof(sourcePath));
-
-            var path = DirectoryNode.EmendFullPath(sourcePath);
-
-            var views = new List<DirectoryPathNode>();
-
-            // Viewを順に作成してRegionに登録
-            foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
             {
-                views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(eab, path)));
+                itemsControl.ItemsSource = null;
+                eab.SelectedDirectory = "";
             }
+            else
+            {
+                var path = DirectoryNode.EmendFullPath(sourcePath);
+                var views = new List<DirectoryPathNode>();
 
-            itemsControl.ItemsSource = views;
-            eab.SelectedDirectory = path;
+                // Viewを順に作成してRegionに登録
+                foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
+                {
+                    views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(eab, path)));
+                }
+
+                itemsControl.ItemsSource = views;
+                eab.SelectedDirectory = path;
+            }
         }
 
         /// <summary>
