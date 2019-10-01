@@ -19,12 +19,8 @@ namespace ImageComparisonViewer.MainTabControl.Views
 
             // 以下で動くが他画像に合わせる
             //regionManager.RegisterViewWithRegion(RegionNames.ImageContentRegion1_0, typeof(ImagePanel));
-
-            foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
-            {
-                regionManager.RegisterViewWithRegion(name,
-                    () => container.Resolve<ImagePanel>());
-            }
+            TabContentDouble.RegisterImagePanelViewsWithRegion(container, regionManager, _contentCount);
         }
+
     }
 }

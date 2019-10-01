@@ -44,11 +44,11 @@
 
 
         <StackPanel Grid.Column="5" >
-            <Button Content="Inner"
-                    Command="{Binding SwapImagesInnerCommand, Mode=OneTime}" />
+            <Button Content="→"
+                    Command="{Binding ImagesRightShiftCommand, Mode=OneTime}" />
 
-            <Button Content="Outer"
-                    Command="{Binding SwapImagesOuterCommand, Mode=OneTime}" />
+            <Button Content="←"
+                    Command="{Binding ImagesLeftShiftCommand, Mode=OneTime}" />
         </StackPanel>
 
     </Grid>

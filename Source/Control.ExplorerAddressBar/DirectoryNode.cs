@@ -65,13 +65,13 @@ namespace Control.ExplorerAddressBar
         /// </summary>
         /// <param name="srcPath"></param>
         /// <returns></returns>
-        public static string EmendFullPath(string srcPath)
+        public static string EmendFullPath(string path)
         {
-            string path = srcPath;
+            if (string.IsNullOrEmpty(path)) return path;
 
             // 最終は "\" にする(手入力が入力楽なので)
             if (path[^1] != Path.DirectorySeparatorChar)
-                path += Path.DirectorySeparatorChar;
+                return path + Path.DirectorySeparatorChar;
 
             return path;
         }

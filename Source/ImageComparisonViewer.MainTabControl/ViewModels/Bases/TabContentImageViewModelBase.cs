@@ -1,6 +1,9 @@
-﻿using ImageComparisonViewer.MainTabControl.Common;
+﻿using Control.ImagePanel.Views;
+using ImageComparisonViewer.Core;
+using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
@@ -13,24 +16,34 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
     abstract class TabContentImageViewModelBase : TabContentViewModelBase
     {
-        public int ContentCount { get; }
+        private readonly int _contentCount;
 
         private readonly IRegionManager _regionManager;
+        private readonly ImageSources _imageSources;
 
-        public DelegateCommand SwapImagesInnerCommand { get; }
-        public DelegateCommand SwapImagesOuterCommand { get; }
+        public DelegateCommand ImagesRightShiftCommand { get; }
+        public DelegateCommand ImagesLeftShiftCommand { get; }
 
-        public TabContentImageViewModelBase(IRegionManager regionManager, string title, int index)
-            : base (title)
+        public TabContentImageViewModelBase(IContainerExtension container, IRegionManager regionManager, string title, int index)
+            : base(title)
         {
             _regionManager = regionManager;
-            ContentCount = index;
+            _contentCount = index;
+            _imageSources = container.Resolve<ImageSources>();
 
-            SwapImagesInnerCommand = new DelegateCommand(SwapImageViewModelsInnerTrack);
-            //_applicationCommands.SwapInnerTrackCommand.RegisterCommand(SwapImagesInnerCommand);
+            ImagesRightShiftCommand = new DelegateCommand(() =>
+            {
+                RightShiftViewModels();
+                IncrementRightShiftCounter();   // ユーザ操作による回転数を更新
+            });
+            //_applicationCommands.SwapInnerTrackCommand.RegisterCommand(RightShiftCommand);
 
-            SwapImagesOuterCommand = new DelegateCommand(SwapImageViewModelsOuterTrack);
-            //_applicationCommands.SwapOuterTrackCommand.RegisterCommand(SwapImagesOuterCommand);
+            ImagesLeftShiftCommand = new DelegateCommand(() =>
+            {
+                LeftShiftViewModels();
+                IncrementLeftShiftCounter();   // ユーザ操作による回転数を更新
+            });
+            //_applicationCommands.SwapOuterTrackCommand.RegisterCommand(LeftShiftCommand);
 
             IsActiveChanged += ViewModel_IsActiveChanged;
         }
@@ -39,27 +52,16 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         private void ViewModel_IsActiveChanged([MaybeNull]object? sender, EventArgs e)
         {
             if (!(e is DataEventArgs<bool> e2)) return;
-            if (e2.Value)
+            var isActive = e2.Value;
+
+            // アクティブ状態の伝搬
+            foreach (var view in GetImagePanelViews())
+                view.IsActive = isActive;
+
+            // 非アクティブ時に溜まった回転数をModelに通知する
+            if (!isActive)
             {
-                // アクティブ化時
-                for (int i = 0; i < ContentCount; i++)
-                {
-                    foreach (var view in GetImageContentViews())
-                    {
-                        // ◆ここで各ImagePanelのソース画像達を指定したい
-                        //if (view.DataContext is Control.ImagePanel.ViewModels.ImagePanelViewModel vmodel)
-                        {
-                            Debug.WriteLine("");
-                            //vmodel.UpdateImageSource(i);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // 非アクティブ化時
-                // ◆ここで各ImagePanelのソース画像達を入れ替えたい
-                //MainImages.AdaptImageListTracks(ContentCount);
+                AdaptImagesShift();
             }
         }
 
@@ -70,56 +72,69 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         /// </summary>
         /// <returns></returns>
         private IEnumerable<FrameworkElement> GetImageContentViews() =>
-            RegionNames.GetImageContentRegionNames(ContentCount)
+            RegionNames.GetImageContentRegionNames(_contentCount)
                 .Select(name => _regionManager.Regions[name].Views.Cast<FrameworkElement>().FirstOrDefault());
+
+        /// <summary>
+        /// 指定Countに対応する画像RegionのViewsを取得(2画面なら 2_0 → 2_1 を返す)
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<ImagePanel> GetImagePanelViews()
+        {
+            foreach (var view in GetImageContentViews())
+            {
+                if (view is ImagePanel imagePanel)
+                    yield return imagePanel;
+            }
+        }
 
         #endregion
 
-        #region  SwapImageViewModels
+        #region  ShiftImageViewModels
 
-        private readonly int ImageSourcesLength = 3; //◆未確認
-        private int InnerTrackCounter;
+        private int _rightShiftCounter;
 
-        private void IncremanetInnerTrackCounter() =>
-            InnerTrackCounter = (InnerTrackCounter + 1) % ImageSourcesLength;
-        private void DecremanetInnerTrackCounter() =>
-            InnerTrackCounter = (InnerTrackCounter - 1) % ImageSourcesLength;
+        private void IncrementRightShiftCounter() => _rightShiftCounter++;
+        private void IncrementLeftShiftCounter() => _rightShiftCounter--;
 
         /// <summary>
-        /// 画像(ViewModel)を内回りで入れ替え
+        /// 画像の回転を外部に通知する(+次に備えてViewModelを元に戻す)
         /// </summary>
-        private void SwapImageViewModelsInnerTrack()
+        private void AdaptImagesShift()
         {
-            if (ContentCount <= 1) return;  // 回転する必要なし
-            var views = GetImageContentViews().ToList();
+            // ユーザの指示で回転させたViewModelを元に戻す(◆ややこしい…)
+            RightShiftViewModels(-_rightShiftCounter);
 
-            var tail = views[^1].DataContext;
-            for (int i = views.Count - 1; i > 0; i--)
-            {
-                views[i].DataContext = views[i - 1].DataContext;
-            }
-            views[0].DataContext = tail;
+            // Modelに溜まった回転数を通知
+            _imageSources.AdaptImageListTracks(_contentCount, _rightShiftCounter);
 
-            IncremanetInnerTrackCounter();
+            // 外部通知したらクリアする
+            _rightShiftCounter = 0;
         }
 
         /// <summary>
-        /// 画像(ViewModel)を外回りで入れ替え
+        /// 画像(ViewModel)を右回りで入れ替え
         /// </summary>
-        private void SwapImageViewModelsOuterTrack()
+        /// <param name="rightShift">右シフト回数</param>
+        private void RightShiftViewModels(int rightShift = 1)
         {
-            if (ContentCount <= 1) return;  // 回転する必要なし
+            if (_contentCount <= 1) return;  // 回転する必要なし
+            if (rightShift == 0) return;
+
             var views = GetImageContentViews().ToList();
-
-            var head = views[0].DataContext;
-            for (int i = 0; i < views.Count - 1; i++)
+            var vmodels = views.Select(x => x.DataContext).ToList().RightShift(rightShift);
+            for (int i = 0; i < views.Count; i++)
             {
-                views[i].DataContext = views[i + 1].DataContext;
+                views[i].DataContext = vmodels[i];
             }
-            views[^1].DataContext = head;
-
-            DecremanetInnerTrackCounter();
         }
+
+        /// <summary>
+        /// 画像(ViewModel)を左回りで入れ替え
+        /// </summary>
+        /// <param name="leftShift">左シフト回数</param>
+        private void LeftShiftViewModels(int leftShift = 1) =>
+            RightShiftViewModels(-leftShift);   // 右シフトの逆
 
         #endregion
 

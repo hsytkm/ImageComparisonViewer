@@ -9,7 +9,7 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:vme="clr-namespace:Control.ImagePanel.ViewModels.EventConverters"
              xmlns:ceab="clr-namespace:Control.ExplorerAddressBar;assembly=Control.ExplorerAddressBar"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
 
     <StackPanel Background="{StaticResource ActiveBackgroundBrushKey}"
@@ -23,9 +23,11 @@
         </i:Interaction.Triggers>
 
         <ceab:ExplorerAddressBar VerticalAlignment="Top"
-                                 SelectedDirectory="{Binding DirectoryPath, Mode=TwoWay}"/>
+                                 SelectedDirectory="{Binding DirectoryPath.Value, Mode=TwoWay}"/>
 
-        <TextBlock Text="{Binding DirectoryPath, Mode=OneWay}"/>
+        <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
         
+        <!-- forDebug -->
+        <TextBlock Text="{Binding ContentIndex, Mode=OneWay}" />
     </StackPanel>
 </UserControl>

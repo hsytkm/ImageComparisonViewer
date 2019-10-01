@@ -14,9 +14,8 @@ namespace Control.ExplorerAddressBar
     /// </summary>
     public partial class ExplorerAddressBar : UserControl
     {
-        private static readonly string _defaultDirectory =
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            //Environment.GetEnvironmentVariable("SystemDrive") ?? $"C{Path.VolumeSeparatorChar}{Path.DirectorySeparatorChar}";
+        private static readonly string _defaultDirectory = default!;
+            //Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
         private double _nodeBarVisibleWidth;    // NodeBarの表示幅
         private double _nodeBarUnlimitedWidth;  // NodeBarの制限なし幅(理想幅)
@@ -43,8 +42,16 @@ namespace Control.ExplorerAddressBar
                     (d, e) =>
                     {
                         if (!(d is ExplorerAddressBar eab)) return;
-                        if (!(e.NewValue is string path)) return;
-                        AddViewNodes(eab, path);
+
+                        if (e.NewValue is null)
+                        {
+                            // Viewをクリアするためにコールする
+                            AddViewNodes(eab, sourcePath: "");
+                        }
+                        else if (e.NewValue is string path)
+                        {
+                            AddViewNodes(eab, path);
+                        }
                     }));
 
         public string SelectedDirectory
@@ -223,19 +230,26 @@ namespace Control.ExplorerAddressBar
             if (!ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
                 return;
 
-            if (string.IsNullOrEmpty(sourcePath)) return;
-            var path = DirectoryNode.EmendFullPath(sourcePath);
-
-            var views = new List<DirectoryPathNode>();
-
-            // Viewを順に作成してRegionに登録
-            foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
+            // 無効文字ならViewをクリア
+            if (string.IsNullOrEmpty(sourcePath))
             {
-                views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(eab, path)));
+                itemsControl.ItemsSource = null;
+                eab.SelectedDirectory = "";
             }
+            else
+            {
+                var path = DirectoryNode.EmendFullPath(sourcePath);
+                var views = new List<DirectoryPathNode>();
 
-            itemsControl.ItemsSource = views;
-            eab.SelectedDirectory = path;
+                // Viewを順に作成してRegionに登録
+                foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
+                {
+                    views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(eab, path)));
+                }
+
+                itemsControl.ItemsSource = views;
+                eab.SelectedDirectory = path;
+            }
         }
 
         /// <summary>

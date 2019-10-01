@@ -2,6 +2,7 @@
 using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Ioc;
 using Prism.Regions;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace ImageComparisonViewer.MainTabControl.Views
@@ -17,11 +18,33 @@ namespace ImageComparisonViewer.MainTabControl.Views
         {
             InitializeComponent();
 
-            foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
+            RegisterImagePanelViewsWithRegion(container, regionManager, _contentCount);
+        }
+
+        /// <summary>
+        /// RegionにViewを登録する
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="regionManager"></param>
+        /// <param name="contentCount">画像コンテンツの最大数</param>
+        internal static void RegisterImagePanelViewsWithRegion(
+            IContainerExtension container, IRegionManager regionManager, int contentCount)
+        {
+            var regionNames = RegionNames.GetImageContentRegionNames(contentCount);
+            foreach (var (name, index) in regionNames.Select((name, index) => (name, index)))
             {
-                regionManager.RegisterViewWithRegion(name,
-                    () => container.Resolve<ImagePanel>());
+                // ◆複数の引数を渡す場合はデータstructに変えましょう
+                //var parameters = new[] { (typeof(int), (object)index) };
+                //var view = container.Resolve<ImagePanel>(parameters);
+
+                var view = container.Resolve<ImagePanel>();
+
+                // Viewに番号を設定(初回のみ。この値を上書きすることはない)
+                view.ContentIndex = index;
+
+                regionManager.RegisterViewWithRegion(name, () => view);
             }
         }
+
     }
 }
