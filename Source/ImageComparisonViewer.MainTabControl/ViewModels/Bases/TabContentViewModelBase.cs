@@ -4,15 +4,12 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
 
 namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
-    abstract class TabContentViewModelBase : BindableBase, IActiveAware, INavigationAware, IDisposable
+    abstract class TabContentViewModelBase : BindableBase, IActiveAware, INavigationAware
     {
         public string Title { get; }
-
-        internal readonly CompositeDisposable CompositeDisposable = new CompositeDisposable();
 
         public TabContentViewModelBase(string title)
         {
@@ -77,8 +74,6 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         //}
 
         #endregion
-
-        public void Dispose() => CompositeDisposable?.Dispose();
 
     }
 }

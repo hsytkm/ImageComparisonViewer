@@ -1,4 +1,5 @@
-﻿using ImageComparisonViewer.Core;
+﻿using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Core;
 using Prism.Ioc;
 using Prism.Mvvm;
 using Reactive.Bindings;
@@ -13,10 +14,8 @@ using System.Reactive.Linq;
 
 namespace ImageComparisonViewer.ImagePanels.ViewModels
 {
-    class ImagePanelViewModel : BindableBase, IDisposable
+    class ImagePanelViewModel : DisposableBindableBase
     {
-        private readonly CompositeDisposable CompositeDisposable = new CompositeDisposable();
-
         private readonly ImageSources _imageSources = default!;
 
         public int ContentIndex
@@ -47,6 +46,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         {
             _imageSources = container.Resolve<ImageSources>();
 
+            // VM->M
             DropEvent
                 .Subscribe(paths => _imageSources.SetDirectriesPath(ContentIndex, paths))
                 .AddTo(CompositeDisposable);
@@ -74,6 +74,5 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
                 .AddTo(CompositeDisposable);
         }
 
-        public void Dispose() => CompositeDisposable.Dispose();
     }
 }
