@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ImageComparisonViewer.Common.Extensions
 {
 #if false
-    public static class ListShiftExtensions
+    public static class ListShiftExtension
     {
         /// <summary>
         /// リスト要素を右周りシフト

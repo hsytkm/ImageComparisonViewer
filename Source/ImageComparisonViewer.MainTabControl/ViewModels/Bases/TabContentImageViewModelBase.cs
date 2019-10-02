@@ -1,4 +1,4 @@
-﻿using Control.ImagePanel.Views;
+﻿using ImageComparisonViewer.ImagePanels.Views;
 using ImageComparisonViewer.Common.Extensions;
 using ImageComparisonViewer.Core;
 using ImageComparisonViewer.MainTabControl.Common;
@@ -56,7 +56,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             var isActive = e2.Value;
 
             // アクティブ状態の伝搬
-            foreach (var view in GetImagePanelViews())
+            foreach (var view in GetImageContentViews<ImagePanel>())
                 view.IsActive = isActive;
 
             // 非アクティブ時に溜まった回転数をModelに通知する
@@ -72,22 +72,9 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         /// 指定Countに対応する画像RegionのViewsを取得(2画面なら 2_0 → 2_1 を返す)
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<FrameworkElement> GetImageContentViews() =>
+        private IEnumerable<T> GetImageContentViews<T>() where T : FrameworkElement =>
             RegionNames.GetImageContentRegionNames(_contentCount)
-                .Select(name => _regionManager.Regions[name].Views.Cast<FrameworkElement>().FirstOrDefault());
-
-        /// <summary>
-        /// 指定Countに対応する画像RegionのViewsを取得(2画面なら 2_0 → 2_1 を返す)
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<ImagePanel> GetImagePanelViews()
-        {
-            foreach (var view in GetImageContentViews())
-            {
-                if (view is ImagePanel imagePanel)
-                    yield return imagePanel;
-            }
-        }
+                .Select(name => _regionManager.Regions[name].Views.Cast<T>().FirstOrDefault());
 
         #endregion
 
@@ -122,7 +109,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             if (_contentCount <= 1) return;  // 回転する必要なし
             if (rightShift == 0) return;
 
-            var views = GetImageContentViews().ToArray();
+            var views = GetImageContentViews<FrameworkElement>().ToArray();
             var vmodels = views.Select(x => x.DataContext).ToArray().AsSpan()
                 .RightShift(rightShift);
 

@@ -9,11 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.MainT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ExplorerAddressBar", "Control.ExplorerAddressBar\Control.ExplorerAddressBar.csproj", "{E0006C08-8A3F-41FA-A0FE-B00425E15E67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ImagePanel", "Control.ImagePanel\Control.ImagePanel.csproj", "{C3C0905E-2B33-498A-BBD8-4A0085B80009}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.Core", "ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj", "{3432943A-8C71-4ACB-A208-3F3D3652D488}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageComparisonViewer.Common", "ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj", "{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.Common", "ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj", "{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageComparisonViewer.ImagePanels", "ImageComparisonViewer.ImagePanels\ImageComparisonViewer.ImagePanels.csproj", "{2ED93BA7-3327-4E6E-B906-A373EC34F706}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +33,6 @@ Global
 		{E0006C08-8A3F-41FA-A0FE-B00425E15E67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0006C08-8A3F-41FA-A0FE-B00425E15E67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0006C08-8A3F-41FA-A0FE-B00425E15E67}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3C0905E-2B33-498A-BBD8-4A0085B80009}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3432943A-8C71-4ACB-A208-3F3D3652D488}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +41,10 @@ Global
 		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08B3AE28-CB8B-431D-B6B7-F735C2CC615D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿using Control.ImagePanel.Views;
+﻿using ImageComparisonViewer.ImagePanels.Views;
 using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Ioc;
 using Prism.Regions;

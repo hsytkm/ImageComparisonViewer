@@ -1,8 +1,8 @@
-using Control.ImagePanel.ViewModels;
+using ImageComparisonViewer.ImagePanels.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Control.ImagePanel.Views
+namespace ImageComparisonViewer.ImagePanels.Views
 {
     /// <summary>
     /// Interaction logic for ImagePanel.xaml

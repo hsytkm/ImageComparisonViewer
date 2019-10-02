@@ -1,12 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
-    <ApplicationIcon />
-    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,31 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\TabContentTriple.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\TabContentSettings.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\TabContentDouble.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Views\MainTabContentSingle.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\Control.ExplorerAddressBar\Control.ExplorerAddressBar.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj" />
-    <ProjectReference Include="..\ImageComparisonViewer.ImagePanels\ImageComparisonViewer.ImagePanels.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\TabContentTriple.xaml">
+    <Page Update="Views\ImagePanel.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

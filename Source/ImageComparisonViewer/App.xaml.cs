@@ -23,8 +23,6 @@ namespace ImageComparisonViewer
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             moduleCatalog.AddModule<MainTabControl.MainTabControlModule>();
-            moduleCatalog.AddModule<Core.CoreModule>();
-            moduleCatalog.AddModule<Control.ImagePanel.ImagePanelModule>();
         }
 
     }

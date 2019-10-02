@@ -2,7 +2,7 @@
 
 namespace ImageComparisonViewer.Common.Extensions
 {
-    public static class SpanShiftExtensions
+    public static class SpanShiftExtension
     {
         /// <summary>
         /// コレクション要素を右周りシフト
