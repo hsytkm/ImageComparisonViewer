@@ -1,5 +1,5 @@
-﻿using System.Windows.Controls;
-using System.Windows.Interactivity;
+﻿using Microsoft.Xaml.Behaviors;
+using System.Windows.Controls;
 
 namespace Control.ThumbnailList
 {
@@ -18,12 +18,13 @@ namespace Control.ThumbnailList
         }
 
         // 選択中アイテムの番号バッファ(選択中アイテムが消されたときの再選択用)
-        private int _selectedIndexBuffer;
+        //private int _selectedIndexBuffer;
 
         private void AssociatedObject_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is ListBox listBox)) return;
 
+#if false
             // 選択中アイテムが消されたときの再選択
             if (listBox.SelectedItem == null && listBox.Items.Count > 0)
             {
@@ -32,6 +33,7 @@ namespace Control.ThumbnailList
                 listBox.SelectedItem = listBox.Items[newIndex];
             }
             _selectedIndexBuffer = listBox.SelectedIndex;
+#endif
 
             // 選択項目まで表示をスクロール
             listBox.ScrollIntoView(listBox.SelectedItem);

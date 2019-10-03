@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Control.ThumbnailList
 {
+#if false
     class ImageSources : BindableBase
     {
         private const string DirPath = @"C:\data";
@@ -134,7 +135,7 @@ namespace Control.ThumbnailList
             return true;
         }
 
-        #region テスト
+#region テスト
 
         private string? _LoadStatus;
         public string? LoadStatus
@@ -153,7 +154,8 @@ namespace Control.ThumbnailList
             LoadStatus = sb.ToString();
         }
 
-        #endregion
+#endregion
 
     }
+#endif
 }

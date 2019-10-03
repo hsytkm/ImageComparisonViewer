@@ -2,17 +2,14 @@
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using Reactive.Bindings;
-using Reactive.Bindings.Extensions;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Windows.Media.Imaging;
 
 namespace Control.ThumbnailList
 {
+#if false
     class ThumbnailListViewModel : BindableBase
     {
         //public ReadOnlyObservableCollection<ThubnailVModel> Thumbnails { get; }
@@ -75,5 +72,6 @@ namespace Control.ThumbnailList
             Filename = source?.Filename;
         }
     }
+#endif
 
 }

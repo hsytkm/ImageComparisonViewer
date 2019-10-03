@@ -87,7 +87,6 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             // ToDo:対象画像リストの読み出し
             SourceImagesPath = DirectoryPath
                 .Select(x => Directory.EnumerateFiles(x, "*", SearchOption.TopDirectoryOnly).ToList())
-                .Do(x => Debug.WriteLine(x))
                 .Cast<IReadOnlyCollection<string>>()
                 .ToReadOnlyReactiveProperty();
 
