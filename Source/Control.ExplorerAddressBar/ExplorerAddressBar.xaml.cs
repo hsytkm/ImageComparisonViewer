@@ -14,8 +14,7 @@ namespace Control.ExplorerAddressBar
     /// </summary>
     public partial class ExplorerAddressBar : UserControl
     {
-        private static readonly string _defaultDirectory = default!;
-            //Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        //private static readonly string _defaultDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
         private double _nodeBarVisibleWidth;    // NodeBarの表示幅
         private double _nodeBarUnlimitedWidth;  // NodeBarの制限なし幅(理想幅)
@@ -37,7 +36,7 @@ namespace Control.ExplorerAddressBar
                 typeof(string),
                 typeof(ExplorerAddressBar),
                 new FrameworkPropertyMetadata(
-                    _defaultDirectory,
+                    default!,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (d, e) =>
                     {
@@ -87,14 +86,7 @@ namespace Control.ExplorerAddressBar
             #region DirectoryPathTextBox Events
 
             // 初回のテキストボックス非表示
-            DirectoryPathTextBox.Loaded += (sender, _) =>
-            {
-                if (sender is TextBox textBox)
-                {
-                    textBox.Text = _defaultDirectory;
-                    SetTextBoxVisibility(false);
-                }
-            };
+            DirectoryPathTextBox.Loaded += (_, __) => SetTextBoxVisibility(false);
 
             // テキストボックス表示時のフォーカス移行＋カーソル最終文字
             DirectoryPathTextBox.IsVisibleChanged += (sender, e) =>

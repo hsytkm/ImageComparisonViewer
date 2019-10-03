@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -42,6 +43,16 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         public ReactiveProperty<IReadOnlyList<string>> DropEvent { get; } =
             new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None);
 
+        /// <summary>
+        /// 表示画像リスト
+        /// </summary>
+        public ReadOnlyReactiveProperty<IReadOnlyCollection<string>> SourceImagesPath { get; }
+
+        /// <summary>
+        /// 選択中の画像PATH
+        /// </summary>
+        public ReactiveProperty<string> SelectedImagePath { get; } = new ReactiveProperty<string>();
+
         public ImagePanelViewModel(IContainerExtension container)
         {
             _imageSources = container.Resolve<ImageSources>();
@@ -72,6 +83,14 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
                 .Where(x => x.isActive).Select(x => x.path)
                 .Subscribe(x => DirectoryPath.Value = x)
                 .AddTo(CompositeDisposable);
+
+            // ToDo:対象画像リストの読み出し
+            SourceImagesPath = DirectoryPath
+                .Select(x => Directory.EnumerateFiles(x, "*", SearchOption.TopDirectoryOnly).ToList())
+                .Do(x => Debug.WriteLine(x))
+                .Cast<IReadOnlyCollection<string>>()
+                .ToReadOnlyReactiveProperty();
+
         }
 
     }
