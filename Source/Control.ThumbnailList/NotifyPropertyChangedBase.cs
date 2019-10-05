@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace Control.ThumbnailList
 {
     // https://blog.okazuki.jp/entry/2015/05/09/124333
-    class MyBindableBase : INotifyPropertyChanged
+    class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
 #pragma warning disable CS8618
         public event PropertyChangedEventHandler PropertyChanged;

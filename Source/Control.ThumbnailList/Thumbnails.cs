@@ -11,14 +11,11 @@ namespace Control.ThumbnailList
 {
     class Thumbnails
     {
-        public IList<Thumbnail> Sources { get; } = new List<Thumbnail>();
+        public IReadOnlyList<Thumbnail> Sources { get; }
 
-        public Thumbnails(IReadOnlyCollection<string> paths)
+        public Thumbnails(IReadOnlyList<string> paths)
         {
-            foreach (var path in paths)
-            {
-                Sources.Add(new Thumbnail(path));
-            }
+            Sources = paths.Select(x => new Thumbnail(x)).ToList();
         }
 
         /// <summary>
@@ -88,7 +85,7 @@ namespace Control.ThumbnailList
 
     }
 
-    class Thumbnail : MyBindableBase
+    class Thumbnail : NotifyPropertyChangedBase
     {
         // サムネイルの最大幅
         private const int ThumbnailWidthMax = 80;
@@ -111,6 +108,7 @@ namespace Control.ThumbnailList
             FilePath = path;
             Filename = Path.GetFileName(path);
         }
+
         public void LoadImage() =>
             Image = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
 

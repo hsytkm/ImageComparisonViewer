@@ -29,7 +29,7 @@
                                TextAlignment="Left"
                                Margin="2"
                                TextWrapping="Wrap"
-                               Foreground="Lime" >
+                               Foreground="Cyan" >
                         <TextBlock.ToolTip>
                             <ToolTip>
                                 <TextBlock Text="{Binding Filename, Mode=OneTime}" />
