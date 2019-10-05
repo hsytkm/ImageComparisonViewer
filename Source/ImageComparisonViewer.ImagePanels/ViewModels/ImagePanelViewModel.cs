@@ -32,7 +32,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         public ReactiveProperty<bool> IsActive { get; } = new ReactiveProperty<bool>();
 
         /// <summary>
-        /// ディレクトリPATH
+        /// ディレクトリPATH(DistinctUntilChangedでないとVM⇔Mで変更通知地獄に陥る)
         /// </summary>
         public ReactiveProperty<string> DirectoryPath { get; } =
             new ReactiveProperty<string>(mode: ReactivePropertyMode.DistinctUntilChanged);
@@ -46,7 +46,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         /// <summary>
         /// 表示画像リスト
         /// </summary>
-        public ReadOnlyReactiveProperty<IReadOnlyCollection<string>> SourceImagesPath { get; }
+        public ReadOnlyReactiveProperty<IReadOnlyList<string>> SourceImagesPath { get; }
 
         /// <summary>
         /// 選択中の画像PATH
@@ -59,37 +59,67 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
 
             // VM->M
             DropEvent
-                .Subscribe(paths => _imageSources.SetDirectriesPath(ContentIndex, paths))
+                .Subscribe(paths =>
+                {
+                    _imageSources.SetDroppedPaths(ContentIndex, paths);
+
+                    // ファイルドロップ直後の表示画像選択
+                    if (paths.Any()) SelectedImagePath.Value = GetFilePath(paths[0]);
+                })
                 .AddTo(CompositeDisposable);
 
             // VM->M
             DirectoryPath
+                .Where(x => Directory.Exists(x))  //念のためチェック
                 .Subscribe(path => _imageSources.SetDirectryPath(ContentIndex, path))
                 .AddTo(CompositeDisposable);
 
             // VM<-M
             // Listener系はIsActiveを参照して非表示時は無視するようにしています(◆より良い実装あれば変えたい)
-            var sourceDirectory = _imageSources.DirectriesPath
+            var sourceDirectoryCache = _imageSources.DirectriesPath
                 .CollectionChangedAsObservable()
                 .Where(e => e.Action == NotifyCollectionChangedAction.Replace)
                 .Where(e => e.NewStartingIndex == ContentIndex)
                 //.Do(e => Debug.WriteLine($"Log1: {ContentIndex}, {IsActive.Value}, {e.NewStartingIndex}, {e.NewItems.Cast<string>().First()}"))
                 .Select(e => e.NewItems.Cast<string>().First())
-                .ToReadOnlyReactiveProperty()
+                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
-            sourceDirectory
+            var sourceDirectory = sourceDirectoryCache
                 .CombineLatest(IsActive, (path, isActive) => (path, isActive))
                 //.Do(x => Debug.WriteLine($"Log2: {ContentIndex}, {x.isActive}, {x.path}"))
                 .Where(x => x.isActive).Select(x => x.path)
+                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
+                .AddTo(CompositeDisposable);
+
+            // Model画像ディレクトリ変化時の処理
+            sourceDirectory
                 .Subscribe(x => DirectoryPath.Value = x)
                 .AddTo(CompositeDisposable);
 
-            // ToDo:対象画像リストの読み出し
-            SourceImagesPath = DirectoryPath
-                .Select(x => Directory.EnumerateFiles(x, "*", SearchOption.TopDirectoryOnly).ToList())
-                .Cast<IReadOnlyCollection<string>>()
-                .ToReadOnlyReactiveProperty();
+            // 対象画像リストの読み出し(◆拡張性の判定が不十分)
+            SourceImagesPath = sourceDirectory
+                .Select(x => Directory.EnumerateFiles(x, "*.jpg", SearchOption.TopDirectoryOnly).ToList())
+                .Cast<IReadOnlyList<string>>()
+                .ToReadOnlyReactiveProperty()
+                .AddTo(CompositeDisposable);
 
+        }
+
+        /// <summary>
+        /// ファイルPATHを取得する
+        /// </summary>
+        /// <param name="droppedPath"></param>
+        /// <returns></returns>
+        private static string GetFilePath(string droppedPath)
+        {
+            if (File.Exists(droppedPath))
+                return droppedPath;
+
+            // ディレクトリなら先頭ファイル
+            if (Directory.Exists(droppedPath))
+                return Directory.EnumerateFiles(droppedPath, "*", SearchOption.TopDirectoryOnly).First();
+
+            throw new FileNotFoundException(droppedPath);
         }
 
     }

@@ -1,32 +1,37 @@
-﻿using System;
+﻿using ImageComparisonViewer.Common.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace Control.ThumbnailList
 {
-    class Thumbnails : MyBindableBase
+    class Thumbnails
     {
-        public IList<Thumbnail> Items { get; } = new List<Thumbnail>();
-
+        public IList<Thumbnail> Sources { get; } = new List<Thumbnail>();
 
         public Thumbnails(IReadOnlyCollection<string> paths)
         {
             foreach (var path in paths)
             {
-                Items.Add(new Thumbnail(path));
+                Sources.Add(new Thumbnail(path));
             }
-
         }
 
+        /// <summary>
+        /// サムネイルの読み出し状態を切り替える(Load+Unload)
+        /// </summary>
+        /// <param name="centerRatio">表示領域の中央位置の割合(0~1)</param>
+        /// <param name="viewportRatio">表示領域の割合(0~1)</param>
         public void UpdateThumbnail(double centerRatio, double viewportRatio)
         {
-            if (centerRatio == 0) throw new ArgumentException(nameof(centerRatio));
-            if (viewportRatio == 0) throw new ArgumentException(nameof(viewportRatio));
+            // 画像が0個のときは0が通知される
+            if (centerRatio == 0 || viewportRatio == 0) return;
 
-            var list = Items;
+            var list = Sources;
             int length = list.Count;
             if (length == 0) return;
 
@@ -41,83 +46,76 @@ namespace Control.ThumbnailList
             //Debug.WriteLine($"Thumbnail Update() total={length} start={start} end={end} count={count}");
 
             // 解放リスト(表示範囲外で読込み中)
-            var unloads = Enumerable.Range(0, length)
+            var unloadThumbs = Enumerable.Range(0, length)
                 .Where(x => !(start <= x && x <= end))
                 .Select(x => list[x])
-                .Where(x => !x.IsThumbnailEmpty);
-            foreach (var source in unloads)
+                .Where(x => x.IsLoadImage);
+            foreach (var thumb in unloadThumbs)
             {
-                //Debug.WriteLine($"Thumbnail Update() Unload: {source.FilePath}");
-                source.UnloadThumbnail();
+                //Debug.WriteLine($"Thumbnail Update() Unload: {thumb.FilePath}");
+                thumb.UnloadImage();
             }
 
             // 読込みリスト(表示範囲の未読込みを対象)
-            var loads = Enumerable.Range(start, count)
+            var loadThumbs = Enumerable.Range(start, count)
                 .Select(x => list[x])
-                .Where(x => x.IsThumbnailEmpty);
-            foreach (var source in loads)
+                .Where(x => x.IsUnloadImage);
+            foreach (var thumb in loadThumbs)
             {
-                //Debug.WriteLine($"Thumbnail Update() Load: {source.FilePath}");
-                source.LoadThumbnail();
+                //Debug.WriteLine($"Thumbnail Update() Load: {thumb.FilePath}");
+                Task.Run(() => thumb.LoadImage()); // 完了を待たない(高速化)
             }
 
             // 読み込み状況の表示テスト
-            // ◆アイテムが全て画面内に収まっているとScrollChangedが発生せず更新されないが、テスト用やからいいや
             LoadedItemText();
         }
 
+        /// <summary>
+        /// 読み込み状況の表示テスト
+        /// ◆アイテムが全て画面内に収まっているとScrollChangedが発生せず更新されないが、デバッグ用やからいいや
+        /// </summary>
 
-        #region テスト
-
-        public string? LoadStatus
-        {
-            get => _loadStatus;
-            private set => SetProperty(ref _loadStatus, value);
-        }
-        private string? _loadStatus;
-
+        [Conditional("DEBUG")]
         private void LoadedItemText()
         {
             var sb = new System.Text.StringBuilder();
-            foreach (var source in Items)
+            foreach (var thumb in Sources)
             {
-                sb.Append(source.IsThumbnailEmpty ? "□" : "■");
+                sb.Append(thumb.IsUnloadImage ? "□" : "■");
             }
-            LoadStatus = sb.ToString();
-            Debug.WriteLine(LoadStatus);
+            Debug.WriteLine(sb.ToString());
         }
-
-        #endregion
 
     }
 
     class Thumbnail : MyBindableBase
     {
+        // サムネイルの最大幅
+        private const int ThumbnailWidthMax = 80;
+
         public BitmapSource? Image
         {
             get => _image;
-            set => SetProperty(ref _image, value);
+            private set => SetProperty(ref _image, value);
         }
         private BitmapSource? _image;
-        public string? FilePath { get; }
-        public string? Filename { get; }
 
-        public bool IsThumbnailEmpty => Image is null;
+        public string FilePath { get; }
+        public string Filename { get; }
+
+        public bool IsLoadImage => !(Image is null);
+        public bool IsUnloadImage => Image is null;
+
         public Thumbnail(string path)
         {
-            Image = null;
             FilePath = path;
             Filename = Path.GetFileName(path);
         }
-        public void LoadThumbnail()
-        {
-            Image = new BitmapImage(new Uri(@"C:\data\Image0.JPG"));
-        }
+        public void LoadImage() =>
+            Image = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
 
-        public void UnloadThumbnail()
-        {
-            Image = null;
-        }
+        public void UnloadImage() => Image = null;
+
     }
 
 }

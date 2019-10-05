@@ -1,10 +1,11 @@
 ﻿using ImageComparisonViewer.Common.Extensions;
 using Prism.Mvvm;
+using Reactive.Bindings;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 
 namespace ImageComparisonViewer.Core
 {
@@ -13,15 +14,19 @@ namespace ImageComparisonViewer.Core
         // 画像ディレクトリの最大数
         private const int DirectriesCountMax = 3;
 
-        // 画像元ディレクトリ(ViewModelでReplaceを監視)
-        public ObservableCollection<string> DirectriesPath { get; } =
-            new ObservableCollection<string>(Enumerable.Repeat<string>(default!, DirectriesCountMax));
-
         //private readonly Guid guid = Guid.NewGuid();
+
+        /// <summary>
+        /// 画像元ディレクトリ(ViewModelでReplaceを監視)
+        /// Scheduler指定しないとCollectionChanged中にSetして InvalidOperationException が出る
+        /// </summary>
+        public ReactiveCollection<string> DirectriesPath { get; } = new ReactiveCollection<string>(Scheduler.CurrentThread);
+        //public ObservableCollection<string> DirectriesPath { get; } =
+        //    new ObservableCollection<string>(Enumerable.Repeat<string>(default!, DirectriesCountMax));
 
         public ImageSources()
         {
-
+            DirectriesPath.AddRangeOnScheduler(Enumerable.Repeat<string>(default!, DirectriesCountMax));
         }
 
         /// <summary>
@@ -34,35 +39,46 @@ namespace ImageComparisonViewer.Core
             if (index >= DirectriesCountMax)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            // NotifyCollectionChangedAction.Replace抑制のため変化時のみ設定する
-            if (DirectriesPath[index] != path)
-                DirectriesPath[index] = path;
+            // 'ObservableCollection during a CollectionChanged event' 回避のためコレクション操作時にSchedulerを指定する
+            DirectriesPath.SetOnScheduler(index, path);
         }
 
         /// <summary>
-        /// 画像のディレクトリPATHを設定する
+        /// ドロップされたPATHをディレクトリとして設定する
         /// </summary>
         /// <param name="baseIndex"></param>
-        /// <param name="paths"></param>
-        public void SetDirectriesPath(int baseIndex, IReadOnlyList<string> paths)
+        /// <param name="droppedPaths"></param>
+        public void SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths)
         {
             if (baseIndex >= DirectriesCountMax)
                 throw new ArgumentOutOfRangeException(nameof(baseIndex));
 
-            var max = Math.Min(paths.Count, DirectriesCountMax);
+            var max = Math.Min(droppedPaths.Count, DirectriesCountMax);
             for (int i = 0; i < max; i++)
             {
                 int index = (baseIndex + i) % DirectriesCountMax;
-                SetDirectryPath(index, paths[i]);
+                var dirPath = GetDirectoryPath(droppedPaths[i]);
+                SetDirectryPath(index, dirPath);
             }
         }
 
-        public string GetDirectryPath(int index)
+        /// <summary>
+        /// ドロップPATHからディレクトリPATHを取得
+        /// </summary>
+        /// <param name="droppedPath"></param>
+        /// <returns></returns>
+        private static string GetDirectoryPath(string droppedPath)
         {
-            if (index >= DirectriesCountMax)
-                throw new ArgumentOutOfRangeException(nameof(index));
+            if (Directory.Exists(droppedPath))
+                return droppedPath;
 
-            return DirectriesPath[index];
+            if (File.Exists(droppedPath))
+            {
+                var path = Path.GetDirectoryName(droppedPath);  // DirRootならnullになるらしい(未確認)
+                return (path is null) ? droppedPath : path;
+            }
+
+            throw new FileNotFoundException(droppedPath);
         }
 
         /// <summary>

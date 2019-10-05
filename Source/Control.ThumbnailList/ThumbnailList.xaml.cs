@@ -10,6 +10,8 @@ namespace Control.ThumbnailList
     /// </summary>
     public partial class ThumbnailList : UserControl
     {
+        private Thumbnails _thumbnails = default!;
+
         #region SourceImagesPathProperty
 
         /// <summary>
@@ -18,7 +20,7 @@ namespace Control.ThumbnailList
         private static readonly DependencyProperty SourceImagesPathProperty =
             DependencyProperty.Register(
                 nameof(SourceImagesPath),
-                typeof(IReadOnlyCollection<string>),
+                typeof(IReadOnlyList<string>),
                 typeof(ThumbnailList),
                 new FrameworkPropertyMetadata(
                     default!,
@@ -26,13 +28,13 @@ namespace Control.ThumbnailList
                     (d, e) =>
                     {
                         // PATHをViewに読み出す
-                        if (e.NewValue is IReadOnlyCollection<string> paths)
+                        if (e.NewValue is IReadOnlyList<string> paths)
                             SourceImagesPathChanged(d, paths);
                     }));
 
-        public IReadOnlyCollection<string> SourceImagesPath
+        public IReadOnlyList<string> SourceImagesPath
         {
-            get => (IReadOnlyCollection<string>)GetValue(SourceImagesPathProperty);
+            get => (IReadOnlyList<string>)GetValue(SourceImagesPathProperty);
             set => SetValue(SourceImagesPathProperty, value);
         }
 
@@ -41,7 +43,7 @@ namespace Control.ThumbnailList
         #region SelectedImagePathProperty(TwoWay)
 
         /// <summary>
-        /// 選択ディレクトリ
+        /// 選択ファイル(未選択時はnull)
         /// </summary>
         private static readonly DependencyProperty SelectedImagePathProperty =
             DependencyProperty.Register(
@@ -49,15 +51,25 @@ namespace Control.ThumbnailList
                 typeof(string),
                 typeof(ThumbnailList),
                 new FrameworkPropertyMetadata(
-                    default!,
+                    default,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (d, e) =>
                     {
+                        if (!(d is ThumbnailList thumbnailList)) return;
+                        if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
+                        if (!(e.NewValue is string newPath)) return;
+
+                        // 指定された要素を選択する
+                        var newThumb = listBox.ItemsSource.Cast<Thumbnail>()
+                            .FirstOrDefault(x => x.FilePath == newPath);
+
+                        if (listBox.SelectedItem != newThumb)
+                            listBox.SelectedItem = newThumb;
                     }));
 
-        public string SelectedImagePath
+        public string? SelectedImagePath
         {
-            get => (string)GetValue(SelectedImagePathProperty);
+            get => (string?)GetValue(SelectedImagePathProperty);
             set => SetValue(SelectedImagePathProperty, value);
         }
 
@@ -73,20 +85,16 @@ namespace Control.ThumbnailList
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="paths">画像のPATHリスト</param>
-        private static void SourceImagesPathChanged(object sender, IReadOnlyCollection<string> paths)
+        private static void SourceImagesPathChanged(object sender, IReadOnlyList<string> paths)
         {
             if (!(sender is ThumbnailList thumbnailList)) return;
             if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
 
-            //var thumbs = paths.Select(x => new ThubnailVModel(new ImageSource(x)));
-
             var thumbs = new Thumbnails(paths);
-
-            listBox.ItemsSource = thumbs.Items;
             thumbnailList._thumbnails = thumbs;
-        }
 
-        private Thumbnails _thumbnails = default!;
+            listBox.ItemsSource = thumbs.Sources;
+        }
 
         /// <summary>
         /// スクロール変化で表示される画像を読み出し
@@ -108,18 +116,16 @@ namespace Control.ThumbnailList
             var centerRatio = getCenterRatio(e.ExtentWidth, e.ViewportWidth, e.HorizontalOffset);
             var viewportRatio = getViewportRatio(e.ExtentWidth, e.ViewportWidth);
 
-
-            //imageSources.UpdateThumbnail(centerRatio, viewportRatio);
+            // Viewのサムネイル読み込み状態を更新
             _thumbnails?.UpdateThumbnail(centerRatio, viewportRatio);
         }
 
         /// <summary>
-        /// ListBoxの選択変更でPATHを更新
+        /// ListBoxの選択変更で選択ファイルPATHを更新
         /// </summary>
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is ListBox listBox)) return;
-            //if (!(listBox.SelectedItem is ThubnailVModel thumb)) return;
             if (!(listBox.SelectedItem is Thumbnail thumb)) return;
 
             if (!(thumb.FilePath is null))

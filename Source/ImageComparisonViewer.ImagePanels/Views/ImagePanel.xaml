@@ -30,7 +30,8 @@
                            SelectedImagePath="{Binding SelectedImagePath.Value, Mode=TwoWay}" />
 
         <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
-        
+        <TextBlock Text="{Binding SelectedImagePath.Value, Mode=OneWay}"/>
+
         <!-- forDebug -->
         <TextBlock Text="{Binding ContentIndex, Mode=OneWay}" />
     </StackPanel>
