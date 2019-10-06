@@ -1,5 +1,7 @@
+using ICV.Control.ThumbnailList;
 using ImageComparisonViewer.ImagePanels.ViewModels;
 using Prism.Ioc;
+using Prism.Regions;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -68,28 +70,29 @@ namespace ImageComparisonViewer.ImagePanels.Views
 
         #endregion
 
-        public ImagePanel(IContainerExtension container, int contentIndex, uint contentLength)
+        private readonly ImagePanelViewModel _viewModel;
+
+        public ImagePanel(IContainerExtension container, IRegionManager regionManager, int contentIndex, uint contentLength)
         {
             InitializeComponent();
 
             // VMに引数を渡したいので自前でインスタンス作る
-            DataContext = new ImagePanelViewModel(container, contentIndex, (int)contentLength);
+            _viewModel = new ImagePanelViewModel(container, contentIndex, (int)contentLength);
+            DataContext = _viewModel;
+
+            ThumbnailList.Content = container.Resolve<ThumbnailList>();
+            //regionManager.Regions["ThumbnailListRegion"].Add(view); //ダメだった1
+            //regionManager.RegisterViewWithRegion("ThumbnailListRegion", typeof(ThumbnailList)); //ダメだった2
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            if (DataContext is ImagePanelViewModel vmodel)
-            {
-                vmodel.Load();
-            }
+            _viewModel.Load();
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            if (DataContext is ImagePanelViewModel vmodel)
-            {
-                vmodel.Unload();
-            }
+            _viewModel.Unload();
         }
 
     }

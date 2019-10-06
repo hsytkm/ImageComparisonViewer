@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.Commo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.ImagePanels", "ImageComparisonViewer.ImagePanels\ImageComparisonViewer.ImagePanels.csproj", "{2ED93BA7-3327-4E6E-B906-A373EC34F706}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.ThumbnailList", "Control.ThumbnailList\Control.ThumbnailList.csproj", "{F3D47A65-1E21-4807-8B02-77AA928D827E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ThumbnailList", "Control.ThumbnailList\Control.ThumbnailList.csproj", "{F3D47A65-1E21-4807-8B02-77AA928D827E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICV.Control.ThumbnailList", "ICV.Control.ThumbnailList\ICV.Control.ThumbnailList.csproj", "{605CDC91-C868-4A32-891F-26623EEFE35F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{605CDC91-C868-4A32-891F-26623EEFE35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{605CDC91-C868-4A32-891F-26623EEFE35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{605CDC91-C868-4A32-891F-26623EEFE35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{605CDC91-C868-4A32-891F-26623EEFE35F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
