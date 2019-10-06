@@ -6,21 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive.Concurrency;
 
 namespace ImageComparisonViewer.Core
 {
     public class ImageDirectory : BindableBase
     {
         /// <summary>
-        /// ディレクトリPATH
+        /// ディレクトリPATH(未選択ならnull)
         /// </summary>
-        public string DirectoryPath
+        public string? DirectoryPath
         {
             get => _directoryPath;
             private set => SetProperty(ref _directoryPath, value);
         }
-        private string _directoryPath = default!;
+        private string? _directoryPath = default!;
 
         /// <summary>
         /// 選択中のファイル(未選択ならnull)
@@ -32,20 +31,29 @@ namespace ImageComparisonViewer.Core
         }
         private string? _selectedFilePath = default!;
 
-        public int ContentIndex { get; }
+        public ImageDirectory() { }
 
-        public ImageDirectory(int index)
+        public ImageDirectory GetCopyInstance()
         {
-            ContentIndex = index;
+            return new ImageDirectory()
+            {
+                DirectoryPath = DirectoryPath,
+                SelectedFilePath = SelectedFilePath
+            };
         }
 
         /// <summary>
         /// 選択ディレクトリの更新
         /// </summary>
         /// <param name="sourcePath"></param>
-        public void UpdateSourcePath(string sourcePath)
+        public void UpdateBasePath(string? sourcePath)
         {
-            if (Directory.Exists(sourcePath))
+            if (sourcePath is null)
+            {
+                DirectoryPath = null;
+                SelectedFilePath = null;
+            }
+            else if (Directory.Exists(sourcePath))
             {
                 // ディレクトリ内の先頭ファイルを選択
                 DirectoryPath = sourcePath;
@@ -67,6 +75,8 @@ namespace ImageComparisonViewer.Core
         {
             SelectedFilePath = path;
         }
+
+        public override string ToString() => SelectedFilePath ?? "null";
     }
 
     public class ImageSources : BindableBase
@@ -77,16 +87,12 @@ namespace ImageComparisonViewer.Core
         //private readonly Guid guid = Guid.NewGuid();
 
         /// <summary>
-        /// 画像元ディレクトリ(ViewModelで要素のPropertyChangedを監視)
-        /// Scheduler指定しないとCollectionChanged中にSetして InvalidOperationException が出る
+        /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
         /// </summary>
-        public ReactiveCollection<ImageDirectory> ImageDirectries { get; } = new ReactiveCollection<ImageDirectory>(Scheduler.CurrentThread);
+        public IReadOnlyList<ImageDirectory> ImageDirectries { get; } =
+            new List<ImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory()));
 
-        public ImageSources()
-        {
-            var items = Enumerable.Range(0, 3).Select(i => new ImageDirectory(i));
-            ImageDirectries.AddRangeOnScheduler(items);
-        }
+        public ImageSources() { }
 
         /// <summary>
         /// ドロップされたPATHを設定する
@@ -95,10 +101,10 @@ namespace ImageComparisonViewer.Core
         /// <param name="droppedPath"></param>
         public void SetDroppedPath(int index, string droppedPath)
         {
-            if (index >= DirectriesCountMax)
+            if (index >= ImageDirectries.Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            ImageDirectries[index].UpdateSourcePath(droppedPath);
+            ImageDirectries[index].UpdateBasePath(droppedPath);
         }
 
         /// <summary>
@@ -108,14 +114,14 @@ namespace ImageComparisonViewer.Core
         /// <param name="droppedPaths"></param>
         public void SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths)
         {
-            if (baseIndex >= DirectriesCountMax)
+            if (baseIndex >= ImageDirectries.Count)
                 throw new ArgumentOutOfRangeException(nameof(baseIndex));
 
-            var length = Math.Min(droppedPaths.Count, DirectriesCountMax);
+            var length = Math.Min(droppedPaths.Count, ImageDirectries.Count);
             for (int i = 0; i < length; i++)
             {
-                int index = (baseIndex + i) % DirectriesCountMax;
-                ImageDirectries[index].UpdateSourcePath(droppedPaths[i]);
+                int index = (baseIndex + i) % ImageDirectries.Count;
+                ImageDirectries[index].UpdateBasePath(droppedPaths[i]);
             }
         }
 
@@ -123,10 +129,10 @@ namespace ImageComparisonViewer.Core
         /// 選択ファイルPATHの更新
         /// </summary>
         /// <param name="index"></param>
-        /// <param name="droppedPath"></param>
+        /// <param name="selectedFilePath"></param>
         public void SetSelectedFlePath(int index, string? selectedFilePath)
         {
-            if (index >= DirectriesCountMax)
+            if (index >= ImageDirectries.Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
             ImageDirectries[index].SetSelectedFilePath(selectedFilePath);
@@ -141,6 +147,7 @@ namespace ImageComparisonViewer.Core
         {
             if (rightShiftCount == 0) return;   // 処理不要
             if (contentCount <= 1) return;      // ループの概念ない
+            var tailIndex = contentCount - 1;
 
             var sourceList = ImageDirectries;
             if (contentCount > sourceList.Count)
@@ -149,17 +156,49 @@ namespace ImageComparisonViewer.Core
             // 周回する分は捨てる
             rightShiftCount %= contentCount;
 
+#if false
             if (rightShiftCount != 0)
             {
                 // 対象画像数のみ回転させる
                 Span<ImageDirectory> sourceSpan = sourceList.ToArray().AsSpan().Slice(0, contentCount);
                 Span<ImageDirectory> sortedSpan = sourceSpan.RightShift(rightShiftCount);
-
                 for (int i = 0; i < sortedSpan.Length; i++)
                 {
-                    sourceList[i] = sortedSpan[i];
+                    //sourceList[i] = sortedSpan[i];
+                    sourceList[i].UpdateBasePath(sortedSpan[i].DirectoryPath);
+                    sourceList[i].SetSelectedFilePath(sortedSpan[i].SelectedFilePath);
                 }
             }
+#else
+            if (rightShiftCount > 0)
+            {
+                for (int i = 0; i < rightShiftCount; i++)
+                {
+                    var tail = sourceList[tailIndex].GetCopyInstance();
+                    for (int j = tailIndex; j > 0; j--)
+                    {
+                        sourceList[j].UpdateBasePath(sourceList[j - 1].DirectoryPath);
+                        sourceList[j].SetSelectedFilePath(sourceList[j - 1].SelectedFilePath);
+                    }
+                    sourceList[0].UpdateBasePath(tail.DirectoryPath);
+                    sourceList[0].SetSelectedFilePath(tail.SelectedFilePath);
+                }
+            }
+            else if (rightShiftCount < 0)
+            {
+                for (int i = 0; i < -rightShiftCount; i++)
+                {
+                    var head = sourceList[0].GetCopyInstance();
+                    for (int j = 0; j < tailIndex; j++)
+                    {
+                        sourceList[j].UpdateBasePath(sourceList[j + 1].DirectoryPath);
+                        sourceList[j].SetSelectedFilePath(sourceList[j + 1].SelectedFilePath);
+                    }
+                    sourceList[tailIndex].UpdateBasePath(head.DirectoryPath);
+                    sourceList[tailIndex].SetSelectedFilePath(head.SelectedFilePath);
+                }
+            }
+#endif
             //Debug.WriteLine($"Model: {list[0]}, {list[1]}, {list[2]}");
         }
 

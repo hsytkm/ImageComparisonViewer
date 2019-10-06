@@ -33,6 +33,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
+            <!-- ディレクトリノード -->
             <ItemsControl x:Name="NodeItemsControl"
                           Background="{StaticResource BackgroundBrushKey}"
                           Height="{Binding ActualHeight, ElementName=ground, Mode=OneWay}"
@@ -46,12 +47,14 @@
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
 
+            <!-- ノード横の空白Grid(クリック用) -->
             <Border x:Name="GroundMargin"
                     Grid.Column="1"
                     Background="{StaticResource BorderBrushKey}"
                     Visibility="{Binding Visibility, ElementName=NodeItemsControl, Mode=OneWay}"
                     MouseLeftButtonDown="GroundMargin_MouseLeftButtonDown" />
 
+            <!-- 入力用 -->
             <TextBox x:Name="DirectoryPathTextBox"
                      Grid.ColumnSpan="2"
                      VerticalContentAlignment="Center"

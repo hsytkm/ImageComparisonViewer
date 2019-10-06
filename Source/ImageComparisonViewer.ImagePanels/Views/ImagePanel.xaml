@@ -6,13 +6,13 @@
              xmlns:r="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.NETCore"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:prism="http://prismlibrary.com/"
-             prism:ViewModelLocator.AutoWireViewModel="True"
+             prism:ViewModelLocator.AutoWireViewModel="False"
              xmlns:vme="clr-namespace:ImageComparisonViewer.ImagePanels.ViewModels.EventConverters"
              xmlns:ceab="clr-namespace:Control.ExplorerAddressBar;assembly=Control.ExplorerAddressBar"
              xmlns:ctl="clr-namespace:Control.ThumbnailList;assembly=Control.ThumbnailList"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
-
+    
     <StackPanel Background="{StaticResource ActiveBackgroundBrushKey}"
                 AllowDrop="True" >
         <i:Interaction.Triggers>

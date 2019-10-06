@@ -10,7 +10,7 @@ namespace Control.ThumbnailList
     /// </summary>
     public partial class ThumbnailList : UserControl
     {
-        private Thumbnails _thumbnails = default!;
+        private Thumbnails? _thumbnails;
 
         #region SourceImagesPathProperty
 
@@ -27,9 +27,9 @@ namespace Control.ThumbnailList
                     FrameworkPropertyMetadataOptions.None,
                     (d, e) =>
                     {
-                        // PATHをViewに読み出す
-                        if (e.NewValue is IReadOnlyList<string> paths)
-                            SourceImagesPathChanged(d, paths);
+                        // PATH内の画像をサムネイルとしてViewに読み出す(Viewクリアのためでもコールする)
+                        var paths = (e.NewValue is IReadOnlyList<string> ss) ? ss : null;
+                        SourceImagesPathChanged(d, paths);
                     }));
 
         public IReadOnlyList<string> SourceImagesPath
@@ -60,7 +60,7 @@ namespace Control.ThumbnailList
                         if (!(e.NewValue is string newPath)) return;
 
                         // 指定された要素を選択する
-                        var newThumb = listBox.ItemsSource.Cast<Thumbnail>()
+                        var newThumb = listBox.ItemsSource?.Cast<Thumbnail>()
                             .FirstOrDefault(x => x.FilePath == newPath);
 
                         if (listBox.SelectedItem != newThumb)
@@ -85,15 +85,22 @@ namespace Control.ThumbnailList
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="paths">画像のPATHリスト</param>
-        private static void SourceImagesPathChanged(object sender, IReadOnlyList<string> paths)
+        private static void SourceImagesPathChanged(object sender, IReadOnlyList<string>? paths)
         {
             if (!(sender is ThumbnailList thumbnailList)) return;
             if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
 
-            var thumbs = new Thumbnails(paths);
-            thumbnailList._thumbnails = thumbs;
-
-            listBox.ItemsSource = thumbs.Sources;
+            if (paths is null)
+            {
+                thumbnailList._thumbnails = null;
+                listBox.ItemsSource = null;
+            }
+            else
+            {
+                var thumbs = new Thumbnails(paths);
+                thumbnailList._thumbnails = thumbs;
+                listBox.ItemsSource = thumbs.Sources;
+            }
         }
 
         /// <summary>
@@ -102,6 +109,28 @@ namespace Control.ThumbnailList
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            UpdateViewportThumbnail(e.ExtentWidth, e.ViewportWidth, e.HorizontalOffset);
+        }
+
+        /// <summary>
+        /// 画像コンテンツ切り替え時の画像読み出し
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ScrollViewer_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is ScrollViewer scrollViewer)) return;
+            UpdateViewportThumbnail(scrollViewer.ExtentWidth, scrollViewer.ViewportWidth, scrollViewer.HorizontalOffset);
+        }
+
+        /// <summary>
+        /// Viewに表示されるサムネイルを読み出す
+        /// </summary>
+        /// <param name="extentWidth"></param>
+        /// <param name="viewportWidth"></param>
+        /// <param name="horizontalOffset"></param>
+        private void UpdateViewportThumbnail(double extentWidth, double viewportWidth, double horizontalOffset)
         {
             static double clip(double v) => (v <= 0) ? 0 : (1 < v ? 1 : v);
 
@@ -113,11 +142,13 @@ namespace Control.ThumbnailList
             static double getViewportRatio(double length, double viewport) =>
                 (length == 0) ? 0 : clip(viewport / length);
 
-            var centerRatio = getCenterRatio(e.ExtentWidth, e.ViewportWidth, e.HorizontalOffset);
-            var viewportRatio = getViewportRatio(e.ExtentWidth, e.ViewportWidth);
+            if (_thumbnails is null) return;
+
+            var centerRatio = getCenterRatio(extentWidth, viewportWidth, horizontalOffset);
+            var viewportRatio = getViewportRatio(extentWidth, viewportWidth);
 
             // Viewのサムネイル読み込み状態を更新
-            _thumbnails?.UpdateThumbnail(centerRatio, viewportRatio);
+            _thumbnails.UpdateThumbnail(centerRatio, viewportRatio);
         }
 
         /// <summary>
@@ -131,5 +162,6 @@ namespace Control.ThumbnailList
             if (!(thumb.FilePath is null))
                 SelectedImagePath = thumb.FilePath;
         }
+
     }
 }

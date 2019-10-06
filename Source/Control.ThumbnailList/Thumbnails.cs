@@ -60,7 +60,8 @@ namespace Control.ThumbnailList
             foreach (var thumb in loadThumbs)
             {
                 //Debug.WriteLine($"Thumbnail Update() Load: {thumb.FilePath}");
-                Task.Run(() => thumb.LoadImage()); // 完了を待たない(高速化)
+                //Task.Run(() => thumb.LoadImage()); // 完了を待たない(高速化)
+                thumb.LoadImage();
             }
 
             // 読み込み状況の表示テスト
@@ -109,8 +110,11 @@ namespace Control.ThumbnailList
             Filename = Path.GetFileName(path);
         }
 
-        public void LoadImage() =>
+        public void LoadImage()
+        {
             Image = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
+            //Debug.WriteLine($"Finish: {FilePath}");
+        }
 
         public void UnloadImage() => Image = null;
 

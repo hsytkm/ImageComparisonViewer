@@ -1,4 +1,5 @@
 using ImageComparisonViewer.ImagePanels.ViewModels;
+using Prism.Ioc;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,7 +10,7 @@ namespace ImageComparisonViewer.ImagePanels.Views
     /// </summary>
     public partial class ImagePanel : UserControl
     {
-        #region ContentIndexProperty
+        #region ContentIndexProperty(コンストラクタ渡しに変更して不使用)
 
         // 画像コンテンツ番号
         //private static readonly DependencyProperty ContentIndexProperty =
@@ -65,14 +66,12 @@ namespace ImageComparisonViewer.ImagePanels.Views
 
         #endregion
 
-        public ImagePanel(int contentIndex)
+        public ImagePanel(IContainerExtension container, int contentIndex)
         {
             InitializeComponent();
 
-            if (this.DataContext is ImagePanelViewModel vmodel)
-            {
-                vmodel.ContentIndex = contentIndex;
-            }
+            // VMに引数を渡したいので自前でインスタンス作る
+            DataContext = new ImagePanelViewModel(container, contentIndex);
         }
 
     }

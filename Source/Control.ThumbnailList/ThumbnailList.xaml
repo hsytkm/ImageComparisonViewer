@@ -63,7 +63,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBox}">
-                            <ScrollViewer ScrollChanged="ScrollViewer_ScrollChanged" >
+                            <ScrollViewer ScrollChanged="ScrollViewer_ScrollChanged" Loaded="ScrollViewer_Loaded" >
                                 <ItemsPresenter />
                             </ScrollViewer>
                         </ControlTemplate>

@@ -6,7 +6,6 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -17,13 +16,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
     class ImagePanelViewModel : DisposableBindableBase
     {
         private readonly ImageSources _imageSources = default!;
-
-        public int ContentIndex
-        {
-            get => _contentIndex;
-            set => SetProperty(ref _contentIndex, value);
-        }
-        private int _contentIndex;
+        public int ContentIndex { get; }
 
         /// <summary>
         /// Viewのアクティブ状態(非アクティブなら購読を停止)
@@ -31,10 +24,9 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         public ReactiveProperty<bool> IsActive { get; } = new ReactiveProperty<bool>();
 
         /// <summary>
-        /// ディレクトリPATH(DistinctUntilChangedでないとVM⇔Mで変更通知地獄に陥る)
+        /// ディレクトリPATH(未選択ならnull)
         /// </summary>
-        public ReactiveProperty<string> DirectoryPath { get; } =
-            new ReactiveProperty<string>(mode: ReactivePropertyMode.DistinctUntilChanged);
+        public ReactiveProperty<string?> DirectoryPath { get; }
 
         /// <summary>
         /// 画像Drop時のイベント通知
@@ -50,62 +42,48 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         /// <summary>
         /// 選択中の画像PATH(未選択ならnull)
         /// </summary>
-        public ReactiveProperty<string?> SelectedImagePath { get; } = new ReactiveProperty<string?>(mode: ReactivePropertyMode.DistinctUntilChanged);
+        public ReactiveProperty<string?> SelectedImagePath { get; }
 
-        public ImagePanelViewModel(IContainerExtension container)
+        public ImagePanelViewModel(IContainerExtension container, int contentIndex)
         {
+            ContentIndex = contentIndex;
+
             _imageSources = container.Resolve<ImageSources>();
 
             // VM→M
             DropEvent
-                .Subscribe(paths => _imageSources.SetDroppedPaths(ContentIndex, paths))
+                .Subscribe(paths => _imageSources.SetDroppedPaths(contentIndex, paths))
                 .AddTo(CompositeDisposable);
 
-            // VM→M
-            DirectoryPath
-                .Where(x => Directory.Exists(x))  //念のためチェック
-                .Subscribe(path => _imageSources.SetDroppedPath(ContentIndex, path))
-                .AddTo(CompositeDisposable);
+            #region DirectoryPath
 
-            // VM←M
-            // Listener系はIsActiveを参照して非表示時は無視するようにしています(◆より良い実装あれば変えたい)
-            var sourceImageDirectoryCache =_imageSources.ImageDirectries
-                .ObserveElementPropertyChanged()
-                //.Do(x => Debug.WriteLine($"{x.EventArgs} {x.Sender}"))
-                .Select(x => x.Sender)
-                .Where(x => x.ContentIndex == ContentIndex)
-                //.Do(x => Debug.WriteLine($"Log1: {ContentIndex}, {IsActive.Value}, {x.DirectoryPath}"))
-                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
-                .AddTo(CompositeDisposable);
-
-            var sourceImageDirectory = sourceImageDirectoryCache
-                .CombineLatest(IsActive, (imageDirectory, isActive) => (imageDirectory, isActive))
-                //.Do(x => Debug.WriteLine($"Log2: {ContentIndex}, {x.isActive}, {x.path}"))
-                .Where(x => x.isActive).Select(x => x.imageDirectory)
-                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
-                .AddTo(CompositeDisposable);
-
-            // Model画像ディレクトリ変化時の処理
-            sourceImageDirectory
-                .Subscribe(x => DirectoryPath.Value = x.DirectoryPath)
+            // TwoWay
+            DirectoryPath = _imageSources.ImageDirectries[contentIndex]
+                .ToReactivePropertyAsSynchronized(x => x.DirectoryPath, mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
 
             // 対象画像リストの読み出し(◆拡張性の判定が不十分)
-            SourceImagesPath = sourceImageDirectory
-                .Select(x => Directory.EnumerateFiles(x.DirectoryPath, "*.jpg", SearchOption.TopDirectoryOnly).ToList())
+            // M→VMの通知はIsActiveを参照して非表示時は無視する(◆より良い実装あれば変えたい)
+            SourceImagesPath = DirectoryPath
+                .CombineLatest(IsActive, (directoryPath, isActive) => (directoryPath, isActive))
+                //.Do(x => Debug.WriteLine($"Log: {contentIndex}, {x.isActive}, {x.directoryPath}"))
+                .Where(x => x.isActive).Select(x => x.directoryPath)
+                .Select(x => Directory.EnumerateFiles(x, "*.jpg", SearchOption.TopDirectoryOnly).ToList())
                 .Cast<IReadOnlyList<string>>()
-                .ToReadOnlyReactiveProperty()
+                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
 
-            // 選択ディレクトリ更新(VM→M)
-            SelectedImagePath
-                .Subscribe(x => _imageSources.SetSelectedFlePath(ContentIndex, x))
+            #endregion
+
+            #region SelectedFilePath
+
+            // TwoWay
+            // M→VMの通知はIsActiveを参照して非表示時は無視する(◆より良い実装あれば変えたい)
+            SelectedImagePath = _imageSources.ImageDirectries[contentIndex]
+                .ToReactivePropertyAsSynchronized(x => x.SelectedFilePath, mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
 
-            // 選択ディレクトリ更新(VM←M)
-            sourceImageDirectory
-                .Subscribe(x => SelectedImagePath.Value = x.SelectedFilePath)
-                .AddTo(CompositeDisposable);
+            #endregion
 
         }
 
