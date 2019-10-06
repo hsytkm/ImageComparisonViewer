@@ -34,11 +34,15 @@ namespace ImageComparisonViewer.MainTabControl.Views
             var regionNames = RegionNames.GetImageContentRegionNames(contentCount);
             foreach (var (name, index) in regionNames.Indexed())
             {
-                // ◆複数の引数を渡す場合はデータstructに変えましょう
-                var parameters = new[] { (typeof(int), (object)index) };
-                var view = container.Resolve<ImagePanel>(parameters);
-
-                regionManager.RegisterViewWithRegion(name, () => view);
+                regionManager.RegisterViewWithRegion(name, () =>
+                {
+                    // ◆複数の引数を渡す場合はデータstructに変えましょう
+                    var parameters = new[] {
+                        (typeof(int), (object)index),
+                        (typeof(uint), (object)((uint)contentCount)),
+                    };
+                    return container.Resolve<ImagePanel>(parameters);
+                });
             }
         }
 

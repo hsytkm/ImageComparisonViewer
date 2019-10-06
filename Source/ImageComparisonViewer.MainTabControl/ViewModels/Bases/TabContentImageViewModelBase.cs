@@ -56,8 +56,9 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             var isActive = e2.Value;
 
             // アクティブ状態の伝搬
-            foreach (var view in GetImageContentViews<ImagePanel>())
-                view.IsActive = isActive;
+            // ◆これやると起動時に複数のViewがLoadされるので無効化する(原因未調査)
+            //foreach (var view in GetImageContentViews<ImagePanel>())
+            //    view.IsActive = isActive;
 
             // 非アクティブ時に溜まった回転数をModelに通知する
             if (!isActive)

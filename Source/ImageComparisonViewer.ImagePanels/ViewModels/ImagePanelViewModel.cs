@@ -15,60 +15,83 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
 {
     class ImagePanelViewModel : DisposableBindableBase
     {
-        private readonly ImageSources _imageSources = default!;
-        public int ContentIndex { get; }
+        private readonly IContainerExtension _container;
 
-        /// <summary>
-        /// Viewのアクティブ状態(非アクティブなら購読を停止)
-        /// </summary>
-        public ReactiveProperty<bool> IsActive { get; } = new ReactiveProperty<bool>();
+        public int ContentIndex { get; }
+        public int ContentLength { get; }
 
         /// <summary>
         /// ディレクトリPATH(未選択ならnull)
         /// </summary>
-        public ReactiveProperty<string?> DirectoryPath { get; }
+        public ReactiveProperty<string?> DirectoryPath
+        {
+            get => _directoryPath;
+            private set => SetProperty(ref _directoryPath, value);
+        }
+        private ReactiveProperty<string?> _directoryPath = default!;
 
         /// <summary>
         /// 画像Drop時のイベント通知
         /// </summary>
-        public ReactiveProperty<IReadOnlyList<string>> DropEvent { get; } =
-            new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None);
+        public ReactiveProperty<IReadOnlyList<string>> DropEvent
+        {
+            get => _dropEvent;
+            private set => SetProperty(ref _dropEvent, value);
+        }
+        private ReactiveProperty<IReadOnlyList<string>> _dropEvent = default!;
 
         /// <summary>
         /// 表示画像リスト
         /// </summary>
-        public ReadOnlyReactiveProperty<IReadOnlyList<string>> SourceImagesPath { get; }
+        public ReadOnlyReactiveProperty<IReadOnlyList<string>> SourceImagesPath { get; private set; } = default!;
 
         /// <summary>
         /// 選択中の画像PATH(未選択ならnull)
         /// </summary>
-        public ReactiveProperty<string?> SelectedImagePath { get; }
-
-        public ImagePanelViewModel(IContainerExtension container, int contentIndex)
+        public ReactiveProperty<string?> SelectedImagePath
         {
-            ContentIndex = contentIndex;
+            get => _selectedImagePath;
+            private set => SetProperty(ref _selectedImagePath, value);
+        }
+        private ReactiveProperty<string?> _selectedImagePath = default!;
 
-            _imageSources = container.Resolve<ImageSources>();
+        private string _contentMessage;
+
+        public ImagePanelViewModel(IContainerExtension container, int contentIndex, int contentLength)
+        {
+            _container = container;
+            ContentIndex = contentIndex;
+            ContentLength = contentLength;
+            _contentMessage = $"{contentIndex}/{contentLength}";
+        }
+
+        public void Load()
+        {
+            Debug.WriteLine($"Load({_contentMessage})");
+            CompositeDisposable = new System.Reactive.Disposables.CompositeDisposable();
+
+            var imageSources = _container.Resolve<ImageSources>();
+
+            DropEvent = new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None).AddTo(CompositeDisposable);
 
             // VM→M
             DropEvent
-                .Subscribe(paths => _imageSources.SetDroppedPaths(contentIndex, paths))
+                .Subscribe(paths => imageSources.SetDroppedPaths(ContentIndex, paths))
                 .AddTo(CompositeDisposable);
 
             #region DirectoryPath
 
             // TwoWay
-            DirectoryPath = _imageSources.ImageDirectries[contentIndex]
-                .ToReactivePropertyAsSynchronized(x => x.DirectoryPath, mode: ReactivePropertyMode.DistinctUntilChanged)
+            DirectoryPath = imageSources.ImageDirectries[ContentIndex]
+                .ToReactivePropertyAsSynchronized(x => x.DirectoryPath, mode: ReactivePropertyMode.None)
+                .AddTo(CompositeDisposable);
+
+            DirectoryPath
+                .Subscribe(x => Debug.WriteLine($"DirectoryPath({_contentMessage}): {x}"))
                 .AddTo(CompositeDisposable);
 
             // 対象画像リストの読み出し(◆拡張性の判定が不十分)
-            // M→VMの通知はIsActiveを参照して非表示時は無視する(◆より良い実装あれば変えたい)
             SourceImagesPath = DirectoryPath
-                .CombineLatest(IsActive, (directoryPath, isActive) => (directoryPath, isActive))
-                //.Do(x => Debug.WriteLine($"Log: {contentIndex}, {x.isActive}, {x.directoryPath}"))
-                .Where(x => x.isActive)
-                .Select(x => x.directoryPath)
                 .Select(x =>
                 {
                     if (x is null) return Enumerable.Empty<string>().ToList();
@@ -83,13 +106,18 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             #region SelectedFilePath
 
             // TwoWay
-            // M→VMの通知はIsActiveを参照して非表示時は無視する(◆より良い実装あれば変えたい)
-            SelectedImagePath = _imageSources.ImageDirectries[contentIndex]
+            SelectedImagePath = imageSources.ImageDirectries[ContentIndex]
                 .ToReactivePropertyAsSynchronized(x => x.SelectedFilePath, mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
 
             #endregion
 
+        }
+
+        public void Unload()
+        {
+            Debug.WriteLine($"Unload({_contentMessage})");
+            CompositeDisposable?.Dispose();
         }
 
     }

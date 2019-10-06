@@ -14,25 +14,28 @@
              d:DesignHeight="450" d:DesignWidth="800">
     
     <StackPanel Background="{StaticResource ActiveBackgroundBrushKey}"
-                AllowDrop="True" >
+                AllowDrop="True"
+                Loaded="UserControl_Loaded" Unloaded="UserControl_Unloaded" >
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="Drop">
-                <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneTime}">
+                <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneWay}">
                     <vme:DropEventToStringsConverter/>
                 </r:EventToReactiveProperty>
             </i:EventTrigger>
         </i:Interaction.Triggers>
 
+        <!--
         <ceab:ExplorerAddressBar VerticalAlignment="Top"
                                  SelectedDirectory="{Binding DirectoryPath.Value, Mode=TwoWay}"/>
 
         <ctl:ThumbnailList SourceImagesPath="{Binding SourceImagesPath.Value, Mode=OneWay}"
                            SelectedImagePath="{Binding SelectedImagePath.Value, Mode=TwoWay}" />
+        -->
 
         <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
         <TextBlock Text="{Binding SelectedImagePath.Value, Mode=OneWay}"/>
 
         <!-- forDebug -->
-        <TextBlock Text="{Binding ContentIndex, Mode=OneWay}" />
+        <TextBlock Text="{Binding ContentIndex, Mode=OneTime}" />
     </StackPanel>
 </UserControl>

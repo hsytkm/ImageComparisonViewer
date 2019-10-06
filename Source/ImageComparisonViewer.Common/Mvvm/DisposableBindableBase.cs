@@ -6,7 +6,7 @@ namespace ImageComparisonViewer.Common.Mvvm
 {
     public class DisposableBindableBase : BindableBase, IDisposable
     {
-        protected readonly CompositeDisposable CompositeDisposable = new CompositeDisposable();
+        protected CompositeDisposable CompositeDisposable = default!;
 
         #region IDisposable Support
         private bool disposedValue = false; // 重複する呼び出しを検出するには
