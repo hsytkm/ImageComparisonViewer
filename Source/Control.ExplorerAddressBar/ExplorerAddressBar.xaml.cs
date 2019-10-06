@@ -14,8 +14,7 @@ namespace Control.ExplorerAddressBar
     /// </summary>
     public partial class ExplorerAddressBar : UserControl
     {
-        private static readonly string _defaultDirectory = default!;
-            //Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        //private static readonly string _defaultDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
         private double _nodeBarVisibleWidth;    // NodeBarの表示幅
         private double _nodeBarUnlimitedWidth;  // NodeBarの制限なし幅(理想幅)
@@ -37,21 +36,15 @@ namespace Control.ExplorerAddressBar
                 typeof(string),
                 typeof(ExplorerAddressBar),
                 new FrameworkPropertyMetadata(
-                    _defaultDirectory,
+                    default!,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (d, e) =>
                     {
                         if (!(d is ExplorerAddressBar eab)) return;
 
-                        if (e.NewValue is null)
-                        {
-                            // Viewをクリアするためにコールする
-                            AddViewNodes(eab, sourcePath: "");
-                        }
-                        else if (e.NewValue is string path)
-                        {
-                            AddViewNodes(eab, path);
-                        }
+                        // ViewをクリアするためPATHが無効でもコールする
+                        string sourcePath = (e.NewValue is string path) ? path : "";
+                        AddViewNodes(eab, sourcePath);
                     }));
 
         public string SelectedDirectory
@@ -87,13 +80,10 @@ namespace Control.ExplorerAddressBar
             #region DirectoryPathTextBox Events
 
             // 初回のテキストボックス非表示
-            DirectoryPathTextBox.Loaded += (sender, _) =>
+            DirectoryPathTextBox.Loaded += (_, __) =>
             {
-                if (sender is TextBox textBox)
-                {
-                    textBox.Text = _defaultDirectory;
-                    SetTextBoxVisibility(false);
-                }
+                DirectoryPathTextBox.Text = SelectedDirectory;
+                SetTextBoxVisibility(isVisible: false);
             };
 
             // テキストボックス表示時のフォーカス移行＋カーソル最終文字
@@ -241,7 +231,7 @@ namespace Control.ExplorerAddressBar
                 var path = DirectoryNode.EmendFullPath(sourcePath);
                 var views = new List<DirectoryPathNode>();
 
-                // Viewを順に作成してRegionに登録
+                // ノードViewを順に作成してRegionに登録
                 foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
                 {
                     views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(eab, path)));
@@ -256,7 +246,7 @@ namespace Control.ExplorerAddressBar
         /// バーの余白部クリックで入力用のテキストボックスを表示する
         /// </summary>
         private void GroundMargin_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
-            SetTextBoxVisibility(true);
+            SetTextBoxVisibility(isVisible: true);
 
         /// <summary>
         /// テキストボックスの表示切り替え(Property <-> TextBox)
@@ -268,24 +258,19 @@ namespace Control.ExplorerAddressBar
             {
                 // Property -> TextBox
                 if (DirectoryPathTextBox.Visibility != Visibility.Visible)
-                {
                     DirectoryPathTextBox.Visibility = Visibility.Visible;
-                    DirectoryPathTextBox.Text = SelectedDirectory;
-                }
             }
             else
             {
                 // TextBox -> Property
                 if (DirectoryPathTextBox.Visibility != Visibility.Collapsed)
-                {
                     DirectoryPathTextBox.Visibility = Visibility.Collapsed;
-
-                    // 入力のディレクトリが存在したら採用
-                    var path = DirectoryNode.EmendFullPath(DirectoryPathTextBox.Text);
-                    if (Directory.Exists(path))
-                        AddViewNodes(this, path);
-                }
             }
+
+            // 入力のディレクトリが存在したら採用
+            var path = DirectoryNode.EmendFullPath(DirectoryPathTextBox.Text);
+            if (Directory.Exists(path))
+                AddViewNodes(this, path);
         }
 
         /// <summary>
@@ -294,7 +279,7 @@ namespace Control.ExplorerAddressBar
         private void DirectoryPathTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (Keyboard.IsKeyDown(Key.Enter))
-                SetTextBoxVisibility(false);
+                SetTextBoxVisibility(isVisible: false);
         }
 
     }
