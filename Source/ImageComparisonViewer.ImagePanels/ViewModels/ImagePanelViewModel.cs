@@ -59,7 +59,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
 
             // TwoWay
             DirectoryPath = _imageSources.ImageDirectries[contentIndex]
-                .ToReactivePropertyAsSynchronized(x => x.DirectoryPath, mode: ReactivePropertyMode.None)
+                .ToReactivePropertyAsSynchronized(x => x.DirectoryPath, mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
 
             // 対象画像リストの読み出し(◆拡張性の判定が不十分)
@@ -67,8 +67,13 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             SourceImagesPath = DirectoryPath
                 .CombineLatest(IsActive, (directoryPath, isActive) => (directoryPath, isActive))
                 //.Do(x => Debug.WriteLine($"Log: {contentIndex}, {x.isActive}, {x.directoryPath}"))
-                .Where(x => x.isActive).Select(x => x.directoryPath)
-                .Select(x => Directory.EnumerateFiles(x, "*.jpg", SearchOption.TopDirectoryOnly).ToList())
+                .Where(x => x.isActive)
+                .Select(x => x.directoryPath)
+                .Select(x =>
+                {
+                    if (x is null) return Enumerable.Empty<string>().ToList();
+                    return Directory.EnumerateFiles(x, "*.jpg", SearchOption.TopDirectoryOnly).ToList();
+                })
                 .Cast<IReadOnlyList<string>>()
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);

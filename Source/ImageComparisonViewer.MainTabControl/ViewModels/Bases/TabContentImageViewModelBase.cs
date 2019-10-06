@@ -109,6 +109,16 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             if (_contentCount <= 1) return;  // 回転する必要なし
             if (rightShift == 0) return;
 
+#if true
+            // Vの入れ替え
+            var views = GetImageContentViews<FrameworkElement>().ToList().RightShift(rightShift);
+            foreach (var (name, index) in RegionNames.GetImageContentRegionNames(_contentCount).Indexed())
+            {
+                _regionManager.Regions[name].RemoveAll();
+                _regionManager.RegisterViewWithRegion(name, () => views[index]);
+            }
+#else
+            // VMの入れ替え
             var views = GetImageContentViews<FrameworkElement>().ToArray();
             var vmodels = views.Select(x => x.DataContext).ToArray().AsSpan()
                 .RightShift(rightShift);
@@ -117,6 +127,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             {
                 views[i].DataContext = vmodels[i];
             }
+#endif
         }
 
         /// <summary>
