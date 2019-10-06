@@ -218,7 +218,7 @@ namespace Control.ExplorerAddressBar
         /// <param name="sourcePath"></param>
         private static void AddViewNodes(ExplorerAddressBar eab, string sourcePath)
         {
-            if (!ViewHelper.TryGetChildControl<ItemsControl>(eab, out var itemsControl))
+            if (!eab.TryGetChildControl<ItemsControl>(out var itemsControl))
                 return;
 
             // 無効文字ならViewをクリア

@@ -1,6 +1,7 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
 using Prism.Ioc;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,7 +11,7 @@ namespace ICV.Control.ThumbnailList
     /// <summary>
     /// ThumbnailList.xaml の相互作用ロジック
     /// </summary>
-    public partial class ThumbnailList : UserControl
+    public partial class ThumbnailList : DisposableUserControl
     {
         private readonly IContainerExtension _container;
         private Thumbnails? _thumbnails;
@@ -59,7 +60,7 @@ namespace ICV.Control.ThumbnailList
                     (d, e) =>
                     {
                         if (!(d is ThumbnailList thumbnailList)) return;
-                        if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
+                        if (!(thumbnailList.TryGetChildControl(out ListBox? listBox))) return;
                         if (!(e.NewValue is string newPath)) return;
 
                         // 指定された要素を選択する
@@ -93,7 +94,7 @@ namespace ICV.Control.ThumbnailList
         private static void SourceImagesPathChanged(object sender, IReadOnlyList<string>? paths)
         {
             if (!(sender is ThumbnailList thumbnailList)) return;
-            if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
+            if (!(thumbnailList.TryGetChildControl(out ListBox? listBox))) return;
 
             if (paths is null)
             {
@@ -166,16 +167,6 @@ namespace ICV.Control.ThumbnailList
 
             if (!(thumb.FilePath is null))
                 SelectedImagePath = thumb.FilePath;
-        }
-
-        private void ListBox_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void ListBox_Unloaded(object sender, RoutedEventArgs e)
-        {
-
         }
 
     }

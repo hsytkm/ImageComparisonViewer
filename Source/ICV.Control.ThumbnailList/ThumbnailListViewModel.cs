@@ -1,4 +1,5 @@
-﻿using ImageComparisonViewer.Core;
+﻿using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Core;
 using Prism.Ioc;
 using Prism.Mvvm;
 using Reactive.Bindings;
@@ -9,7 +10,7 @@ using System.Diagnostics;
 
 namespace ICV.Control.ThumbnailList
 {
-    class ThumbnailListViewModel : BindableBase
+    class ThumbnailListViewModel : DisposableBindableBase
     {
         private readonly IContainerExtension _container;
 
@@ -29,20 +30,11 @@ namespace ICV.Control.ThumbnailList
         {
             _container = container;
 
-        }
-
-        public void Load()
-        {
             var imageSources = _container.Resolve<ImageSources>();
 
+            SelectedItem = new ReactiveProperty<string>();
             SelectedItem
                 .Subscribe(x => Debug.WriteLine(x));
-
-        }
-
-        public void Unload()
-        {
-
         }
 
     }

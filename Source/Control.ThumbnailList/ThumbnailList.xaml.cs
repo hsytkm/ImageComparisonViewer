@@ -57,7 +57,7 @@ namespace Control.ThumbnailList
                     (d, e) =>
                     {
                         if (!(d is ThumbnailList thumbnailList)) return;
-                        if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
+                        if (!(thumbnailList.TryGetChildControl(out ListBox? listBox))) return;
                         if (!(e.NewValue is string newPath)) return;
 
                         // 指定された要素を選択する
@@ -89,7 +89,7 @@ namespace Control.ThumbnailList
         private static void SourceImagesPathChanged(object sender, IReadOnlyList<string>? paths)
         {
             if (!(sender is ThumbnailList thumbnailList)) return;
-            if (!(ViewHelper.TryGetChildControl(thumbnailList, out ListBox? listBox))) return;
+            if (!(thumbnailList.TryGetChildControl(out ListBox? listBox))) return;
 
             if (paths is null)
             {

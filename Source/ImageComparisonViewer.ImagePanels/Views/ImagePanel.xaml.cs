@@ -1,16 +1,17 @@
 using ICV.Control.ThumbnailList;
+using ImageComparisonViewer.Common.Mvvm;
 using ImageComparisonViewer.ImagePanels.ViewModels;
 using Prism.Ioc;
 using Prism.Regions;
-using System.Windows;
-using System.Windows.Controls;
+using System;
+using System.Linq;
 
 namespace ImageComparisonViewer.ImagePanels.Views
 {
     /// <summary>
     /// Interaction logic for ImagePanel.xaml
     /// </summary>
-    public partial class ImagePanel : UserControl
+    public partial class ImagePanel : DisposableUserControl
     {
         #region ContentIndexProperty(コンストラクタ渡しに変更して不使用)
 
@@ -70,29 +71,24 @@ namespace ImageComparisonViewer.ImagePanels.Views
 
         #endregion
 
-        private readonly ImagePanelViewModel _viewModel;
-
         public ImagePanel(IContainerExtension container, IRegionManager regionManager, int contentIndex, uint contentLength)
         {
             InitializeComponent();
 
             // VMに引数を渡したいので自前でインスタンス作る
-            _viewModel = new ImagePanelViewModel(container, contentIndex, (int)contentLength);
-            DataContext = _viewModel;
+            var viewModel = new ImagePanelViewModel(container, contentIndex, (int)contentLength);
+            DataContext = viewModel;
 
-            ThumbnailList.Content = container.Resolve<ThumbnailList>();
+            var thumbView = container.Resolve<ThumbnailList>();
+            ThumbnailList.Content = thumbView;
+
+            //var view = container.Resolve<ThumbnailList>();
             //regionManager.Regions["ThumbnailListRegion"].Add(view); //ダメだった1
+
             //regionManager.RegisterViewWithRegion("ThumbnailListRegion", typeof(ThumbnailList)); //ダメだった2
-        }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            _viewModel.Load();
-        }
-
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            _viewModel.Unload();
+            //var view = container.Resolve<ThumbnailList>();
+            //regionManager.RegisterViewWithRegion("ThumbnailListRegion", () => view); //ダメだった3
         }
 
     }

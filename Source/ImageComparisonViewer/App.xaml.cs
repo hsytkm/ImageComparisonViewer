@@ -1,5 +1,7 @@
-﻿using Prism.Ioc;
+﻿using ImageComparisonViewer.Common.Prism;
+using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Regions;
 using Prism.Unity;
 using System.Windows;
 
@@ -23,6 +25,12 @@ namespace ImageComparisonViewer
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             moduleCatalog.AddModule<MainTabControl.MainTabControlModule>();
+        }
+
+        protected override void ConfigureDefaultRegionBehaviors(IRegionBehaviorFactory regionBehaviors)
+        {
+            regionBehaviors.AddIfMissing(DisposeBehavior.Key, typeof(DisposeBehavior));
+            base.ConfigureDefaultRegionBehaviors(regionBehaviors);
         }
 
     }

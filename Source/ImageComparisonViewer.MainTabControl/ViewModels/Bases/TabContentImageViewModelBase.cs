@@ -55,15 +55,15 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             if (!(e is DataEventArgs<bool> e2)) return;
             var isActive = e2.Value;
 
-            // アクティブ状態の伝搬
-            // ◆これやると起動時に複数のViewがLoadされるので無効化する(原因未調査)
-            //foreach (var view in GetImageContentViews<ImagePanel>())
-            //    view.IsActive = isActive;
-
             // 非アクティブ時に溜まった回転数をModelに通知する
             if (!isActive)
             {
                 AdaptImagesShift();
+
+                foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
+                {
+                    _regionManager.Regions[name].RemoveAll();
+                }
             }
         }
 

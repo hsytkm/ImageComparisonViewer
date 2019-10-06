@@ -1,11 +1,11 @@
-﻿using Prism.Mvvm;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Reactive.Disposables;
+using System.Windows.Controls;
 
 namespace ImageComparisonViewer.Common.Mvvm
 {
-    public class DisposableBindableBase : BindableBase, IDisposable
+    public class DisposableUserControl : UserControl, IDisposable
     {
         protected readonly CompositeDisposable CompositeDisposable = new CompositeDisposable();
 
@@ -14,14 +14,22 @@ namespace ImageComparisonViewer.Common.Mvvm
 
         protected virtual void Dispose(bool disposing)
         {
-            //Debug.WriteLine($"DisposableBindableBase: {this}");
+            //Debug.WriteLine($"DisposableUserControl: {this}");
 
             if (!disposedValue)
             {
                 if (disposing)
                 {
                     // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
-                    CompositeDisposable.Dispose();
+                    if (DataContext is IDisposable vmodel)
+                        vmodel.Dispose();
+
+                    // 全ての子コントロールをDispose(◆孫が何度もDisposeされて気になる…)
+                    foreach (var child in ViewHelper.Descendants(this))
+                    {
+                        if (child is IDisposable disposable)
+                            disposable.Dispose();
+                    }
                 }
 
                 // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
@@ -29,10 +37,11 @@ namespace ImageComparisonViewer.Common.Mvvm
 
                 disposedValue = true;
             }
+            //Debug.WriteLine($"End DisposableUserControl: {this}");
         }
 
         // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
-        // ~DisposableBindableBase()
+        // ~DisposableUserControl()
         // {
         //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
         //   Dispose(false);
@@ -47,6 +56,5 @@ namespace ImageComparisonViewer.Common.Mvvm
             // GC.SuppressFinalize(this);
         }
         #endregion
-
     }
 }

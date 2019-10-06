@@ -1,7 +1,6 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
 using ImageComparisonViewer.Core;
 using Prism.Ioc;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -63,12 +62,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             ContentIndex = contentIndex;
             ContentLength = contentLength;
             _contentMessage = $"{contentIndex}/{contentLength}";
-        }
 
-        public void Load()
-        {
-            Debug.WriteLine($"Load({_contentMessage})");
-            CompositeDisposable = new System.Reactive.Disposables.CompositeDisposable();
 
             var imageSources = _container.Resolve<ImageSources>();
 
@@ -112,12 +106,6 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
 
             #endregion
 
-        }
-
-        public void Unload()
-        {
-            Debug.WriteLine($"Unload({_contentMessage})");
-            CompositeDisposable?.Dispose();
         }
 
     }
