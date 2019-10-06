@@ -2,9 +2,9 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace Control.ThumbnailList
+namespace ImageComparisonViewer.Common.Mvvm
 {
-    static class ViewHelper
+    public static class ViewHelper
     {
         public static bool TryGetChildControl<T>(DependencyObject d, [NotNullWhen(true)] out T? child)
             where T : DependencyObject

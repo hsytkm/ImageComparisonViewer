@@ -1,3 +1,4 @@
+using ImageComparisonViewer.Common.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
