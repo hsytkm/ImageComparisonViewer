@@ -8,12 +8,13 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:r="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.NETCore"
     xmlns:prism="http://prismlibrary.com/"
-    prism:ViewModelLocator.AutoWireViewModel="True"
+    prism:ViewModelLocator.AutoWireViewModel="False"
     xmlns:v="clr-namespace:ICV.Control.ThumbnailList"
+    xmlns:ve="clr-namespace:ICV.Control.ThumbnailList.EventConverters"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" >
 
-    <ListBox ItemsSource="{Binding Thumbnails, Mode=OneWay}"
+    <ListBox ItemsSource="{Binding ThumbnailSources, Mode=OneWay}"
              SelectedItem="{Binding SelectedItem.Value, Mode=TwoWay}" >
 
         <!-- 選択要素が表示されるようにスクロールする -->
@@ -70,16 +71,13 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBox}">
                             <ScrollViewer>
-                                <!--
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="ScrollChanged">
                                         <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollChangedHorizontal, Mode=OneWay}">
-                                            <vme:ScrollChangedEventToViewportConverter/>
+                                            <ve:ScrollChangedEventToViewportConverter/>
                                         </r:EventToReactiveProperty>
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
-                                -->
-
                                 <ItemsPresenter />
                             </ScrollViewer>
                         </ControlTemplate>
