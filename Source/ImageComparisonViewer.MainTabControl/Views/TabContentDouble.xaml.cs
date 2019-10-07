@@ -31,19 +31,20 @@ namespace ImageComparisonViewer.MainTabControl.Views
         internal static void RegisterImagePanelViewsWithRegion(
             IContainerExtension container, IRegionManager regionManager, int contentCount)
         {
-            var regionNames = RegionNames.GetImageContentRegionNames(contentCount);
-            foreach (var (name, index) in regionNames.Indexed())
-            {
-                regionManager.RegisterViewWithRegion(name, () =>
-                {
-                    // ◆複数の引数を渡す場合はデータstructに変えましょう
-                    var parameters = new[] {
-                        (typeof(int), (object)index),
-                        (typeof(uint), (object)((uint)contentCount)),
-                    };
-                    return container.Resolve<ImagePanel>(parameters);
-                });
-            }
+            //◆Activeの切り替わりで読み込み方式に変える
+            //var regionNames = RegionNames.GetImageContentRegionNames(contentCount);
+            //foreach (var (name, index) in regionNames.Indexed())
+            //{
+            //    regionManager.RegisterViewWithRegion(name, () =>
+            //    {
+            //        // ◆複数の引数を渡す場合はデータstructに変えましょう
+            //        var parameters = new[] {
+            //            (typeof(int), (object)index),
+            //            (typeof(uint), (object)((uint)contentCount)),
+            //        };
+            //        return container.Resolve<ImagePanel>(parameters);
+            //    });
+            //}
         }
 
     }

@@ -15,9 +15,10 @@
     xmlns:icvtl="clr-namespace:ICV.Control.ThumbnailList;assembly=ICV.Control.ThumbnailList"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" >
-    
+
     <StackPanel Background="{StaticResource ActiveBackgroundBrushKey}"
                 AllowDrop="True" >
+        <!-- MemoryLeak???
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="Drop">
                 <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneWay}">
@@ -26,7 +27,6 @@
             </i:EventTrigger>
         </i:Interaction.Triggers>
 
-        <!--
         <ceab:ExplorerAddressBar VerticalAlignment="Top"
                                  SelectedDirectory="{Binding DirectoryPath.Value, Mode=TwoWay}"/>
 
@@ -34,16 +34,13 @@
                            SelectedImagePath="{Binding SelectedImagePath.Value, Mode=TwoWay}" />
         <icvtl:ThumbnailList />
         <ContentControl prism:RegionManager.RegionName="ThumbnailListRegion" />
-        -->
 
         <ContentControl x:Name="ThumbnailList" />
-
-
+        -->
 
         <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
         <TextBlock Text="{Binding SelectedImagePath.Value, Mode=OneWay}"/>
 
-        <!-- forDebug -->
         <TextBlock Text="{Binding ContentIndex, Mode=OneTime}" />
     </StackPanel>
 </mvvm:DisposableUserControl>

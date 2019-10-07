@@ -21,6 +21,7 @@ namespace ImageComparisonViewer.ImagePanels.Views
             var viewModel = new ImagePanelViewModel(container, contentIndex, (int)contentCount);
             DataContext = viewModel;
 
+#if false   // ◆メモリリーク怪しいので一旦無効化
             // ◆複数の引数を渡す場合はデータstructに変えましょう
             var parameters = new[]
             {
@@ -29,6 +30,7 @@ namespace ImageComparisonViewer.ImagePanels.Views
             };
             var thumbView = container.Resolve<ThumbnailList>(parameters);
             ThumbnailList.Content = thumbView;
+#endif
 
             //var view = container.Resolve<ThumbnailList>();
             //regionManager.Regions["ThumbnailListRegion"].Add(view); //ダメだった1
@@ -37,6 +39,14 @@ namespace ImageComparisonViewer.ImagePanels.Views
 
             //var view = container.Resolve<ThumbnailList>();
             //regionManager.RegisterViewWithRegion("ThumbnailListRegion", () => view); //ダメだった3
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            // 以下がないとメモリリークするっぽい…
+            DataContext = null;
         }
 
     }

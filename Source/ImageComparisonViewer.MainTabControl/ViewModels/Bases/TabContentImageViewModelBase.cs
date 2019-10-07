@@ -19,6 +19,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
     {
         private readonly int _contentCount;
 
+        private readonly IContainerExtension _container;
         private readonly IRegionManager _regionManager;
         private readonly ImageSources _imageSources;
 
@@ -28,6 +29,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         public TabContentImageViewModelBase(IContainerExtension container, IRegionManager regionManager, string title, int index)
             : base(title)
         {
+            _container = container;
             _regionManager = regionManager;
             _contentCount = index;
             _imageSources = container.Resolve<ImageSources>();
@@ -56,7 +58,30 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             var isActive = e2.Value;
 
             // 非アクティブ時に溜まった回転数をModelに通知する
-            if (!isActive)
+            if (isActive)
+            {
+                var regionNames = RegionNames.GetImageContentRegionNames(_contentCount);
+                foreach (var (name, index) in regionNames.Indexed())
+                {
+                    //_regionManager.RegisterViewWithRegion(name, () =>
+                    //{
+                    //    // ◆複数の引数を渡す場合はデータstructに変えましょう
+                    //    //var parameters = new[] {
+                    //    //    (typeof(int), (object)index),
+                    //    //    (typeof(uint), (object)((uint)_contentCount)),
+                    //    //};
+                    //    //return _container.Resolve<ImagePanel>(parameters);
+
+                    //    // ◆上のコードだとTabの切り替えでContainerにゴミインスタンスが溜まって
+                    //    //   メモリリークするので普通にインスタンス作る
+                    //    return new ImagePanel(_container, _regionManager, index, (uint)_contentCount);
+                    //});
+
+                    var view = new ImagePanel(_container, _regionManager, index, (uint)_contentCount);
+                    _regionManager.AddToRegion(name, view);
+                }
+            }
+            else
             {
                 AdaptImagesShift();
 
