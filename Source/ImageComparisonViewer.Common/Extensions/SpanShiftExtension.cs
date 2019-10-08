@@ -2,6 +2,7 @@
 
 namespace ImageComparisonViewer.Common.Extensions
 {
+#if false
     public static class SpanShiftExtension
     {
         /// <summary>
@@ -87,4 +88,5 @@ namespace ImageComparisonViewer.Common.Extensions
         }
 
     }
+#endif
 }

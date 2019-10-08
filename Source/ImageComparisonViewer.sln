@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.Commo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageComparisonViewer.ImagePanels", "ImageComparisonViewer.ImagePanels\ImageComparisonViewer.ImagePanels.csproj", "{2ED93BA7-3327-4E6E-B906-A373EC34F706}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.ThumbnailList", "Control.ThumbnailList\Control.ThumbnailList.csproj", "{F3D47A65-1E21-4807-8B02-77AA928D827E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ICV.Control.ThumbnailList", "ICV.Control.ThumbnailList\ICV.Control.ThumbnailList.csproj", "{605CDC91-C868-4A32-891F-26623EEFE35F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICV.Control.ThumbnailList", "ICV.Control.ThumbnailList\ICV.Control.ThumbnailList.csproj", "{605CDC91-C868-4A32-891F-26623EEFE35F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICV.Control.ExplorerAddressBar", "ICV.Control.ExplorerAddressBar\ICV.Control.ExplorerAddressBar.csproj", "{C8B6D9F2-49BE-487D-A584-1D9A58F23A1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,14 +49,14 @@ Global
 		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2ED93BA7-3327-4E6E-B906-A373EC34F706}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3D47A65-1E21-4807-8B02-77AA928D827E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{605CDC91-C868-4A32-891F-26623EEFE35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{605CDC91-C868-4A32-891F-26623EEFE35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{605CDC91-C868-4A32-891F-26623EEFE35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{605CDC91-C868-4A32-891F-26623EEFE35F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8B6D9F2-49BE-487D-A584-1D9A58F23A1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8B6D9F2-49BE-487D-A584-1D9A58F23A1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8B6D9F2-49BE-487D-A584-1D9A58F23A1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8B6D9F2-49BE-487D-A584-1D9A58F23A1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

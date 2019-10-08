@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ImageComparisonViewer.Common.Extensions
 {
-#if true
+#if false
     public static class ListShiftExtension
     {
         /// <summary>
