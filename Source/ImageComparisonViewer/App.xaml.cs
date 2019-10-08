@@ -1,5 +1,4 @@
 ﻿using ImageComparisonViewer.Common.Prism;
-using ImageComparisonViewer.ImagePanels.Views;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
@@ -33,7 +32,7 @@ namespace ImageComparisonViewer
 
             #endregion
 
-            containerRegistry.RegisterSingleton<Core.ImageSources>();
+            containerRegistry.RegisterSingleton<Core.Images.CompositeImageDirectory>();
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

@@ -1,5 +1,5 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
-using ImageComparisonViewer.Core;
+using ImageComparisonViewer.Core.Images;
 using Prism.Ioc;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -55,23 +55,23 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             ContentCount = parameter.ContentCount;
 
             _container = container;
-            var imageSources = _container.Resolve<ImageSources>();
-            var imageSource = imageSources.ImageDirectries[ContentIndex];
+            var compositeDirectory = _container.Resolve<CompositeImageDirectory>();
+            var imageDirectory = compositeDirectory.ImageDirectries[ContentIndex];
 
             // ドロップファイル通知
             DropEvent = new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None).AddTo(CompositeDisposable);
             DropEvent
-                .Subscribe(paths => imageSources.SetDroppedPaths(ContentIndex, paths))
+                .Subscribe(paths => compositeDirectory.SetDroppedPaths(ContentIndex, paths))
                 .AddTo(CompositeDisposable);
 
             // 読み出しディレクトリ購読
-            DirectoryPath = imageSource
+            DirectoryPath = imageDirectory
                 .ObserveProperty(x => x.DirectoryPath)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
 
             // 選択ファイル購読
-            SelectedImagePath = imageSource
+            SelectedImagePath = imageDirectory
                 .ObserveProperty(x => x.SelectedFilePath)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);

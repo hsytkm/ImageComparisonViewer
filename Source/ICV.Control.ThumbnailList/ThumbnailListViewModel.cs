@@ -1,6 +1,7 @@
 ﻿using ICV.Control.ThumbnailList.EventConverters;
 using ImageComparisonViewer.Common.Mvvm;
-using ImageComparisonViewer.Core;
+using ImageComparisonViewer.Core.Images;
+using Prism.Commands;
 using Prism.Ioc;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -42,19 +43,39 @@ namespace ICV.Control.ThumbnailList
         }
         private ReactiveProperty<HorizontalScrolltRatio> _scrollViewerHorizontalScrollRatio = default!;
 
+        /// <summary>
+        /// 選択画像を進めるコマンド
+        /// </summary>
+        public DelegateCommand NextSelectedItemCommand
+        {
+            get => _nextSelectedItemCommand;
+            private set => SetProperty(ref _nextSelectedItemCommand, value);
+        }
+        private DelegateCommand _nextSelectedItemCommand = default!;
+
+        /// <summary>
+        /// 選択画像を戻すコマンド
+        /// </summary>
+        public DelegateCommand PrevSelectedItemCommand
+        {
+            get => _prevSelectedItemCommand;
+            private set => SetProperty(ref _prevSelectedItemCommand, value);
+        }
+        private DelegateCommand _prevSelectedItemCommand = default!;
+
         public ThumbnailListViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
-            var imageSources = container.Resolve<ImageSources>();
-            var imageSource = imageSources.ImageDirectries[parameter.ContentIndex];
+            var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+            var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
             // 選択候補サムネイル要素の作成
-            ThumbnailSources = imageSource.ImageFiles
+            ThumbnailSources = imageDirectory.ImageFiles
                 .ToReadOnlyReactiveCollection(x => new Thumbnail(x.FilePath))
                 .AddTo(CompositeDisposable);
 
 #pragma warning disable CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
             // 選択中画像のTwoWay
-            SelectedItem = imageSource
+            SelectedItem = imageDirectory
                 .ToReactivePropertyAsSynchronized(x => x.SelectedFilePath,
                     convert: m => ThumbnailSources.FirstOrDefault(x => x.FilePath == m),
                     convertBack: v => v?.FilePath,
@@ -67,11 +88,11 @@ namespace ICV.Control.ThumbnailList
                 .AddTo(CompositeDisposable);
 
             ScrollViewerHorizontalScrollRatio
-                .Subscribe(x => imageSource.UpdateThumbnail(x.CenterRatio, x.ViewportRatio))
+                .Subscribe(x => imageDirectory.UpdateThumbnail(x.CenterRatio, x.ViewportRatio))
                 .AddTo(CompositeDisposable);
 
             // Modelのサムネイル読み込みを監視して更新
-            imageSource.ImageFiles
+            imageDirectory.ImageFiles
                 .ObserveElementProperty(x => x.Thumbnail)
                 //.Do(x => Debug.WriteLine($"{x.Instance} {x.Property} {x.Value}"))
                 .Subscribe(model =>
@@ -81,6 +102,10 @@ namespace ICV.Control.ThumbnailList
                         vmodel.Image = model.Instance.Thumbnail;
                 })
                 .AddTo(CompositeDisposable);
+
+            // 選択画像の進む/戻る
+            NextSelectedItemCommand = new DelegateCommand(imageDirectory.MoveNextImage);
+            PrevSelectedItemCommand = new DelegateCommand(imageDirectory.MovePrevImage);
 
         }
 

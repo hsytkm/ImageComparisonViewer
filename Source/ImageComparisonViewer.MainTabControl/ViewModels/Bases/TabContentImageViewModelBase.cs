@@ -1,6 +1,6 @@
 ﻿using ImageComparisonViewer.ImagePanels.Views;
 using ImageComparisonViewer.Common.Extensions;
-using ImageComparisonViewer.Core;
+using ImageComparisonViewer.Core.Images;
 using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Commands;
 using Prism.Events;
@@ -21,7 +21,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 
         private readonly IContainerExtension _container;
         private readonly IRegionManager _regionManager;
-        private readonly ImageSources _imageSources;
+        private readonly CompositeImageDirectory _compositeDirectory;
 
         public DelegateCommand ImagesRightShiftCommand { get; }
         public DelegateCommand ImagesLeftShiftCommand { get; }
@@ -32,7 +32,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             _container = container;
             _regionManager = regionManager;
             _contentCount = index;
-            _imageSources = container.Resolve<ImageSources>();
+            _compositeDirectory = container.Resolve<CompositeImageDirectory>();
 
             ImagesRightShiftCommand = new DelegateCommand(() => RightShiftViewModels());
             //_applicationCommands.SwapInnerTrackCommand.RegisterCommand(RightShiftCommand);
@@ -54,7 +54,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 RegisterImagePanelViewRegions();
 
                 // Modelへのリソース破棄要求(1画面に切り替わったら2画面以上の情報は捨てる)
-                _imageSources.ReleaseResources(_contentCount);
+                _compositeDirectory.ReleaseResources(_contentCount);
             }
             else
             {
@@ -116,7 +116,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         private void AdaptImagesShift()
         {
             // 溜まった回転数をModelに通知
-            _imageSources.AdaptImageListTracks(_contentCount, _rightShiftCounter);
+            _compositeDirectory.AdaptImageListTracks(_contentCount, _rightShiftCounter);
 
             // 外部通知したらクリアする
             _rightShiftCounter = 0;
