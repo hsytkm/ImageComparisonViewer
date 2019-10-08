@@ -8,12 +8,12 @@ namespace ICV.Control.ThumbnailList
     /// </summary>
     public partial class ThumbnailList : DisposableUserControl
     {
-        public ThumbnailList(IContainerExtension container, int contentIndex, uint contentCount)
+        public ThumbnailList(IContainerExtension container, ImageViewParameter parameter)
         {
             InitializeComponent();
 
             // VMに引数を渡したいので自前でインスタンス作る
-            DataContext = new ThumbnailListViewModel(container, contentIndex, (int)contentCount);
+            DataContext = new ThumbnailListViewModel(container, parameter);
         }
     }
 }

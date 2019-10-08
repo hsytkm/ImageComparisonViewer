@@ -44,10 +44,14 @@ namespace ImageComparisonViewer.Core
         public void LoadImage()
         {
             Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
-            //Debug.WriteLine($"Finish: {FilePath}");
+            //Debug.WriteLine($"Load Thumbnail: {FilePath}");
         }
 
-        public void UnloadImage() => Thumbnail = null;
+        public void UnloadImage()
+        {
+            Thumbnail = null;
+            //Debug.WriteLine($"Unload Thumbnail: {FilePath}");
+        }
     }
 
     public class ImageDirectory : BindableBase
@@ -214,6 +218,17 @@ namespace ImageComparisonViewer.Core
             Debug.WriteLine(sb.ToString());
         }
 
+        /// <summary>
+        /// 保持リソースの破棄
+        /// </summary>
+        public void ReleaseResources()
+        {
+            foreach (var imageFIle in ImageFiles)
+            {
+                imageFIle.UnloadImage();
+            }
+        }
+
         public override string ToString() => SelectedFilePath ?? "null";
     }
 
@@ -338,6 +353,19 @@ namespace ImageComparisonViewer.Core
             }
 #endif
             //Debug.WriteLine($"Model: {list[0]}, {list[1]}, {list[2]}");
+        }
+
+        /// <summary>
+        /// 指定された画像グループ以降の保持リソースを破棄する
+        /// </summary>
+        /// <param name="targetContentCount">対象の画像コンテンツ数(2なら2画面なので3画面以上の情報を削除)</param>
+        public void ReleaseResources(int targetContentCount)
+        {
+            if (targetContentCount < 1) return;
+            for (int i = targetContentCount; i < ImageDirectries.Count; i++)
+            {
+                ImageDirectries[i].ReleaseResources();
+            }
         }
 
     }

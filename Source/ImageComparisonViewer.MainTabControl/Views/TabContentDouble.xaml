@@ -26,15 +26,6 @@
         <ContentControl Grid.Column="2"
                         prism:RegionManager.RegionName="ImageContentRegion2_1" />
 
-        <!--
-        <cip:ImagePanel Grid.Column="2" />
-
-        <TextBlock Text="{Binding Title, Mode=OneTime}"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
-        -->
-
-
         <StackPanel Grid.Column="3" >
             <Button Content="→"
                     Command="{Binding ImagesRightShiftCommand, Mode=OneTime}" />

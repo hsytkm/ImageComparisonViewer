@@ -72,8 +72,13 @@
                         <ControlTemplate TargetType="{x:Type ListBox}">
                             <ScrollViewer>
                                 <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Loaded">
+                                        <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollViewerHorizontalScrollRatio, Mode=OneWay}">
+                                            <ve:LoadedEventToViewportConverter/>
+                                        </r:EventToReactiveProperty>
+                                    </i:EventTrigger>
                                     <i:EventTrigger EventName="ScrollChanged">
-                                        <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollChangedHorizontal, Mode=OneWay}">
+                                        <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollViewerHorizontalScrollRatio, Mode=OneWay}">
                                             <ve:ScrollChangedEventToViewportConverter/>
                                         </r:EventToReactiveProperty>
                                     </i:EventTrigger>

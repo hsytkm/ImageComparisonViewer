@@ -35,25 +35,25 @@ namespace ICV.Control.ThumbnailList
         /// <summary>
         /// ScrollViewerの表示範囲割合
         /// </summary>
-        public ReactiveProperty<HorizontalScrolltRatio> ScrollChangedHorizontal
+        public ReactiveProperty<HorizontalScrolltRatio> ScrollViewerHorizontalScrollRatio
         {
-            get => _scrollChangedHorizontal;
-            private set => SetProperty(ref _scrollChangedHorizontal, value);
+            get => _scrollViewerHorizontalScrollRatio;
+            private set => SetProperty(ref _scrollViewerHorizontalScrollRatio, value);
         }
-        private ReactiveProperty<HorizontalScrolltRatio> _scrollChangedHorizontal = default!;
+        private ReactiveProperty<HorizontalScrolltRatio> _scrollViewerHorizontalScrollRatio = default!;
 
-        public ThumbnailListViewModel(IContainerExtension container, int contentIndex, int contentCount)
+        public ThumbnailListViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
             var imageSources = container.Resolve<ImageSources>();
-            var imageSource = imageSources.ImageDirectries[contentIndex];
+            var imageSource = imageSources.ImageDirectries[parameter.ContentIndex];
 
-            // 選択候補サムネイルの用意
+            // 選択候補サムネイル要素の作成
             ThumbnailSources = imageSource.ImageFiles
                 .ToReadOnlyReactiveCollection(x => new Thumbnail(x.FilePath))
                 .AddTo(CompositeDisposable);
 
-            // 選択アイテムのTwoWay
 #pragma warning disable CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
+            // 選択中画像のTwoWay
             SelectedItem = imageSource
                 .ToReactivePropertyAsSynchronized(x => x.SelectedFilePath,
                     convert: m => ThumbnailSources.FirstOrDefault(x => x.FilePath == m),
@@ -62,14 +62,15 @@ namespace ICV.Control.ThumbnailList
                 .AddTo(CompositeDisposable);
 #pragma warning restore CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
 
-            ScrollChangedHorizontal = new ReactiveProperty<HorizontalScrolltRatio>(mode: ReactivePropertyMode.DistinctUntilChanged)
+            // サムネイルScrollの水平表示領域
+            ScrollViewerHorizontalScrollRatio = new ReactiveProperty<HorizontalScrolltRatio>(mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
 
-            ScrollChangedHorizontal
+            ScrollViewerHorizontalScrollRatio
                 .Subscribe(x => imageSource.UpdateThumbnail(x.CenterRatio, x.ViewportRatio))
                 .AddTo(CompositeDisposable);
 
-            // Modelのサムネイル読み込みを監視
+            // Modelのサムネイル読み込みを監視して更新
             imageSource.ImageFiles
                 .ObserveElementProperty(x => x.Thumbnail)
                 //.Do(x => Debug.WriteLine($"{x.Instance} {x.Property} {x.Value}"))

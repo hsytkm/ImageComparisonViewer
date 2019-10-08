@@ -21,8 +21,13 @@ namespace ImageComparisonViewer.Common.Mvvm
                 if (disposing)
                 {
                     // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    CompositeDisposable.Dispose();
+
                     if (DataContext is IDisposable vmodel)
+                    {
                         vmodel.Dispose();
+                    }
+                    DataContext = null;     // メモリリークしてる気がするので明示的に(気のせいかも…)
 
                     // 全ての子コントロールをDispose(◆孫が何度もDisposeされて気になる…)
                     foreach (var child in ViewHelper.Descendants(this))

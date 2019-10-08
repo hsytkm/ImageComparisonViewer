@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Windows;
+using ImageComparisonViewer.Common.Mvvm;
 
 namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
@@ -34,18 +34,10 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             _contentCount = index;
             _imageSources = container.Resolve<ImageSources>();
 
-            ImagesRightShiftCommand = new DelegateCommand(() =>
-            {
-                RightShiftViewModels();
-                IncrementRightShiftCounter();   // ユーザ操作による回転数を更新
-            });
+            ImagesRightShiftCommand = new DelegateCommand(() => RightShiftViewModels());
             //_applicationCommands.SwapInnerTrackCommand.RegisterCommand(RightShiftCommand);
 
-            ImagesLeftShiftCommand = new DelegateCommand(() =>
-            {
-                LeftShiftViewModels();
-                IncrementLeftShiftCounter();   // ユーザ操作による回転数を更新
-            });
+            ImagesLeftShiftCommand = new DelegateCommand(() => LeftShiftViewModels());
             //_applicationCommands.SwapOuterTrackCommand.RegisterCommand(LeftShiftCommand);
 
             IsActiveChanged += ViewModel_IsActiveChanged;
@@ -57,69 +49,73 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             if (!(e is DataEventArgs<bool> e2)) return;
             var isActive = e2.Value;
 
-            // 非アクティブ時に溜まった回転数をModelに通知する
             if (isActive)
             {
-                var regionNames = RegionNames.GetImageContentRegionNames(_contentCount);
-                foreach (var (name, index) in regionNames.Indexed())
-                {
-                    //_regionManager.RegisterViewWithRegion(name, () =>
-                    //{
-                    //    // ◆複数の引数を渡す場合はデータstructに変えましょう
-                    //    //var parameters = new[] {
-                    //    //    (typeof(int), (object)index),
-                    //    //    (typeof(uint), (object)((uint)_contentCount)),
-                    //    //};
-                    //    //return _container.Resolve<ImagePanel>(parameters);
+                RegisterImagePanelViewRegions();
 
-                    //    // ◆上のコードだとTabの切り替えでContainerにゴミインスタンスが溜まって
-                    //    //   メモリリークするので普通にインスタンス作る
-                    //    return new ImagePanel(_container, _regionManager, index, (uint)_contentCount);
-                    //});
-
-                    var view = new ImagePanel(_container, _regionManager, index, (uint)_contentCount);
-                    _regionManager.AddToRegion(name, view);
-                }
+                // Modelへのリソース破棄要求(1画面に切り替わったら2画面以上の情報は捨てる)
+                _imageSources.ReleaseResources(_contentCount);
             }
             else
             {
-                AdaptImagesShift();
+                RemoveImagePanelViewRegions();
 
-                foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
-                {
-                    _regionManager.Regions[name].RemoveAll();
-                }
+                // 非アクティブ時に溜まった回転数をModelに通知する
+                AdaptImagesShift();
             }
         }
 
-        #region  GetRegionView
+        #region  ViewRegion
 
         /// <summary>
         /// 指定Countに対応する画像RegionのViewsを取得(2画面なら 2_0 → 2_1 を返す)
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<T> GetImageContentViews<T>() where T : FrameworkElement =>
-            RegionNames.GetImageContentRegionNames(_contentCount)
-                .Select(name => _regionManager.Regions[name].Views.Cast<T>().FirstOrDefault());
+        //private IEnumerable<T> GetImageContentViews<T>() where T : FrameworkElement =>
+        //    RegionNames.GetImageContentRegionNames(_contentCount)
+        //        .Select(name => _regionManager.Regions[name].Views.Cast<T>().FirstOrDefault());
+
+        /// <summary>
+        /// Viewを作成してリージョンに登録する
+        /// </summary>
+        private void RegisterImagePanelViewRegions(int contentIndexOffset = 0)
+        {
+            var regionNames = RegionNames.GetImageContentRegionNames(_contentCount);
+            foreach (var (name, index) in regionNames.Indexed())
+            {
+                _regionManager.RegisterViewWithRegion(name, () =>
+                {
+                    var contentIndex = (index + contentIndexOffset) % _contentCount;
+                    var parameters = ImageViewParameterFactory.GetImageViewParameters(contentIndex, _contentCount);
+                    return _container.Resolve<ImagePanel>(parameters);
+                });
+            }
+        }
+
+        /// <summary>
+        /// リージョンのViewを削除する
+        /// </summary>
+        private void RemoveImagePanelViewRegions()
+        {
+            foreach (var name in RegionNames.GetImageContentRegionNames(_contentCount))
+            {
+                _regionManager.Regions[name].RemoveAll();
+            }
+        }
 
         #endregion
 
         #region  ShiftImageViewModels
 
+        // ViewModelで管理している右回転数(左回転時は負数になる)
         private int _rightShiftCounter;
-
-        private void IncrementRightShiftCounter() => _rightShiftCounter++;
-        private void IncrementLeftShiftCounter() => _rightShiftCounter--;
 
         /// <summary>
         /// 画像の回転を外部に通知する(+次に備えてViewModelを元に戻す)
         /// </summary>
         private void AdaptImagesShift()
         {
-            // ユーザの指示で回転させたViewModelを元に戻す(◆ややこしい…)
-            RightShiftViewModels(-_rightShiftCounter);
-
-            // Modelに溜まった回転数を通知
+            // 溜まった回転数をModelに通知
             _imageSources.AdaptImageListTracks(_contentCount, _rightShiftCounter);
 
             // 外部通知したらクリアする
@@ -129,13 +125,22 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         /// <summary>
         /// 画像(ViewModel)を右回りで入れ替え
         /// </summary>
-        /// <param name="rightShift">右シフト回数</param>
-        private void RightShiftViewModels(int rightShift = 1)
+        /// <param name="rightShiftRequest">右シフト回数</param>
+        private void RightShiftViewModels(int rightShiftRequest = 1)
         {
             if (_contentCount <= 1) return;  // 回転する必要なし
-            if (rightShift == 0) return;
+            if (rightShiftRequest == 0) return;
 
 #if true
+            // Vの作り直し
+            RemoveImagePanelViewRegions();
+
+            // 画像コンテンツ番号のシフト量(これまでの累積回転数を考慮)
+            var indexShift = (-(_rightShiftCounter + rightShiftRequest)) % _contentCount;
+            if (indexShift < 0) indexShift += _contentCount;
+            RegisterImagePanelViewRegions(indexShift);
+
+#elif false
             // Vの入れ替え
             var views = GetImageContentViews<FrameworkElement>().ToList().RightShift(rightShift);
             foreach (var (name, index) in RegionNames.GetImageContentRegionNames(_contentCount).Indexed())
@@ -154,6 +159,8 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 views[i].DataContext = vmodels[i];
             }
 #endif
+            // ViewModel内の回転数を加算
+            _rightShiftCounter += rightShiftRequest;
         }
 
         /// <summary>

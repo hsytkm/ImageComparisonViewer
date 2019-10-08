@@ -14,11 +14,5 @@
 
         <ContentControl prism:RegionManager.RegionName="ImageContentRegion1_0" />
 
-        <!--
-        <TextBlock Text="{Binding Title, Mode=OneTime}"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
-        -->
-
     </Grid>
 </UserControl>

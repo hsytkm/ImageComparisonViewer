@@ -17,7 +17,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
         private readonly IContainerExtension _container;
 
         public int ContentIndex { get; }
-        public int ContentLength { get; }
+        public int ContentCount { get; }
 
         /// <summary>
         /// ディレクトリPATH(未選択ならnull)
@@ -56,12 +56,12 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
 
         private string _contentMessage;
 
-        public ImagePanelViewModel(IContainerExtension container, int contentIndex, int contentLength)
+        public ImagePanelViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
             _container = container;
-            ContentIndex = contentIndex;
-            ContentLength = contentLength;
-            _contentMessage = $"{contentIndex}/{contentLength}";
+            ContentIndex = parameter.ContentIndex;
+            ContentCount = parameter.ContentCount;
+            _contentMessage = $"{ContentIndex}/{ContentCount}";
 
 
             var imageSources = _container.Resolve<ImageSources>();

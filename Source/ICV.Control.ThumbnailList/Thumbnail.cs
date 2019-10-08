@@ -9,15 +9,25 @@ namespace ICV.Control.ThumbnailList
     /// </summary>
     class Thumbnail : BindableBase
     {
+        /// <summary>
+        /// 画像ファイルPATH
+        /// </summary>
+        public string FilePath { get; }
+
+        /// <summary>
+        /// 画像ファイル名
+        /// </summary>
+        public string Filename { get; }
+
+        /// <summary>
+        /// サムネイル画像(非読込み時はnull)
+        /// </summary>
         public BitmapSource? Image
         {
             get => _image;
             set => SetProperty(ref _image, value);
         }
         private BitmapSource? _image;
-
-        public string FilePath { get; }
-        public string Filename { get; }
 
         public Thumbnail(string path)
         {

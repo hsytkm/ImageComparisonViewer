@@ -21,6 +21,18 @@ namespace ICV.Control.ThumbnailList.EventConverters
     }
 
     /// <summary>
+    /// Loadedイベントで水平方向の表示領域の情報を返す
+    /// </summary>
+    class LoadedEventToViewportConverter : ReactiveConverter<dynamic, HorizontalScrolltRatio>
+    {
+        protected override IObservable<HorizontalScrolltRatio> OnConvert(IObservable<dynamic> source)
+        {
+            return source
+                .Select(x => new HorizontalScrolltRatio(this.AssociateObject as ScrollViewer));
+        }
+    }
+
+    /// <summary>
     /// 水平方向の表示領域の情報
     /// </summary>
     readonly struct HorizontalScrolltRatio
@@ -39,6 +51,19 @@ namespace ICV.Control.ThumbnailList.EventConverters
         {
             CenterRatio = GetCenterRatio(e.ExtentWidth, e.ViewportWidth, e.HorizontalOffset);
             ViewportRatio = GetViewportRatio(e.ExtentWidth, e.ViewportWidth);
+        }
+
+        public HorizontalScrolltRatio(ScrollViewer? scroll)
+        {
+            if (scroll is null)
+            {
+                CenterRatio = ViewportRatio = 0;
+            }
+            else
+            {
+                CenterRatio = GetCenterRatio(scroll.ExtentWidth, scroll.ViewportWidth, scroll.HorizontalOffset);
+                ViewportRatio = GetViewportRatio(scroll.ExtentWidth, scroll.ViewportWidth);
+            }
         }
 
         /// <summary>
