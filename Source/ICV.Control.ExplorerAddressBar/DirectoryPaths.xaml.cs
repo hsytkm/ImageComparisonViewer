@@ -58,6 +58,12 @@ namespace ICV.Control.ExplorerAddressBar
         {
             InitializeComponent();
 
+            // 選択ディレクトリでViewを更新
+            this.Loaded += (_, __) =>
+            {
+                AddViewNodes(this, SelectedDirectory);
+            };
+
             // NodeBarの表示幅
             this.SizeChanged += (_, e) =>
             {
@@ -108,6 +114,11 @@ namespace ICV.Control.ExplorerAddressBar
             {
                 if (elements.All(x => x.Visibility == Visibility.Visible))
                 {
+                    foreach (var fe in _fwElementWidths.Select(x => x.Element))
+                    {
+                        if (fe is IDisposable disposable)
+                            disposable.Dispose();
+                    }
                     _fwElementWidths.Clear();
 
                     // リストは逆管理
@@ -174,6 +185,14 @@ namespace ICV.Control.ExplorerAddressBar
             // 無効文字ならViewをクリア
             if (string.IsNullOrEmpty(sourcePath))
             {
+                if (itemsControl.ItemsSource != null)
+                {
+                    foreach (var obj in itemsControl.ItemsSource)
+                    {
+                        if (obj is IDisposable disposable)
+                            disposable.Dispose();
+                    }
+                }
                 itemsControl.ItemsSource = null;
                 dirView.SelectedDirectory = "";
             }
@@ -185,7 +204,9 @@ namespace ICV.Control.ExplorerAddressBar
                 // ノードViewを順に作成してRegionに登録
                 foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
                 {
-                    views.Add(new DirectoryPathNode(directoryNode, path => AddViewNodes(dirView, path)));
+                    //var view = new DirectoryPathNode(directoryNode, path => AddViewNodes(dirView, path));
+                    var view = new DirectoryPathNode(directoryNode);
+                    views.Add(view);
                 }
 
                 itemsControl.ItemsSource = views;

@@ -26,6 +26,26 @@ namespace ICV.Control.ExplorerAddressBar
         private ReactiveProperty<bool> _isVisibleDirectoryNode = default!;
 
         /// <summary>
+        /// TextBoxを表示する(DirectoryNodeを非表示にする)
+        /// </summary>
+        public DelegateCommand VisibleTextBoxCommand
+        {
+            get => _visibleTextBoxCommand;
+            private set => SetProperty(ref _visibleTextBoxCommand, value);
+        }
+        private DelegateCommand _visibleTextBoxCommand = default!;
+
+        /// <summary>
+        /// TextBoxを非表示にする(DirectoryNodeを表示する)
+        /// </summary>
+        public DelegateCommand CollapsedTextBoxCommand
+        {
+            get => _collapsedTextBoxCommand;
+            private set => SetProperty(ref _collapsedTextBoxCommand, value);
+        }
+        private DelegateCommand _collapsedTextBoxCommand = default!;
+
+        /// <summary>
         /// 対象ディレクトリ
         /// </summary>
         public ReactiveProperty<string> TargetDirectory
@@ -36,7 +56,7 @@ namespace ICV.Control.ExplorerAddressBar
         private ReactiveProperty<string> _targetDirectory = default!;
 
         /// <summary>
-        /// TextBoxの入力文字列(EnterKeyでViewから通知が来る)
+        /// TextBoxの文字列
         /// </summary>
         public ReactiveProperty<string> InputText
         {
@@ -46,7 +66,7 @@ namespace ICV.Control.ExplorerAddressBar
         private ReactiveProperty<string> _inputText = default!;
 
         /// <summary>
-        /// 
+        /// TextBox確定時のコマンド
         /// </summary>
         public DelegateCommand<string> TextInputCommand
         {
@@ -54,26 +74,6 @@ namespace ICV.Control.ExplorerAddressBar
             private set => SetProperty(ref _textInputCommand, value);
         }
         private DelegateCommand<string> _textInputCommand = default!;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public DelegateCommand VisibleTextBoxCommand
-        {
-            get => _visibleTextBoxCommand;
-            private set => SetProperty(ref _visibleTextBoxCommand, value);
-        }
-        private DelegateCommand _visibleTextBoxCommand = default!;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public DelegateCommand CollapsedTextBoxCommand
-        {
-            get => _collapsedTextBoxCommand;
-            private set => SetProperty(ref _collapsedTextBoxCommand, value);
-        }
-        private DelegateCommand _collapsedTextBoxCommand = default!;
 
         public ExplorerAddressBarViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
@@ -83,9 +83,10 @@ namespace ICV.Control.ExplorerAddressBar
             IsVisibleDirectoryNode = new ReactiveProperty<bool>(initialValue: true)
                 .AddTo(CompositeDisposable);
 
-            InputText = new ReactiveProperty<string>().AddTo(CompositeDisposable);
+            VisibleTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.Value = false);
+            CollapsedTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.Value = true);
 
-            // Modelのディレクトリを購読
+            // Modelのディレクトリ(TwoWay)
             TargetDirectory = imageDirectory
                 .ToReactivePropertyAsSynchronized(x => x.DirectoryPath,
                     convert: m => (m is null) ? _defaultDirectory : m,
@@ -98,14 +99,12 @@ namespace ICV.Control.ExplorerAddressBar
             {
                 if (Directory.Exists(path))
                 {
-                    Debug.WriteLine($"ToModel:{path}");
                     TargetDirectory.Value = path;
                 }
                 IsVisibleDirectoryNode.Value = true;
             });
 
-            VisibleTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.Value = false);
-            CollapsedTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.Value = true);
+            InputText = new ReactiveProperty<string>(mode: ReactivePropertyMode.None).AddTo(CompositeDisposable);
 
             // TextBox表示時に文字列を準備
             IsVisibleDirectoryNode
