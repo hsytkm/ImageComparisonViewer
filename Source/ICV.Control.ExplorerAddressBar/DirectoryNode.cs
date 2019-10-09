@@ -42,7 +42,8 @@ namespace ICV.Control.ExplorerAddressBar
         /// 引数pathディレクトリ内の子DirectoryNodeを返す
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<DirectoryNode> GetChildDirectoryNodes() => GetChildDirectoryNodes(FullPath);
+        public IEnumerable<DirectoryNode> GetChildDirectoryNodes() =>
+            GetChildDirectoryNodes(FullPath);
 
         /// <summary>
         /// 存在するディレクトリに修正する

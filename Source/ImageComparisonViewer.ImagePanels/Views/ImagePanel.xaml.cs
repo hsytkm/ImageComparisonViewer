@@ -1,3 +1,4 @@
+using ICV.Control.ExplorerAddressBar;
 using ICV.Control.ThumbnailList;
 using ImageComparisonViewer.Common.Mvvm;
 using ImageComparisonViewer.ImagePanels.ViewModels;
@@ -22,8 +23,8 @@ namespace ImageComparisonViewer.ImagePanels.Views
             DataContext = viewModel;
 
             var parameters = ImageViewParameterFactory.GetImageViewParameters(parameter);
-            var thumbView = container.Resolve<ThumbnailList>(parameters);
-            ThumbnailList.Content = thumbView;
+            ExplolerAddressBar.Content = container.Resolve<ExplorerAddressBar>(parameters);
+            ThumbnailList.Content = container.Resolve<ThumbnailList>(parameters);
 
             // ↓↓Regionで管理しようとしたけど、各ImagePanelで名前が重複してダメっぽかった↓↓
             //var view = container.Resolve<ThumbnailList>();

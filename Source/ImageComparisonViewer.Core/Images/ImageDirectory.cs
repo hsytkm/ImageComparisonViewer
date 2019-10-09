@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ImageComparisonViewer.Core.Images
 {
@@ -21,7 +22,14 @@ namespace ImageComparisonViewer.Core.Images
         public string? DirectoryPath
         {
             get => _directoryPath;
-            private set => SetProperty(ref _directoryPath, value);
+            set
+            {
+                if (SetProperty(ref _directoryPath, value))
+                {
+                    // ディレクトリを更新する(◆この辺ごちゃってるので整理する)
+                    UpdateBasePath(value);
+                }
+            }
         }
         private string? _directoryPath = default!;
 
@@ -148,8 +156,10 @@ namespace ImageComparisonViewer.Core.Images
             foreach (var thumb in loadThumbs)
             {
                 //Debug.WriteLine($"Thumbnail Update() Load: {thumb.FilePath}");
-                //Task.Run(() => thumb.LoadImage()); // 完了を待たない(高速化)
-                thumb.LoadImage();
+                //thumb.LoadImage();
+
+                // 完了を待たない(高速化)
+                Task.Run(() => thumb.LoadImage());
             }
 
             // 読み込み状況の表示テスト

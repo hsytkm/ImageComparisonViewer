@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageComparisonViewer.Common.Mvvm;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,7 +8,7 @@ namespace ICV.Control.ExplorerAddressBar
     /// <summary>
     /// DirectoryPathNode.xaml の相互作用ロジック
     /// </summary>
-    public partial class DirectoryPathNode : UserControl
+    public partial class DirectoryPathNode : DisposableUserControl
     {
         // ディレクトリの更新を親クラスに通知
         private readonly Action<string> _updateDirectoryAction;

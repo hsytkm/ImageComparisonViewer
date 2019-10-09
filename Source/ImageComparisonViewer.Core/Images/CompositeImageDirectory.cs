@@ -57,13 +57,13 @@ namespace ImageComparisonViewer.Core.Images
         /// </summary>
         /// <param name="index"></param>
         /// <param name="selectedFilePath"></param>
-        //public void SetSelectedFlePath(int index, string? selectedFilePath)
-        //{
-        //    if (index >= ImageDirectries.Count)
-        //        throw new ArgumentOutOfRangeException(nameof(index));
+        public void SetSelectedFlePath(int index, string? selectedFilePath)
+        {
+            if (index >= ImageDirectries.Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
 
-        //    ImageDirectries[index].SetSelectedFilePath(selectedFilePath);
-        //}
+            ImageDirectries[index].SetSelectedFilePath(selectedFilePath);
+        }
 
         /// <summary>
         /// 外部からの回転数通知に応じてコレクション要素をシフトする

@@ -37,6 +37,8 @@
         <ContentControl prism:RegionManager.RegionName="ThumbnailListRegion" />
         -->
 
+        <ContentControl x:Name="ExplolerAddressBar" />
+
         <ContentControl x:Name="ThumbnailList" />
 
         <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
