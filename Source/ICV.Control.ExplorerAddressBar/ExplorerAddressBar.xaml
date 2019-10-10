@@ -49,11 +49,12 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- ディレクトリノード -->
-            <v:DirectoryPaths Height="{Binding ActualHeight, ElementName=ground, Mode=OneWay}"
-                              Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
-                                                   Converter={StaticResource BoolToVisibilityConverter}}"
-                              SelectedDirectory="{Binding TargetDirectory.Value, Mode=TwoWay}" />
+            <!-- ディレクトリノード ◆Grid消せるが未対応 -->
+            <Grid Height="{Binding ActualHeight, ElementName=ground, Mode=OneWay}"
+                  Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
+                                       Converter={StaticResource BoolToVisibilityConverter}}" >
+                <ContentControl x:Name="DirectoryPaths" />
+            </Grid>
 
             <!-- ノード横の空白Grid(クリック用) -->
             <Border x:Name="marginBorder"

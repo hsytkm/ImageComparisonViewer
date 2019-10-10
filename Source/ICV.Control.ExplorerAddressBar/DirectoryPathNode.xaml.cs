@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Core.Images;
 
 namespace ICV.Control.ExplorerAddressBar
 {
@@ -7,10 +8,10 @@ namespace ICV.Control.ExplorerAddressBar
     /// </summary>
     public partial class DirectoryPathNode : DisposableUserControl
     {
-        public DirectoryPathNode(DirectoryNode node)
+        public DirectoryPathNode(DirectoryNode node, ImageDirectory imageDirectory)
         {
             // InitializeComponent()の前にViewModel作ること(for OneTime Binding)
-            DataContext = new DirectoryPathNodeViewModel(node);
+            DataContext = new DirectoryPathNodeViewModel(node, imageDirectory);
 
             InitializeComponent();
         }

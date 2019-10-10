@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Core.Images;
 using Prism.Commands;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -37,22 +38,19 @@ namespace ICV.Control.ExplorerAddressBar
         }
         private ReactiveProperty<DirectoryNode> _selectedNode = default!;
 
-        public DirectoryPathNodeViewModel(DirectoryNode targetNode)
+        public DirectoryPathNodeViewModel(DirectoryNode targetNode, ImageDirectory imageDirectory)
         {
             TargetNode = targetNode;
             ChildDirectories = targetNode.GetChildDirectoryNodes();
 
-            DirectorySelectCommand = new DelegateCommand<DirectoryNode>(node =>
-                {
-                    Debug.WriteLine($"Command: {node.FullPath}");
-                });
-
             SelectedNode = new ReactiveProperty<DirectoryNode>(mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
             SelectedNode
-                .Subscribe(node => Debug.WriteLine($"SelectedNode: {node.FullPath}"))
+                .Subscribe(node => imageDirectory.DirectoryPath = node.FullPath)
                 .AddTo(CompositeDisposable);
 
+            DirectorySelectCommand = new DelegateCommand<DirectoryNode>(node =>
+                SelectedNode.Value = node);
         }
 
     }

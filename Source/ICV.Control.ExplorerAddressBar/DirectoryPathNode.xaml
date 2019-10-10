@@ -25,7 +25,8 @@
 
         <ComboBox Margin="1,0"
                   Width="18"
-                  Visibility="{Binding TargetNode.HasChildDirectory, Mode=OneTime, Converter={StaticResource BoolToVisibilityConverter}}"
+                  Visibility="{Binding TargetNode.HasChildDirectory, Mode=OneTime,
+                                       Converter={StaticResource BoolToVisibilityConverter}}"
                   ItemsSource="{Binding ChildDirectories, Mode=OneTime}"
                   SelectedValue="{Binding SelectedNode.Value, Mode=OneWayToSource}">
 
