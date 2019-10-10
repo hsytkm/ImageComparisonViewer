@@ -10,10 +10,10 @@ namespace ICV.Control.ThumbnailList
     {
         public ThumbnailList(IContainerExtension container, ImageViewParameter parameter)
         {
-            InitializeComponent();
-
             // VMに引数を渡したいので自前でインスタンス作る
             DataContext = new ThumbnailListViewModel(container, parameter);
+
+            InitializeComponent();
         }
     }
 }

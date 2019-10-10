@@ -1,5 +1,4 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
-using ImageComparisonViewer.Core.Images;
 using Prism.Commands;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -24,33 +23,28 @@ namespace ICV.Control.ExplorerAddressBar
         public IEnumerable<DirectoryNode> ChildDirectories { get; } = default!;
 
         /// <summary>
-        /// ディレクトリ選択コマンド(Button)
+        /// ディレクトリ選択コマンド
         /// </summary>
         public DelegateCommand<DirectoryNode> DirectorySelectCommand { get; } = default!;
 
         /// <summary>
-        /// ディレクトリ選択(ComboBox)
+        /// ディレクトリ選択(OneWayToSource)
         /// </summary>
-        public ReactiveProperty<DirectoryNode> SelectedNode
-        {
-            get => _selectedNode;
-            private set => SetProperty(ref _selectedNode, value);
-        }
-        private ReactiveProperty<DirectoryNode> _selectedNode = default!;
+        public ReactiveProperty<DirectoryNode> SelectedNode { get; } =
+            new ReactiveProperty<DirectoryNode>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
-        public DirectoryPathNodeViewModel(DirectoryNode targetNode, ImageDirectory imageDirectory)
+        public DirectoryPathNodeViewModel(DirectoryNode targetNode, Action<string> sendDirectoryPath)
         {
             TargetNode = targetNode;
+
             ChildDirectories = targetNode.GetChildDirectoryNodes();
 
-            SelectedNode = new ReactiveProperty<DirectoryNode>(mode: ReactivePropertyMode.DistinctUntilChanged)
-                .AddTo(CompositeDisposable);
-            SelectedNode
-                .Subscribe(node => imageDirectory.DirectoryPath = node.FullPath)
-                .AddTo(CompositeDisposable);
+            DirectorySelectCommand = new DelegateCommand<DirectoryNode>(x => SelectedNode.Value = x);
 
-            DirectorySelectCommand = new DelegateCommand<DirectoryNode>(node =>
-                SelectedNode.Value = node);
+            // Viewのディレクトリ選択を外部に通知
+            SelectedNode
+                .Subscribe(node => sendDirectoryPath(node.FullPath))
+                .AddTo(CompositeDisposable);
         }
 
     }

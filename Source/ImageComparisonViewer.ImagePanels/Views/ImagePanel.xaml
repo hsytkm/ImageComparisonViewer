@@ -17,7 +17,7 @@
                 AllowDrop="True" >
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="Drop">
-                <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneWay}">
+                <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneTime}">
                     <vme:DropEventToStringsConverter/>
                 </r:EventToReactiveProperty>
             </i:EventTrigger>

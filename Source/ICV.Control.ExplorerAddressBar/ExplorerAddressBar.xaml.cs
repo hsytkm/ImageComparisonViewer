@@ -10,10 +10,10 @@ namespace ICV.Control.ExplorerAddressBar
     {
         public ExplorerAddressBar(IContainerExtension container, ImageViewParameter parameter)
         {
-            InitializeComponent();
-
             // VMに引数を渡したいので自前でインスタンス作る
             DataContext = new ExplorerAddressBarViewModel(container, parameter);
+
+            InitializeComponent();
 
             DirectoryPaths.Content = new DirectoryPaths(container, parameter);
         }

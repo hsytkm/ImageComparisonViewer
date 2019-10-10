@@ -4,87 +4,50 @@ using Prism.Commands;
 using Prism.Ioc;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using Reactive.Bindings.Notifiers;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reactive.Linq;
 
 namespace ICV.Control.ExplorerAddressBar
 {
     class ExplorerAddressBarViewModel : DisposableBindableBase
     {
-        private static readonly string _defaultDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        private static readonly string _defaultDirectory =
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
         /// <summary>
         /// DirectoryNodeを表示する(TextBoxを表示しない)
         /// </summary>
-        public ReactiveProperty<bool> IsVisibleDirectoryNode
-        {
-            get => _isVisibleDirectoryNode;
-            private set => SetProperty(ref _isVisibleDirectoryNode, value);
-        }
-        private ReactiveProperty<bool> _isVisibleDirectoryNode = default!;
+        public BooleanNotifier IsVisibleDirectoryNode { get; } = new BooleanNotifier(initialValue: true);
 
         /// <summary>
         /// TextBoxを表示する(DirectoryNodeを非表示にする)
         /// </summary>
-        public DelegateCommand VisibleTextBoxCommand
-        {
-            get => _visibleTextBoxCommand;
-            private set => SetProperty(ref _visibleTextBoxCommand, value);
-        }
-        private DelegateCommand _visibleTextBoxCommand = default!;
+        public DelegateCommand VisibleTextBoxCommand { get; } = default!;
 
         /// <summary>
         /// TextBoxを非表示にする(DirectoryNodeを表示する)
         /// </summary>
-        public DelegateCommand CollapsedTextBoxCommand
-        {
-            get => _collapsedTextBoxCommand;
-            private set => SetProperty(ref _collapsedTextBoxCommand, value);
-        }
-        private DelegateCommand _collapsedTextBoxCommand = default!;
+        public DelegateCommand CollapsedTextBoxCommand { get; } = default!;
 
         /// <summary>
         /// 対象ディレクトリ
         /// </summary>
-        public ReactiveProperty<string> TargetDirectory
-        {
-            get => _targetDirectory;
-            private set => SetProperty(ref _targetDirectory, value);
-        }
-        private ReactiveProperty<string> _targetDirectory = default!;
-
-        /// <summary>
-        /// TextBoxの文字列
-        /// </summary>
-        public ReactiveProperty<string> InputText
-        {
-            get => _inputText;
-            private set => SetProperty(ref _inputText, value);
-        }
-        private ReactiveProperty<string> _inputText = default!;
+        public ReactiveProperty<string> TargetDirectory { get; } = default!;
 
         /// <summary>
         /// TextBox確定時のコマンド
         /// </summary>
-        public DelegateCommand<string> TextInputCommand
-        {
-            get => _textInputCommand;
-            private set => SetProperty(ref _textInputCommand, value);
-        }
-        private DelegateCommand<string> _textInputCommand = default!;
+        public DelegateCommand<string> TextInputCommand { get; } = default!;
 
         public ExplorerAddressBarViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
             var compositeDirectory = container.Resolve<CompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
-            IsVisibleDirectoryNode = new ReactiveProperty<bool>(initialValue: true)
-                .AddTo(CompositeDisposable);
-
-            VisibleTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.Value = false);
-            CollapsedTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.Value = true);
+            VisibleTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.TurnOff());
+            CollapsedTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.TurnOn());
 
             // Modelのディレクトリ(TwoWay)
             TargetDirectory = imageDirectory
@@ -101,16 +64,8 @@ namespace ICV.Control.ExplorerAddressBar
                 {
                     TargetDirectory.Value = path;
                 }
-                IsVisibleDirectoryNode.Value = true;
+                IsVisibleDirectoryNode.TurnOn();
             });
-
-            InputText = new ReactiveProperty<string>(mode: ReactivePropertyMode.None).AddTo(CompositeDisposable);
-
-            // TextBox表示時に文字列を準備
-            IsVisibleDirectoryNode
-                .Where(x => !x)
-                .Subscribe(_ => InputText.Value = TargetDirectory.Value ?? "")
-                .AddTo(CompositeDisposable);
         }
 
     }

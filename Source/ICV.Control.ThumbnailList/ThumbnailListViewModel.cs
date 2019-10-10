@@ -16,52 +16,28 @@ namespace ICV.Control.ThumbnailList
         /// <summary>
         /// サムネイルリスト
         /// </summary>
-        public ReadOnlyReactiveCollection<Thumbnail> ThumbnailSources
-        {
-            get => _thumbnailSources;
-            private set => SetProperty(ref _thumbnailSources, value);
-        }
-        private ReadOnlyReactiveCollection<Thumbnail> _thumbnailSources = default!;
+        public ReadOnlyReactiveCollection<Thumbnail> ThumbnailSources { get; } = default!;
 
         /// <summary>
         /// 選択中のサムネイル(未選択時はnull)
         /// </summary>
-        public ReactiveProperty<Thumbnail?> SelectedItem
-        {
-            get => _selectedItem;
-            private set => SetProperty(ref _selectedItem, value);
-        }
-        private ReactiveProperty<Thumbnail?> _selectedItem = default!;
+        public ReactiveProperty<Thumbnail?> SelectedItem { get; } = default!;
 
         /// <summary>
         /// ScrollViewerの表示範囲割合
         /// </summary>
-        public ReactiveProperty<HorizontalScrolltRatio> ScrollViewerHorizontalScrollRatio
-        {
-            get => _scrollViewerHorizontalScrollRatio;
-            private set => SetProperty(ref _scrollViewerHorizontalScrollRatio, value);
-        }
-        private ReactiveProperty<HorizontalScrolltRatio> _scrollViewerHorizontalScrollRatio = default!;
+        public ReactiveProperty<HorizontalScrolltRatio> ScrollViewerHorizontalScrollRatio { get; } =
+            new ReactiveProperty<HorizontalScrolltRatio>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
         /// <summary>
         /// 選択画像を進めるコマンド
         /// </summary>
-        public DelegateCommand NextSelectedItemCommand
-        {
-            get => _nextSelectedItemCommand;
-            private set => SetProperty(ref _nextSelectedItemCommand, value);
-        }
-        private DelegateCommand _nextSelectedItemCommand = default!;
+        public DelegateCommand NextSelectedItemCommand { get; } = default!;
 
         /// <summary>
         /// 選択画像を戻すコマンド
         /// </summary>
-        public DelegateCommand PrevSelectedItemCommand
-        {
-            get => _prevSelectedItemCommand;
-            private set => SetProperty(ref _prevSelectedItemCommand, value);
-        }
-        private DelegateCommand _prevSelectedItemCommand = default!;
+        public DelegateCommand PrevSelectedItemCommand { get; } = default!;
 
         public ThumbnailListViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
@@ -84,9 +60,6 @@ namespace ICV.Control.ThumbnailList
 #pragma warning restore CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
 
             // サムネイルScrollの水平表示領域
-            ScrollViewerHorizontalScrollRatio = new ReactiveProperty<HorizontalScrolltRatio>(mode: ReactivePropertyMode.DistinctUntilChanged)
-                .AddTo(CompositeDisposable);
-
             ScrollViewerHorizontalScrollRatio
                 .Subscribe(x => imageDirectory.UpdateThumbnail(x.CenterRatio, x.ViewportRatio))
                 .AddTo(CompositeDisposable);

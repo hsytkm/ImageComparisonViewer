@@ -8,7 +8,7 @@ namespace ICV.Control.ExplorerAddressBar
     public class DirectoryNode
     {
         // ディレクトリ略名の最大文字列(5文字を設定したら "dire..." となる)
-        private static readonly int _abbreviationNameLengthMax = 10;
+        private const int _abbreviationNameLengthMax = 10;
 
         /// <summary>
         /// 対象ディレクトリのフルPATH

@@ -1,9 +1,9 @@
-﻿using Microsoft.Xaml.Behaviors;
+﻿using ImageComparisonViewer.Common.Mvvm;
 using System.Windows.Controls;
 
-namespace ICV.Control.ThumbnailList
+namespace ICV.Control.ThumbnailList.Behavior
 {
-    class ListBoxSelectionBehavior : Behavior<ListBox>
+    class ListBoxSelectionBehavior : BehaviorBase<ListBox>
     {
         protected override void OnAttached()
         {

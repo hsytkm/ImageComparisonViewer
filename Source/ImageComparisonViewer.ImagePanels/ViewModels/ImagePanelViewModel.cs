@@ -6,60 +6,40 @@ using Reactive.Bindings.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
 
 namespace ImageComparisonViewer.ImagePanels.ViewModels
 {
     class ImagePanelViewModel : DisposableBindableBase
     {
-        private readonly IContainerExtension _container;
-
         public int ContentIndex { get; }
         public int ContentCount { get; }
 
         /// <summary>
         /// 画像Drop時のイベント通知
         /// </summary>
-        public ReactiveProperty<IReadOnlyList<string>> DropEvent
-        {
-            get => _dropEvent;
-            private set => SetProperty(ref _dropEvent, value);
-        }
-        private ReactiveProperty<IReadOnlyList<string>> _dropEvent = default!;
+        public ReactiveProperty<IReadOnlyList<string>> DropEvent { get; } =
+            new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None);
 
         /// <summary>
         /// ディレクトリPATH(未選択ならnull)
         /// </summary>
-        public ReadOnlyReactiveProperty<string?> DirectoryPath
-        {
-            get => _directoryPath;
-            private set => SetProperty(ref _directoryPath, value);
-        }
-        private ReadOnlyReactiveProperty<string?> _directoryPath = default!;
+        public ReadOnlyReactiveProperty<string?> DirectoryPath { get; } = default!;
 
         /// <summary>
         /// 選択中の画像PATH(未選択ならnull)
         /// </summary>
-        public ReadOnlyReactiveProperty<string?> SelectedImagePath
-        {
-            get => _selectedImagePath;
-            private set => SetProperty(ref _selectedImagePath, value);
-        }
-        private ReadOnlyReactiveProperty<string?> _selectedImagePath = default!;
+        public ReadOnlyReactiveProperty<string?> SelectedImagePath { get; } = default!;
 
         public ImagePanelViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
             ContentIndex = parameter.ContentIndex;
             ContentCount = parameter.ContentCount;
 
-            _container = container;
-            var compositeDirectory = _container.Resolve<CompositeImageDirectory>();
+            var compositeDirectory = container.Resolve<CompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[ContentIndex];
 
             // ドロップファイル通知
-            DropEvent = new ReactiveProperty<IReadOnlyList<string>>(mode: ReactivePropertyMode.None).AddTo(CompositeDisposable);
             DropEvent
                 .Subscribe(paths => compositeDirectory.SetDroppedPaths(ContentIndex, paths))
                 .AddTo(CompositeDisposable);

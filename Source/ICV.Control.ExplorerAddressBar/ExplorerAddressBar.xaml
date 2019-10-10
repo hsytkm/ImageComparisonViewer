@@ -21,9 +21,6 @@
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <vc:InverseBooleanToVisibilityConverter x:Key="InvBoolToVisibilityConverter" />
-            <!--
-            <vc:InverseVisibilityConverter x:Key="InvVisibilityConverter" />
-            -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/ImageComparisonViewer.Common;component/Themes/DarkPurple.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -31,11 +28,8 @@
     </UserControl.Resources>
 
     <i:Interaction.Behaviors>
-        <vb:WindowClickCommandBehavior ClickCommand="{Binding CollapsedTextBoxCommand, Mode=OneWay}" />
+        <vb:WindowClickCommandBehavior ClickCommand="{Binding CollapsedTextBoxCommand, Mode=OneTime}" />
     </i:Interaction.Behaviors>
-
-    <!-- ItemsControl攻略 ～ 外観のカスタマイズ http://grabacr.net/archives/1240 -->
-    <!-- Standard Controls - ItemsControl http://yujiro15.net/YKSoftware/StandardControls_ItemsControl.html -->
 
     <!-- MainWindowが小さくなっても本来のサイズを取得するためScrollViewerで包む -->
     <ScrollViewer IsTabStop="False" 
@@ -49,29 +43,26 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- ディレクトリノード ◆Grid消せるが未対応 -->
-            <Grid Height="{Binding ActualHeight, ElementName=ground, Mode=OneWay}"
-                  Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
-                                       Converter={StaticResource BoolToVisibilityConverter}}" >
-                <ContentControl x:Name="DirectoryPaths" />
-            </Grid>
+            <!-- ディレクトリノード(内部でViewをリスト管理) -->
+            <ContentControl x:Name="DirectoryPaths"
+                            Height="{Binding ActualHeight, ElementName=ground, Mode=OneWay}"
+                            Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
+                                                 Converter={StaticResource BoolToVisibilityConverter}}" />
 
             <!-- ノード横の空白Grid(クリック用) -->
-            <Border x:Name="marginBorder"
-                    Grid.Column="1"
+            <Border Grid.Column="1"
                     Background="{StaticResource BorderBrushKey}"
                     Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
                                          Converter={StaticResource BoolToVisibilityConverter}}" >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseLeftButtonDown">
-                        <r:EventToReactiveCommand Command="{Binding VisibleTextBoxCommand, Mode=OneWay}" />
+                        <r:EventToReactiveCommand Command="{Binding VisibleTextBoxCommand, Mode=OneTime}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Border>
 
             <!-- 入力用(EnterKeyで確定) -->
-            <TextBox x:Name="pathTextBox"
-                     Grid.ColumnSpan="2"
+            <TextBox Grid.ColumnSpan="2"
                      Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
                                           Converter={StaticResource InvBoolToVisibilityConverter}}"
                      Text="{Binding TargetDirectory.Value, Mode=OneWay}"
@@ -82,11 +73,11 @@
                 
                 <TextBox.InputBindings>
                     <KeyBinding Gesture="Enter"
-                                Command="{Binding TextInputCommand, Mode=OneWay}"
-                                CommandParameter="{Binding Text, ElementName=pathTextBox, Mode=OneWay}" />
+                                Command="{Binding TextInputCommand, Mode=OneTime}"
+                                CommandParameter="{Binding Text, Mode=OneWay,
+                                                   RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
                 </TextBox.InputBindings>
             </TextBox>
-            
         </Grid>
     </ScrollViewer>
 

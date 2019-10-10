@@ -10,6 +10,7 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="False"
     xmlns:v="clr-namespace:ICV.Control.ThumbnailList"
+    xmlns:vb="clr-namespace:ICV.Control.ThumbnailList.Behavior"
     xmlns:ve="clr-namespace:ICV.Control.ThumbnailList.EventConverters"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" >
@@ -25,7 +26,7 @@
 
             <!-- 選択要素が表示されるようにスクロールする -->
             <i:Interaction.Behaviors>
-                <v:ListBoxSelectionBehavior/>
+                <vb:ListBoxSelectionBehavior/>
             </i:Interaction.Behaviors>
 
             <ListBox.Resources>
@@ -79,12 +80,12 @@
                                 <ScrollViewer>
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="Loaded">
-                                            <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollViewerHorizontalScrollRatio, Mode=OneWay}">
+                                            <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollViewerHorizontalScrollRatio, Mode=OneTime}">
                                                 <ve:LoadedEventToViewportConverter/>
                                             </r:EventToReactiveProperty>
                                         </i:EventTrigger>
                                         <i:EventTrigger EventName="ScrollChanged">
-                                            <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollViewerHorizontalScrollRatio, Mode=OneWay}">
+                                            <r:EventToReactiveProperty ReactiveProperty="{Binding ScrollViewerHorizontalScrollRatio, Mode=OneTime}">
                                                 <ve:ScrollChangedEventToViewportConverter/>
                                             </r:EventToReactiveProperty>
                                         </i:EventTrigger>
@@ -99,8 +100,8 @@
         </ListBox>
 
         <StackPanel Grid.Column="1" >
-            <Button Content="＜" Command="{Binding PrevSelectedItemCommand, Mode=OneWay}" />
-            <Button Content="＞" Command="{Binding NextSelectedItemCommand, Mode=OneWay}" />
+            <Button Content="＜" Command="{Binding PrevSelectedItemCommand, Mode=OneTime}" />
+            <Button Content="＞" Command="{Binding NextSelectedItemCommand, Mode=OneTime}" />
         </StackPanel>
     </Grid>
 

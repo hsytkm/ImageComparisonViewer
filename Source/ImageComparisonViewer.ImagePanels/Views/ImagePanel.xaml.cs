@@ -16,11 +16,10 @@ namespace ImageComparisonViewer.ImagePanels.Views
     {
         public ImagePanel(IContainerExtension container, IRegionManager regionManager, ImageViewParameter parameter)
         {
-            InitializeComponent();
-
             // VMに引数を渡したいので自前でインスタンス作る
-            var viewModel = new ImagePanelViewModel(container, parameter);
-            DataContext = viewModel;
+            DataContext = new ImagePanelViewModel(container, parameter);
+
+            InitializeComponent();
 
             var parameters = ImageViewParameterFactory.GetImageViewParameters(parameter);
             ExplolerAddressBar.Content = container.Resolve<ExplorerAddressBar>(parameters);

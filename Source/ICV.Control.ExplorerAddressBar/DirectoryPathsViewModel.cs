@@ -19,46 +19,39 @@ namespace ICV.Control.ExplorerAddressBar
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
         /// <summary>
-        /// 
+        /// 親コントロールの幅(制限なし最大)
         /// </summary>
-        public ReactiveProperty<double> UserControlWidth
-        {
-            get => _userControlWidth;
-            private set => SetProperty(ref _userControlWidth, value);
-        }
-        private ReactiveProperty<double> _userControlWidth = default!;
+        public ReactiveProperty<double> UserControlWidth { get; } =
+            new ReactiveProperty<double>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
         /// <summary>
-        /// 
+        /// 自コントロールの幅(制限あり)
         /// </summary>
-        public ReactiveProperty<double> ItemsControlWidth
-        {
-            get => _itemsControlWidth;
-            private set => SetProperty(ref _itemsControlWidth, value);
-        }
-        private ReactiveProperty<double> _itemsControlWidth = default!;
+        public ReactiveProperty<double> ItemsControlWidth { get; } =
+            new ReactiveProperty<double>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
-        public ReactiveProperty<IList<DirectoryPathNode>> ViewItemsSource
-        {
-            get => _itemsSourceView;
-            private set => SetProperty(ref _itemsSourceView, value);
-        }
-        private ReactiveProperty<IList<DirectoryPathNode>> _itemsSourceView = default!;
+        /// <summary>
+        /// View(ディレクトリノード)のリスト
+        /// </summary>
+        public ReactiveProperty<IList<DirectoryPathNode>> ViewItemsSource { get; } =
+             new ReactiveProperty<IList<DirectoryPathNode>>(mode: ReactivePropertyMode.None);
 
-        private readonly ImageDirectory _imageDirectory;
+        /// <summary>
+        /// ディレクトリPATHをModelに通知するAction(子View用)
+        /// </summary>
+        private readonly Action<string> _sendSerectedDirectoryPathAction;
 
         public DirectoryPathsViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
             var compositeDirectory = container.Resolve<CompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
-            _imageDirectory = imageDirectory;
 
-            ViewItemsSource = new ReactiveProperty<IList<DirectoryPathNode>>(mode: ReactivePropertyMode.None)
-                .AddTo(CompositeDisposable);
+            _sendSerectedDirectoryPathAction = path => imageDirectory.DirectoryPath = path;
 
+            // Modelのディレクトリを購読
             var targetDirectory = imageDirectory
                 .ObserveProperty(x => x.DirectoryPath)
-                .ToReactiveProperty(mode: ReactivePropertyMode.Default)
+                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.Default)
                 .AddTo(CompositeDisposable);
 
             targetDirectory
@@ -66,15 +59,11 @@ namespace ICV.Control.ExplorerAddressBar
                 .AddTo(CompositeDisposable);
 
             // 親コントロールの幅(制限なし最大)
-            UserControlWidth = new ReactiveProperty<double>(mode: ReactivePropertyMode.DistinctUntilChanged)
-                .AddTo(CompositeDisposable);
             UserControlWidth
                 .Subscribe(width => UpdateNodesVisibility(width, ItemsControlWidth.Value))
                 .AddTo(CompositeDisposable);
 
             // 自コントロールの幅(制限あり)
-            ItemsControlWidth = new ReactiveProperty<double>(mode: ReactivePropertyMode.DistinctUntilChanged)
-                .AddTo(CompositeDisposable);
             ItemsControlWidth
                 .Subscribe(width => UpdateNodesVisibility(UserControlWidth.Value, width))
                 .AddTo(CompositeDisposable);
@@ -178,7 +167,7 @@ namespace ICV.Control.ExplorerAddressBar
                 // ノードViewを順に作成してRegionに登録
                 foreach (var directoryNode in DirectoryNode.GetDirectoryNodes(path))
                 {
-                    views.Add(new DirectoryPathNode(directoryNode, _imageDirectory));
+                    views.Add(new DirectoryPathNode(directoryNode, _sendSerectedDirectoryPathAction));
                 }
 
                 ViewItemsSource.Value = views;

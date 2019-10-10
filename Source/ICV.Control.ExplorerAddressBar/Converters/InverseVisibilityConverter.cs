@@ -5,6 +5,7 @@ using System.Windows.Data;
 
 namespace ICV.Control.ExplorerAddressBar.Converters
 {
+#if false
     [ValueConversion(typeof(Visibility), typeof(Visibility))]
     class InverseVisibilityConverter : IValueConverter
     {
@@ -18,4 +19,5 @@ namespace ICV.Control.ExplorerAddressBar.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
             throw new NotImplementedException();
     }
+#endif
 }

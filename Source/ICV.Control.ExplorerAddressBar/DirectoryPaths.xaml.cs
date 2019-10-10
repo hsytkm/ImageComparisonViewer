@@ -10,9 +10,9 @@ namespace ICV.Control.ExplorerAddressBar
     {
         public DirectoryPaths(IContainerExtension container, ImageViewParameter parameter)
         {
-            InitializeComponent();
-
             DataContext = new DirectoryPathsViewModel(container, parameter);
+
+            InitializeComponent();
         }
     }
 }
