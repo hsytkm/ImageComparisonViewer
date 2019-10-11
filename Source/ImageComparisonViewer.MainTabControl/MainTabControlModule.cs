@@ -29,9 +29,6 @@ namespace ImageComparisonViewer.MainTabControl
             }
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
-            //containerRegistry.RegisterSingleton<ahe>();
-        }
+        public void RegisterTypes(IContainerRegistry containerRegistry) { }
     }
 }

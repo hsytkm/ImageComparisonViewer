@@ -62,8 +62,7 @@
             <!-- ディレクトリノード(内部でViewをリスト管理) -->
             <!-- ItemsControl攻略 ～ 外観のカスタマイズ http://grabacr.net/archives/1240 -->
             <!-- Standard Controls - ItemsControl http://yujiro15.net/YKSoftware/StandardControls_ItemsControl.html -->
-            <ItemsControl x:Name="NodeItemsControl"
-                          ItemsSource="{Binding ViewItemsSource.Value, Mode=OneWay}"
+            <ItemsControl ItemsSource="{Binding ViewItemsSource.Value, Mode=OneWay}"
                           Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
                                                Converter={StaticResource BoolToVisibilityConverter}}" >
                 <i:Interaction.Triggers>

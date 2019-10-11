@@ -116,13 +116,13 @@ namespace ImageComparisonViewer.Core.Images
         /// </summary>
         /// <param name="centerRatio">表示領域の中央位置の割合(0~1)</param>
         /// <param name="viewportRatio">表示領域の割合(0~1)</param>
-        public void UpdateThumbnail(double centerRatio, double viewportRatio)
+        public void UpdateThumbnails(double centerRatio, double viewportRatio)
         {
             // 画像が0個のときは0が通知される
             if (centerRatio == 0 || viewportRatio == 0) return;
 
-            var list = _imageFiles;
-            int length = list.Count;
+            var imageFiles = _imageFiles;
+            int length = imageFiles.Count;
             if (length == 0) return;
 
             //Debug.WriteLine($"Thumbnail Update() center={centerRatio:f2} viewport={viewportRatio:f2}");
@@ -138,7 +138,7 @@ namespace ImageComparisonViewer.Core.Images
             // 解放リスト(表示範囲外で読込み中)
             var unloadThumbs = Enumerable.Range(0, length)
                 .Where(x => !(start <= x && x <= end))
-                .Select(x => list[x])
+                .Select(x => imageFiles[x])
                 .Where(x => x.IsLoadImage);
             foreach (var thumb in unloadThumbs)
             {
@@ -148,7 +148,7 @@ namespace ImageComparisonViewer.Core.Images
 
             // 読込みリスト(表示範囲の未読込みを対象)
             var loadThumbs = Enumerable.Range(start, count)
-                .Select(x => list[x])
+                .Select(x => imageFiles[x])
                 .Where(x => x.IsUnloadImage);
             foreach (var thumb in loadThumbs)
             {

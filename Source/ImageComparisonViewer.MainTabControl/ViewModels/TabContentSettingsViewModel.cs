@@ -7,7 +7,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels
 {
     class TabContentSettingsViewModel : TabContentViewModelBase
     {
-        private readonly static string _title = "Settings";
+        private const string _title = "Settings";
 
         public TabContentSettingsViewModel() : base(_title)
         {

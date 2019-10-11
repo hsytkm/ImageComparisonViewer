@@ -174,7 +174,6 @@ namespace ICV.Control.ExplorerAddressBar
             {
                 if (elements.All(x => x.Visibility == Visibility.Visible))
                 {
-                    //Dispose(_fwElementWidths.Select(x => x.Element));
                     _fwElementWidths.Clear();
 
                     // リストは逆管理

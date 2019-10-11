@@ -54,14 +54,14 @@ namespace ICV.Control.ThumbnailList
             SelectedItem = imageDirectory
                 .ToReactivePropertyAsSynchronized(x => x.SelectedFilePath,
                     convert: m => ThumbnailSources.FirstOrDefault(x => x.FilePath == m),
-                    convertBack: v => v?.FilePath,
+                    convertBack: vm => vm?.FilePath,
                     mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
 #pragma warning restore CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
 
             // サムネイルScrollの水平表示領域
             ScrollViewerHorizontalScrollRatio
-                .Subscribe(x => imageDirectory.UpdateThumbnail(x.CenterRatio, x.ViewportRatio))
+                .Subscribe(x => imageDirectory.UpdateThumbnails(x.CenterRatio, x.ViewportRatio))
                 .AddTo(CompositeDisposable);
 
             // Modelのサムネイル読み込みを監視して更新
