@@ -10,6 +10,7 @@
     xmlns:v="clr-namespace:ICV.Control.ExplorerAddressBar"
     xmlns:vb="clr-namespace:ICV.Control.ExplorerAddressBar.Behaviors"
     xmlns:vc="clr-namespace:ICV.Control.ExplorerAddressBar.Converters"
+    xmlns:ve="clr-namespace:ICV.Control.ExplorerAddressBar.EventConverters"
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="False"
     mc:Ignorable="d"
@@ -27,9 +28,24 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
+    <!-- 画面外クリックでTextBoxを非表示化 -->
     <i:Interaction.Behaviors>
         <vb:WindowClickCommandBehavior ClickCommand="{Binding CollapsedTextBoxCommand, Mode=OneTime}" />
     </i:Interaction.Behaviors>
+
+    <!-- UserControlのサイズ取得 -->
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <r:EventToReactiveProperty ReactiveProperty="{Binding UserControlWidth, Mode=OneTime}" >
+                <ve:LoadedWidthConverter/>
+            </r:EventToReactiveProperty>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="SizeChanged">
+            <r:EventToReactiveProperty ReactiveProperty="{Binding UserControlWidth, Mode=OneTime}" >
+                <ve:SizeChangedWidthConverter/>
+            </r:EventToReactiveProperty>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
 
     <!-- MainWindowが小さくなっても本来のサイズを取得するためScrollViewerで包む -->
     <ScrollViewer IsTabStop="False" 
@@ -44,14 +60,35 @@
             </Grid.ColumnDefinitions>
 
             <!-- ディレクトリノード(内部でViewをリスト管理) -->
-            <ContentControl x:Name="DirectoryPaths"
-                            Height="{Binding ActualHeight, ElementName=ground, Mode=OneWay}"
-                            Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
-                                                 Converter={StaticResource BoolToVisibilityConverter}}" />
+            <!-- ItemsControl攻略 ～ 外観のカスタマイズ http://grabacr.net/archives/1240 -->
+            <!-- Standard Controls - ItemsControl http://yujiro15.net/YKSoftware/StandardControls_ItemsControl.html -->
+            <ItemsControl x:Name="NodeItemsControl"
+                          ItemsSource="{Binding ViewItemsSource.Value, Mode=OneWay}"
+                          Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
+                                               Converter={StaticResource BoolToVisibilityConverter}}" >
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Loaded">
+                        <r:EventToReactiveProperty ReactiveProperty="{Binding ItemsControlWidth, Mode=OneTime}" >
+                            <ve:LoadedWidthConverter/>
+                        </r:EventToReactiveProperty>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="SizeChanged">
+                        <r:EventToReactiveProperty ReactiveProperty="{Binding ItemsControlWidth, Mode=OneTime}" >
+                            <ve:SizeChangedWidthConverter/>
+                        </r:EventToReactiveProperty>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
 
-            <!-- ノード横の空白Grid(クリック用) -->
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+            <!-- ディレクトリ横の余白(クリック用) -->
             <Border Grid.Column="1"
-                    Background="{StaticResource BorderBrushKey}"
+                    Background="Transparent"
                     Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
                                          Converter={StaticResource BoolToVisibilityConverter}}" >
                 <i:Interaction.Triggers>

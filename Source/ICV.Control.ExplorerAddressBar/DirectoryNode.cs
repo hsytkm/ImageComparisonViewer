@@ -27,7 +27,7 @@ namespace ICV.Control.ExplorerAddressBar
 
         public DirectoryNode(string fullPath)
         {
-            FullPath = EmendFullPath(fullPath);
+            FullPath = fullPath;
             FullName = GetDirectoryName(fullPath);
             AbbrName = GetAbbreviationDirectoryName(FullName);
         }
@@ -62,11 +62,11 @@ namespace ICV.Control.ExplorerAddressBar
         //}
 
         /// <summary>
-        /// FullPathを整形
+        /// FullPathを整形(ViewModelに入ってくるPATH)
         /// </summary>
-        /// <param name="srcPath"></param>
+        /// <param name="path"></param>
         /// <returns></returns>
-        public static string EmendFullPath(string path)
+        public static string EmendFullPathToViewModel(string path)
         {
             if (string.IsNullOrEmpty(path)) return path;
 
@@ -74,6 +74,26 @@ namespace ICV.Control.ExplorerAddressBar
             if (path[^1] != Path.DirectorySeparatorChar)
                 return path + Path.DirectorySeparatorChar;
 
+            return path;
+        }
+
+        /// <summary>
+        /// FullPathを整形(ViewModelから出ていくPATH)
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string EmendFullPathFromViewModel(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+
+            // 最終が "\" なら削除するが("C:\"なら削除しない)
+            if (path[^1] == Path.DirectorySeparatorChar)
+            {
+                if (path[^2] == Path.VolumeSeparatorChar)
+                    return path;
+
+                return path.TrimEnd(Path.DirectorySeparatorChar);
+            }
             return path;
         }
 

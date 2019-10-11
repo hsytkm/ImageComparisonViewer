@@ -14,8 +14,6 @@ namespace ICV.Control.ExplorerAddressBar
             DataContext = new ExplorerAddressBarViewModel(container, parameter);
 
             InitializeComponent();
-
-            DirectoryPaths.Content = new DirectoryPaths(container, parameter);
         }
     }
 }
