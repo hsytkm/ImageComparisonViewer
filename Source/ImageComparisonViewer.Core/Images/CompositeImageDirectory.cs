@@ -1,4 +1,6 @@
-﻿using Prism.Mvvm;
+﻿using ImageComparisonViewer.Common.Extensions;
+using ImageComparisonViewer.Core.Extensions;
+using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,19 +24,6 @@ namespace ImageComparisonViewer.Core.Images
         public CompositeImageDirectory() { }
 
         /// <summary>
-        /// ドロップされたPATHを設定する
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="droppedPath"></param>
-        //public void SetDroppedPath(int index, string droppedPath)
-        //{
-        //    if (index >= ImageDirectries.Count)
-        //        throw new ArgumentOutOfRangeException(nameof(index));
-
-        //    ImageDirectries[index].UpdateBasePath(droppedPath);
-        //}
-
-        /// <summary>
         /// ドロップされた複数のPATHを設定する
         /// </summary>
         /// <param name="baseIndex"></param>
@@ -44,25 +33,14 @@ namespace ImageComparisonViewer.Core.Images
             if (baseIndex >= ImageDirectries.Count)
                 throw new ArgumentOutOfRangeException(nameof(baseIndex));
 
-            var length = Math.Min(droppedPaths.Count, ImageDirectries.Count);
+            var filesPath = droppedPaths.Select(x => x.ToImagePath()).ToArray();
+            var length = Math.Min(filesPath.Length, ImageDirectries.Count);
+
             for (int i = 0; i < length; i++)
             {
                 int index = (baseIndex + i) % ImageDirectries.Count;
-                ImageDirectries[index].UpdateBasePath(droppedPaths[i]);
+                ImageDirectries[index].DirectoryPath = filesPath[i];
             }
-        }
-
-        /// <summary>
-        /// 選択ファイルPATHの更新
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="selectedFilePath"></param>
-        public void SetSelectedFlePath(int index, string? selectedFilePath)
-        {
-            if (index >= ImageDirectries.Count)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            ImageDirectries[index].SetSelectedFilePath(selectedFilePath);
         }
 
         /// <summary>
@@ -83,50 +61,17 @@ namespace ImageComparisonViewer.Core.Images
             // 周回する分は捨てる
             rightShiftCount %= contentCount;
 
-#if false
             if (rightShiftCount != 0)
             {
                 // 対象画像数のみ回転させる
-                Span<ImageDirectory> sourceSpan = sourceList.ToArray().AsSpan().Slice(0, contentCount);
-                Span<ImageDirectory> sortedSpan = sourceSpan.RightShift(rightShiftCount);
-                for (int i = 0; i < sortedSpan.Length; i++)
+                var seeds = sourceList.Select(x => ImageDirectorySeed.CreateInstance(x)).ToArray();
+                Span<ImageDirectorySeed> sortedSeeds = seeds.AsSpan().Slice(0, contentCount).RightShift(rightShiftCount);
+
+                for (int i = 0; i < sortedSeeds.Length; i++)
                 {
-                    //sourceList[i] = sortedSpan[i];
-                    sourceList[i].UpdateBasePath(sortedSpan[i].DirectoryPath);
-                    sourceList[i].SetSelectedFilePath(sortedSpan[i].SelectedFilePath);
+                    sourceList[i].UpdateFromSeed(sortedSeeds[i]);
                 }
             }
-#else
-            if (rightShiftCount > 0)
-            {
-                for (int i = 0; i < rightShiftCount; i++)
-                {
-                    var tail = sourceList[tailIndex].GetCopyInstance();
-                    for (int j = tailIndex; j > 0; j--)
-                    {
-                        sourceList[j].UpdateBasePath(sourceList[j - 1].DirectoryPath);
-                        sourceList[j].SetSelectedFilePath(sourceList[j - 1].SelectedFilePath);
-                    }
-                    sourceList[0].UpdateBasePath(tail.DirectoryPath);
-                    sourceList[0].SetSelectedFilePath(tail.SelectedFilePath);
-                }
-            }
-            else if (rightShiftCount < 0)
-            {
-                for (int i = 0; i < -rightShiftCount; i++)
-                {
-                    var head = sourceList[0].GetCopyInstance();
-                    for (int j = 0; j < tailIndex; j++)
-                    {
-                        sourceList[j].UpdateBasePath(sourceList[j + 1].DirectoryPath);
-                        sourceList[j].SetSelectedFilePath(sourceList[j + 1].SelectedFilePath);
-                    }
-                    sourceList[tailIndex].UpdateBasePath(head.DirectoryPath);
-                    sourceList[tailIndex].SetSelectedFilePath(head.SelectedFilePath);
-                }
-            }
-#endif
-            //Debug.WriteLine($"Model: {list[0]}, {list[1]}, {list[2]}");
         }
 
         /// <summary>

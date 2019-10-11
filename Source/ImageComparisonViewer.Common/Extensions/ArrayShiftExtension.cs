@@ -2,63 +2,64 @@
 
 namespace ImageComparisonViewer.Common.Extensions
 {
-    public static class SpanShiftExtension
+#if false
+    public static class ArrayShiftExtension
     {
         /// <summary>
         /// コレクション要素を右周りシフト
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="span"></param>
-        private static Span<T> RightShiftOnce<T>(this Span<T> span)
+        /// <param name="array"></param>
+        private static T[] RightShiftOnce<T>(this T[] array)
         {
-            var tail = span[^1];
-            for (int i = span.Length - 1; i > 0; i--)
+            var tail = array[^1];
+            for (int i = array.Length - 1; i > 0; i--)
             {
-                span[i] = span[i - 1];
+                array[i] = array[i - 1];
             }
-            span[0] = tail;
+            array[0] = tail;
 
-            return span;
+            return array;
         }
 
         /// <summary>
         /// コレクション要素を左周りシフト
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="span"></param>
-        private static Span<T> LeftShiftOnce<T>(this Span<T> span)
+        /// <param name="array"></param>
+        private static T[] LeftShiftOnce<T>(this T[] array)
         {
-            var head = span[0];
-            for (int i = 0; i < span.Length - 1; i++)
+            var head = array[0];
+            for (int i = 0; i < array.Length - 1; i++)
             {
-                span[i] = span[i + 1];
+                array[i] = array[i + 1];
             }
-            span[^1] = head;
+            array[^1] = head;
 
-            return span;
+            return array;
         }
 
         /// <summary>
         /// コレクション要素を右周りに指定回数シフト
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="span"></param>
-        public static Span<T> RightShift<T>(this Span<T> span, int rightShift)
+        /// <param name="array"></param>
+        public static T[] RightShift<T>(this T[] array, int rightShift)
         {
             if (rightShift == 0)
             {
-                return span;
+                return array;
             }
             else if (rightShift < 0)
             {
-                return LeftShift(span, -rightShift);
+                return LeftShift(array, -rightShift);
             }
             else
             {
                 for (int i = 0; i < rightShift; i++)
-                    span = RightShiftOnce(span);
+                    array = RightShiftOnce(array);
 
-                return span;
+                return array;
             }
         }
 
@@ -66,25 +67,26 @@ namespace ImageComparisonViewer.Common.Extensions
         /// コレクション要素を左周りに指定回数シフト
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="span"></param>
-        public static Span<T> LeftShift<T>(this Span<T> span, int leftShift)
+        /// <param name="array"></param>
+        public static T[] LeftShift<T>(this T[] array, int leftShift)
         {
             if (leftShift == 0)
             {
-                return span;
+                return array;
             }
             else if (leftShift < 0)
             {
-                return RightShift(span, -leftShift);
+                return RightShift(array, -leftShift);
             }
             else
             {
                 for (int i = 0; i < leftShift; i++)
-                    span = LeftShiftOnce(span);
+                    array = LeftShiftOnce(array);
 
-                return span;
+                return array;
             }
         }
 
     }
+#endif
 }

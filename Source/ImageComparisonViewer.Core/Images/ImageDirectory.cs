@@ -7,10 +7,27 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ImageComparisonViewer.Core.Images
 {
+    /// <summary>
+    /// ImageDirectoryの中身だけを書き換えるためのSeed値
+    /// </summary>
+    internal readonly struct ImageDirectorySeed
+    {
+        public readonly string? DirectoryPath;
+        public readonly string? SelectedFilePath;
+
+        private ImageDirectorySeed(string? dir, string? file)
+        {
+            DirectoryPath = dir;
+            SelectedFilePath = file;
+        }
+
+        public static ImageDirectorySeed CreateInstance(ImageDirectory imageDirectory) =>
+            new ImageDirectorySeed(imageDirectory.DirectoryPath, imageDirectory.SelectedFilePath);
+    }
+
     /// <summary>
     /// 画像ディレクトリ
     /// </summary>
@@ -25,10 +42,7 @@ namespace ImageComparisonViewer.Core.Images
             set
             {
                 if (SetProperty(ref _directoryPath, value))
-                {
-                    // ディレクトリを更新する(◆この辺ごちゃってるので整理する)
-                    UpdateBasePath(value);
-                }
+                    UpdateBasePath(value);  // ディレクトリの更新処理
             }
         }
         private string? _directoryPath = default!;
@@ -39,31 +53,33 @@ namespace ImageComparisonViewer.Core.Images
         public string? SelectedFilePath
         {
             get => _selectedFilePath;
-            private set => SetProperty(ref _selectedFilePath, value);
+            set => SetProperty(ref _selectedFilePath, value);
         }
         private string? _selectedFilePath = default!;
 
         /// <summary>
         /// 画像ファイルたち
         /// </summary>
-        public ObservableCollection<ImageFile> ImageFiles { get; } = new ObservableCollection<ImageFile>();
+        public ReadOnlyObservableCollection<ImageFile> ImageFiles => new ReadOnlyObservableCollection<ImageFile>(_imageFiles);
+        private readonly ObservableCollection<ImageFile> _imageFiles = new ObservableCollection<ImageFile>();
 
         public ImageDirectory() { }
 
-        public ImageDirectory GetCopyInstance()
+        /// <summary>
+        /// 自クラスの内容をSeed値を元に更新する
+        /// </summary>
+        /// <param name="seed"></param>
+        internal void UpdateFromSeed(in ImageDirectorySeed seed)
         {
-            return new ImageDirectory()
-            {
-                DirectoryPath = DirectoryPath,
-                SelectedFilePath = SelectedFilePath
-            };
+            UpdateBasePath(seed.DirectoryPath);
+            SelectedFilePath = seed.SelectedFilePath;
         }
 
         /// <summary>
         /// 選択ディレクトリの更新
         /// </summary>
         /// <param name="sourcePath"></param>
-        public void UpdateBasePath(string? sourcePath)
+        private void UpdateBasePath(string? sourcePath)
         {
             if (sourcePath is null)
             {
@@ -74,12 +90,12 @@ namespace ImageComparisonViewer.Core.Images
             {
                 // ディレクトリ内の先頭ファイルを選択
                 DirectoryPath = sourcePath;
-                SelectedFilePath = sourcePath.GetFirstFilePathInDirectory();
+                SelectedFilePath = sourcePath.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
             }
             else if (File.Exists(sourcePath))
             {
-                DirectoryPath = sourcePath.GetDirectoryPath();
-                SetSelectedFilePath(sourcePath);
+                DirectoryPath = sourcePath.ToDirectoryPath();
+                SelectedFilePath = sourcePath;
             }
             else
             {
@@ -87,30 +103,11 @@ namespace ImageComparisonViewer.Core.Images
             }
 
             // ディレクトリ内の画像PATHを読み出し
-            ImageFiles.Clear();
+            _imageFiles.Clear();
             if (DirectoryPath != null)
             {
-                foreach (var imageFile in GetImageFiles(DirectoryPath))
-                    ImageFiles.Add(imageFile);
-            }
-        }
-
-        /// <summary>
-        /// 選択ファイルの更新
-        /// </summary>
-        /// <param name="path"></param>
-        public void SetSelectedFilePath(string? path)
-        {
-            SelectedFilePath = path;
-        }
-
-        private static IEnumerable<ImageFile> GetImageFiles(string directoryPath)
-        {
-            if (directoryPath is null) yield break; //=Enumerable.Empty<ImageFile>();
-
-            foreach (var path in Directory.EnumerateFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly))
-            {
-                yield return new ImageFile(path);
+                foreach (var imageFile in DirectoryPath.GetImageFilesPathInDirectory())
+                    _imageFiles.Add(new ImageFile(imageFile));
             }
         }
 
@@ -124,7 +121,7 @@ namespace ImageComparisonViewer.Core.Images
             // 画像が0個のときは0が通知される
             if (centerRatio == 0 || viewportRatio == 0) return;
 
-            var list = ImageFiles;
+            var list = _imageFiles;
             int length = list.Count;
             if (length == 0) return;
 
@@ -156,10 +153,9 @@ namespace ImageComparisonViewer.Core.Images
             foreach (var thumb in loadThumbs)
             {
                 //Debug.WriteLine($"Thumbnail Update() Load: {thumb.FilePath}");
-                //thumb.LoadImage();
 
-                // 完了を待たない(高速化)
-                Task.Run(() => thumb.LoadImage());
+                // Asyncの完了を待たない(高速化)
+                thumb.LoadImageAsync();
             }
 
             // 読み込み状況の表示テスト
@@ -175,7 +171,7 @@ namespace ImageComparisonViewer.Core.Images
         private void LoadedItemText()
         {
             var sb = new System.Text.StringBuilder();
-            foreach (var thumb in ImageFiles)
+            foreach (var thumb in _imageFiles)
             {
                 sb.Append(thumb.IsUnloadImage ? "□" : "■");
             }
@@ -187,7 +183,7 @@ namespace ImageComparisonViewer.Core.Images
         /// </summary>
         public void ReleaseResources()
         {
-            foreach (var imageFile in ImageFiles)
+            foreach (var imageFile in _imageFiles)
             {
                 imageFile.UnloadImage();
             }
@@ -200,7 +196,7 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (SelectedFilePath is null) return;
 
-            var next = ImageFiles.NextOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
+            var next = _imageFiles.NextOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
             SelectedFilePath = next?.FilePath;
         }
 
@@ -211,7 +207,7 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (SelectedFilePath is null) return;
 
-            var prev = ImageFiles.PrevOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
+            var prev = _imageFiles.PrevOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
             SelectedFilePath = prev?.FilePath;
         }
 

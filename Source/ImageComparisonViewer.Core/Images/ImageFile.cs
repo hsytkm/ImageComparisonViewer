@@ -2,6 +2,7 @@
 using Prism.Mvvm;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace ImageComparisonViewer.Core.Images
@@ -37,9 +38,9 @@ namespace ImageComparisonViewer.Core.Images
             FilePath = path;
         }
 
-        public void LoadImage()
+        public void LoadImageAsync()
         {
-            Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
+            Task.Run(() => Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
             //Debug.WriteLine($"Load Thumbnail: {FilePath}");
         }
 
