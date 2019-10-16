@@ -20,6 +20,7 @@ namespace ImageComparisonViewer.Core.Images
         /// </summary>
         public string FilePath { get; }
 
+        #region Thumbnail
         /// <summary>
         /// サムネイル画像(非読み込み時はnull)
         /// </summary>
@@ -30,24 +31,65 @@ namespace ImageComparisonViewer.Core.Images
         }
         private BitmapSource? _thumbnail;
 
-        public bool IsLoadImage => !(Thumbnail is null);
-        public bool IsUnloadImage => Thumbnail is null;
+        public bool IsLoadThumbnailImage => !(Thumbnail is null);
+        public bool IsUnloadThumbnailImage => Thumbnail is null;
+
+        public void LoadThumbnailImageAsync()
+        {
+            if (Thumbnail is null)
+            {
+                Task.Run(() => Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
+                //Debug.WriteLine($"Load Thumbnail: {FilePath}");
+            }
+        }
+
+        public void UnloadThumbnailImage()
+        {
+            Thumbnail = null;
+            //Debug.WriteLine($"Unload Thumbnail: {FilePath}");
+        }
+        #endregion
+
+        #region FullImage
+        /// <summary>
+        /// 主画像(非読み込み時はnull)
+        /// </summary>
+        public BitmapSource? FullImage
+        {
+            get => _fullImage;
+            private set => SetProperty(ref _fullImage, value);
+        }
+        private BitmapSource? _fullImage;
+
+        public async Task LoadFullImageAsync()
+        {
+            if (FullImage is null)
+            {
+                await Task.Run(() => FullImage = FilePath.ToBitmapImage());
+                //Debug.WriteLine($"Load FullImage: {FilePath}");
+            }
+        }
+
+        public void LoadFullImage()
+        {
+            if (FullImage is null)
+            {
+                FullImage = FilePath.ToBitmapImage();
+                //Debug.WriteLine($"Load FullImage: {FilePath}");
+            }
+        }
+
+        public void UnloadFullImage()
+        {
+            FullImage = null;
+            //Debug.WriteLine($"Unload FullImage: {FilePath}");
+        }
+        #endregion
 
         public ImageFile(string path)
         {
             FilePath = path;
         }
 
-        public void LoadImageAsync()
-        {
-            Task.Run(() => Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
-            //Debug.WriteLine($"Load Thumbnail: {FilePath}");
-        }
-
-        public void UnloadImage()
-        {
-            Thumbnail = null;
-            //Debug.WriteLine($"Unload Thumbnail: {FilePath}");
-        }
     }
 }

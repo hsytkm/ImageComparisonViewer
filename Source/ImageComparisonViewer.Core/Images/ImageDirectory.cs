@@ -7,6 +7,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace ImageComparisonViewer.Core.Images
 {
@@ -53,9 +55,23 @@ namespace ImageComparisonViewer.Core.Images
         public string? SelectedFilePath
         {
             get => _selectedFilePath;
-            set => SetProperty(ref _selectedFilePath, value);
+            set
+            {
+                if (SetProperty(ref _selectedFilePath, value))
+                    UpdateMainImageAsync(value);
+            }
         }
         private string? _selectedFilePath = default!;
+
+        /// <summary>
+        /// 選択中のファイル(未選択ならnull)
+        /// </summary>
+        public BitmapSource? SelectedImage
+        {
+            get => _selectedImage;
+            private set => SetProperty(ref _selectedImage, value);
+        }
+        private BitmapSource? _selectedImage;
 
         /// <summary>
         /// 画像ファイルたち
@@ -81,21 +97,22 @@ namespace ImageComparisonViewer.Core.Images
         /// <param name="sourcePath"></param>
         private void UpdateBasePath(string? sourcePath)
         {
+            string? selectedFilePath;
             if (sourcePath is null)
             {
                 DirectoryPath = null;
-                SelectedFilePath = null;
+                selectedFilePath = null;
             }
             else if (Directory.Exists(sourcePath))
             {
                 // ディレクトリ内の先頭ファイルを選択
                 DirectoryPath = sourcePath;
-                SelectedFilePath = sourcePath.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
+                selectedFilePath = sourcePath.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
             }
             else if (File.Exists(sourcePath))
             {
                 DirectoryPath = sourcePath.ToDirectoryPath();
-                SelectedFilePath = sourcePath;
+                selectedFilePath = sourcePath;
             }
             else
             {
@@ -109,6 +126,9 @@ namespace ImageComparisonViewer.Core.Images
                 foreach (var imageFile in DirectoryPath.GetImageFilesPathInDirectory())
                     _imageFiles.Add(new ImageFile(imageFile));
             }
+
+            // ImageFilesリストの更新後に設定する(◆ローカルルールはイマイチ)
+            SelectedFilePath = selectedFilePath;
         }
 
         /// <summary>
@@ -121,8 +141,7 @@ namespace ImageComparisonViewer.Core.Images
             // 画像が0個のときは0が通知される
             if (centerRatio == 0 || viewportRatio == 0) return;
 
-            var imageFiles = _imageFiles;
-            int length = imageFiles.Count;
+            int length = ImageFiles.Count;
             if (length == 0) return;
 
             //Debug.WriteLine($"Thumbnail Update() center={centerRatio:f2} viewport={viewportRatio:f2}");
@@ -138,24 +157,24 @@ namespace ImageComparisonViewer.Core.Images
             // 解放リスト(表示範囲外で読込み中)
             var unloadThumbs = Enumerable.Range(0, length)
                 .Where(x => !(start <= x && x <= end))
-                .Select(x => imageFiles[x])
-                .Where(x => x.IsLoadImage);
+                .Select(x => ImageFiles[x])
+                .Where(x => x.IsLoadThumbnailImage);
             foreach (var thumb in unloadThumbs)
             {
                 //Debug.WriteLine($"Thumbnail Update() Unload: {thumb.FilePath}");
-                thumb.UnloadImage();
+                thumb.UnloadThumbnailImage();
             }
 
             // 読込みリスト(表示範囲の未読込みを対象)
             var loadThumbs = Enumerable.Range(start, count)
-                .Select(x => imageFiles[x])
-                .Where(x => x.IsUnloadImage);
+                .Select(x => ImageFiles[x])
+                .Where(x => x.IsUnloadThumbnailImage);
             foreach (var thumb in loadThumbs)
             {
                 //Debug.WriteLine($"Thumbnail Update() Load: {thumb.FilePath}");
 
                 // Asyncの完了を待たない(高速化)
-                thumb.LoadImageAsync();
+                thumb.LoadThumbnailImageAsync();
             }
 
             // 読み込み状況の表示テスト
@@ -171,11 +190,37 @@ namespace ImageComparisonViewer.Core.Images
         private void LoadedItemText()
         {
             var sb = new System.Text.StringBuilder();
-            foreach (var thumb in _imageFiles)
+            foreach (var thumb in ImageFiles)
             {
-                sb.Append(thumb.IsUnloadImage ? "□" : "■");
+                sb.Append(thumb.IsUnloadThumbnailImage ? "□" : "■");
             }
             Debug.WriteLine(sb.ToString());
+        }
+
+        /// <summary>
+        /// 主画像の読み込み
+        /// </summary>
+        /// <param name="imagePath"></param>
+        private async void UpdateMainImageAsync(string? imagePath)
+        {
+            if (imagePath is null)
+            {
+                SelectedImage = null;
+                return;
+            }
+
+            var unloads = ImageFiles.Where(x => x.FilePath != imagePath);
+            foreach (var unload in unloads)
+            {
+                unload.UnloadFullImage();
+            }
+
+            var load = ImageFiles.FirstOrDefault(x => x.FilePath == imagePath);
+            if (load != null)
+            {
+                await load.LoadFullImageAsync();
+                SelectedImage = load.FullImage;
+            }
         }
 
         /// <summary>
@@ -183,9 +228,9 @@ namespace ImageComparisonViewer.Core.Images
         /// </summary>
         public void ReleaseResources()
         {
-            foreach (var imageFile in _imageFiles)
+            foreach (var imageFile in ImageFiles)
             {
-                imageFile.UnloadImage();
+                imageFile.UnloadThumbnailImage();
             }
         }
 
@@ -196,7 +241,7 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (SelectedFilePath is null) return;
 
-            var next = _imageFiles.NextOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
+            var next = ImageFiles.NextOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
             SelectedFilePath = next?.FilePath;
         }
 
@@ -207,7 +252,7 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (SelectedFilePath is null) return;
 
-            var prev = _imageFiles.PrevOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
+            var prev = ImageFiles.PrevOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
             SelectedFilePath = prev?.FilePath;
         }
 

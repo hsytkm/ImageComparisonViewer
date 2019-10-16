@@ -7,7 +7,6 @@ namespace ImageComparisonViewer.Common.Mvvm
 {
     public class BehaviorBase<T> : Behavior<T> where T : FrameworkElement
     {
-        #region field
         /// <summary>
         /// セットアップ状態
         /// </summary>
@@ -21,10 +20,8 @@ namespace ImageComparisonViewer.Common.Mvvm
         /// <summary>
         /// 対象オブジェクト
         /// </summary>
-        private WeakReference weakTarget = default!;
-        #endregion  // フィールド
+        private WeakReference? weakTarget;
 
-        #region method
         /// <summary>
         /// Changedハンドラ
         /// </summary>
@@ -32,56 +29,38 @@ namespace ImageComparisonViewer.Common.Mvvm
         {
             base.OnChanged();
 
-            //==== 関連オブジェクト有無判定 ====//
             var target = AssociatedObject;
             if (target != null)
             {
-                //==== Hook開始 ====//
                 HookupBehavior(target);
             }
             else
             {
-                //==== Hook解除 ====//
                 UnHookupBehavior();
             }
         }
 
         /// <summary>
-        /// ビヘイビアをHookする。
+        /// ビヘイビアをHookする
         /// </summary>
         /// <param name="target"></param>
         private void HookupBehavior(T target)
         {
-            //==== Hook状態判定 ====//
-            if (isHookedUp)
-            {
-                //-==- Hook中 -==-//
-                return;
-            }
+            if (isHookedUp) return;
 
-            //==== Hook開始 ====//
-            weakTarget = new WeakReference(target);
             isHookedUp = true;
+            weakTarget = new WeakReference(target);
             target.Unloaded += OnTargetUnloaded;
             target.Loaded += OnTargetLoaded;
-
-            //==== ビヘイビアのセットアップ ====//
-            SetupBehavior();
         }
 
         /// <summary>
-        /// ビヘイビアをUnhookする。
+        /// ビヘイビアをUnhookする
         /// </summary>
         private void UnHookupBehavior()
         {
-            //==== Hook状態判定 ====//
-            if (!isHookedUp)
-            {
-                //-==- 未Hook -==-//
-                return;
-            }
+            if (!isHookedUp) return;
 
-            //==== Hook解除 ====//
             isHookedUp = false;
             var target = AssociatedObject ?? (weakTarget?.Target as T);
             if (target != null)
@@ -89,9 +68,7 @@ namespace ImageComparisonViewer.Common.Mvvm
                 target.Unloaded -= OnTargetUnloaded;
                 target.Loaded -= OnTargetLoaded;
             }
-
-            //==== ビヘイビアのクリーンアップ ====//
-            CleanupBehavior();
+            weakTarget = null;
         }
 
         /// <summary>
@@ -101,8 +78,10 @@ namespace ImageComparisonViewer.Common.Mvvm
         /// <param name="e"></param>
         private void OnTargetLoaded(object sender, RoutedEventArgs e)
         {
-            //==== ビヘイビアのセットアップ ====//
-            SetupBehavior();
+            if (isSetup) return;
+
+            isSetup = true;
+            OnLoaded();
         }
 
         /// <summary>
@@ -112,41 +91,24 @@ namespace ImageComparisonViewer.Common.Mvvm
         /// <param name="e"></param>
         private void OnTargetUnloaded(object sender, RoutedEventArgs e)
         {
-            //==== ビヘイビアのクリーンアップ ====//
-            CleanupBehavior();
-        }
-
-        /// <summary>
-        /// セットアップ時の処理を行う。
-        /// </summary>
-        protected virtual void OnSetup() { }
-
-        /// <summary>
-        /// クリーンアップ時の処理を行う。
-        /// </summary>
-        protected virtual void OnCleanup() { }
-
-        /// <summary>
-        /// ビヘイビアのセットアップを行う。
-        /// </summary>
-        private void SetupBehavior()
-        {
-            if (isSetup) return;
-
-            isSetup = true;
-            OnSetup();
-        }
-
-        /// <summary>
-        /// ビヘイビアのクリーンアップを行う。
-        /// </summary>
-        private void CleanupBehavior()
-        {
             if (!isSetup) return;
 
             isSetup = false;
-            OnCleanup();
+            OnUnloaded();
         }
-        #endregion  // メソッド
+
+        /// <summary>
+        /// Behaviorの設定
+        /// </summary>
+        protected virtual void OnLoaded() { }
+
+        /// <summary>
+        /// Behaviorの解除
+        /// </summary>
+        protected virtual void OnUnloaded() { }
+
+        protected sealed override void OnAttached() => base.OnAttached();
+        protected sealed override void OnDetaching() => base.OnDetaching();
+
     }
 }

@@ -5,15 +5,15 @@ namespace ICV.Control.ThumbnailList.Behavior
 {
     class ListBoxSelectionBehavior : BehaviorBase<ListBox>
     {
-        protected override void OnAttached()
+        protected override void OnLoaded()
         {
-            base.OnAttached();
+            base.OnLoaded();
             AssociatedObject.SelectionChanged += AssociatedObject_SelectionChanged;
         }
 
-        protected override void OnDetaching()
+        protected override void OnUnloaded()
         {
-            base.OnDetaching();
+            base.OnUnloaded();
             AssociatedObject.SelectionChanged -= AssociatedObject_SelectionChanged;
         }
 

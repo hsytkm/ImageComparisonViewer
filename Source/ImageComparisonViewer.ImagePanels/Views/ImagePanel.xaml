@@ -13,8 +13,8 @@
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" >
 
-    <StackPanel Background="{StaticResource ActiveBackgroundBrushKey}"
-                AllowDrop="True" >
+    <Grid Background="{StaticResource ActiveBackgroundBrushKey}"
+          AllowDrop="True" >
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="Drop">
                 <r:EventToReactiveProperty ReactiveProperty="{Binding DropEvent, Mode=OneTime}">
@@ -22,6 +22,15 @@
                 </r:EventToReactiveProperty>
             </i:EventTrigger>
         </i:Interaction.Triggers>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
         <!--
     xmlns:ceab="clr-namespace:Control.ExplorerAddressBar;assembly=Control.ExplorerAddressBar"
@@ -37,13 +46,15 @@
         <ContentControl prism:RegionManager.RegionName="ThumbnailListRegion" />
         -->
 
-        <ContentControl x:Name="ExplolerAddressBar" />
+        <ContentControl Grid.Row="0" x:Name="ExplolerAddressBarControl" />
 
-        <ContentControl x:Name="ThumbnailList" />
+        <ContentControl Grid.Row="1" x:Name="ThumbnailListControl" />
 
-        <TextBlock Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
-        <TextBlock Text="{Binding SelectedImagePath.Value, Mode=OneWay}"/>
+        <TextBlock Grid.Row="2" Text="{Binding DirectoryPath.Value, Mode=OneWay}"/>
+        <TextBlock Grid.Row="3" Text="{Binding SelectedImagePath.Value, Mode=OneWay}"/>
+        <TextBlock Grid.Row="4" Text="{Binding ContentIndex, Mode=OneTime}" />
 
-        <TextBlock Text="{Binding ContentIndex, Mode=OneTime}" />
-    </StackPanel>
+        <ContentControl Grid.Row="5" x:Name="ZoomableImageControl" />
+
+    </Grid>
 </mvvm:DisposableUserControl>

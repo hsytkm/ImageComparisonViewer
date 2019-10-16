@@ -6,15 +6,15 @@ namespace ICV.Control.ExplorerAddressBar.Behaviors
 {
     class VisibilityFocusGetTextBoxBehavior : BehaviorBase<TextBox>
     {
-        protected override void OnSetup()
+        protected override void OnLoaded()
         {
-            base.OnSetup();
+            base.OnLoaded();
             AssociatedObject.IsVisibleChanged += AssociatedObject_IsVisibleChanged;
         }
 
-        protected override void OnCleanup()
+        protected override void OnUnloaded()
         {
-            base.OnCleanup();
+            base.OnUnloaded();
             AssociatedObject.IsVisibleChanged -= AssociatedObject_IsVisibleChanged;
         }
 

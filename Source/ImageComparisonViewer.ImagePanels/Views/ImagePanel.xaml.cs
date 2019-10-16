@@ -22,8 +22,9 @@ namespace ImageComparisonViewer.ImagePanels.Views
             InitializeComponent();
 
             var parameters = ImageViewParameterFactory.GetImageViewParameters(parameter);
-            ExplolerAddressBar.Content = container.Resolve<ExplorerAddressBar>(parameters);
-            ThumbnailList.Content = container.Resolve<ThumbnailList>(parameters);
+            ExplolerAddressBarControl.Content = container.Resolve<ExplorerAddressBar>(parameters);
+            ThumbnailListControl.Content = container.Resolve<ThumbnailList>(parameters);
+            //ZoomableImageControl.Content = container.Resolve<ZoomableImage>(parameters);
 
             // ↓↓Regionで管理しようとしたけど、各ImagePanelで名前が重複してダメっぽかった↓↓
             //var view = container.Resolve<ThumbnailList>();
