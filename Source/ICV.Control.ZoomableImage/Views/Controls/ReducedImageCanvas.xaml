@@ -1,0 +1,41 @@
+﻿<mvvm:DisposableUserControl
+    x:Class="ICV.Control.ZoomableImage.Views.Controls.ReducedImageCanvas"
+    xmlns:mvvm="clr-namespace:ImageComparisonViewer.Common.Mvvm;assembly=ImageComparisonViewer.Common"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    mc:Ignorable="d" 
+    d:DesignHeight="100" d:DesignWidth="100">
+
+    <Canvas HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="5,5,0,0"
+            Width="{Binding ElementName=ThumbImage, Path=ActualWidth}"
+            Height="{Binding ElementName=ThumbImage, Path=ActualHeight}" >
+
+        <Image x:Name="ThumbImage"
+               Width="100"
+               Stretch="Uniform" />
+            
+        <Path Fill="#7FFFFFFF">
+            <Path.Data>
+                <CombinedGeometry x:Name="CombinedGeometry"
+                                  GeometryCombineMode="Xor" />
+            </Path.Data>
+        </Path>
+
+        <Thumb x:Name="ThumbViewport"
+               MinHeight="4"
+               MinWidth="4" >
+            <Thumb.Template>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border BorderBrush="Red"
+                            BorderThickness="2"
+                            Background="Transparent" />
+                </ControlTemplate>
+            </Thumb.Template>
+        </Thumb>
+    </Canvas>
+
+</mvvm:DisposableUserControl>

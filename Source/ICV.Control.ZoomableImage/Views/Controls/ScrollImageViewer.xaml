@@ -1,0 +1,69 @@
+﻿<mvvm:DisposableUserControl
+    x:Class="ICV.Control.ZoomableImage.Views.Controls.ScrollImageViewer"
+    xmlns:mvvm="clr-namespace:ImageComparisonViewer.Common.Mvvm;assembly=ImageComparisonViewer.Common"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:vc="clr-namespace:ICV.Control.ZoomableImage.Views.Controls"
+    xmlns:vb="clr-namespace:ICV.Control.ZoomableImage.Views.Behaviors"
+    xmlns:vcnv="clr-namespace:ICV.Control.ZoomableImage.Views.Converters"
+    x:Name="root"
+    mc:Ignorable="d" 
+    d:DesignHeight="450" d:DesignWidth="800">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Styles/ImageScrollControlStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <vcnv:BooleansToVisibilityConverter x:Key="BooleansToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="MainScrollViewer"
+                  Style="{StaticResource ScrollViewerImageStyleKey}" >
+
+        <i:Interaction.Behaviors>
+            <!-- MouseWheel+ShiftでScrollViewerを左右に移動 -->
+            <vb:MouseHorizontalShiftBehavior />
+        </i:Interaction.Behaviors>
+
+        <Grid>
+            <Image x:Name="MainImage"
+                   Source="{Binding BitmapSource, ElementName=root, Mode=OneWay, NotifyOnTargetUpdated=True}" >
+                <i:Interaction.Behaviors>
+                    <!-- 画像ズーム時のスケーリング更新 -->
+                    <vb:ImageBitmapScalingBehavior />
+                </i:Interaction.Behaviors>
+            </Image>
+
+            <!-- 画像上のサンプリング枠 -->
+            <vc:ImageOverlapSamplingFrame BorderBrush="Cyan"
+                                          Width="{Binding ActualWidth, ElementName=MainImage, Mode=OneWay}"
+                                          Height="{Binding ActualHeight, ElementName=MainImage, Mode=OneWay}"
+                                          GroundPanelTopLeft="{Binding ContentViewRect.TopLeft, ElementName=root, Mode=OneWay}"
+                                          IsFrameInterlock="{Binding IsViewerInterlock, ElementName=root, Mode=OneWay}"
+                                          FrameRectRatio="{Binding ImageOverlapSamplingFrameRectRatio, ElementName=root, Mode=OneWayToSource}" >
+                <vc:ImageOverlapSamplingFrame.Style>
+                    <Style TargetType="{x:Type vc:ImageOverlapSamplingFrame}">
+                        <Setter Property="Visibility">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource BooleansToVisibilityConverter}">
+                                    <MultiBinding.Bindings>
+                                        <Binding Path="IsVisibleImageSamplingFrame" ElementName="root" Mode="OneWay" />
+                                        <Binding Path="IsLoadImage" ElementName="root" Mode="OneWay" />
+                                    </MultiBinding.Bindings>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </vc:ImageOverlapSamplingFrame.Style>
+            </vc:ImageOverlapSamplingFrame>
+            
+        </Grid>
+           
+    </ScrollViewer>
+
+</mvvm:DisposableUserControl>

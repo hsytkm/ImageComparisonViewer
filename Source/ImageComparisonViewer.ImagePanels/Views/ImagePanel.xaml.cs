@@ -1,5 +1,6 @@
 using ICV.Control.ExplorerAddressBar;
 using ICV.Control.ThumbnailList;
+using ICV.Control.ZoomableImage.Views;
 using ImageComparisonViewer.Common.Mvvm;
 using ImageComparisonViewer.ImagePanels.ViewModels;
 using Prism.Ioc;
@@ -24,7 +25,7 @@ namespace ImageComparisonViewer.ImagePanels.Views
             var parameters = ImageViewParameterFactory.GetImageViewParameters(parameter);
             ExplolerAddressBarControl.Content = container.Resolve<ExplorerAddressBar>(parameters);
             ThumbnailListControl.Content = container.Resolve<ThumbnailList>(parameters);
-            //ZoomableImageControl.Content = container.Resolve<ZoomableImage>(parameters);
+            ZoomableImageControl.Content = container.Resolve<ZoomableImage>(parameters);
 
             // ↓↓Regionで管理しようとしたけど、各ImagePanelで名前が重複してダメっぽかった↓↓
             //var view = container.Resolve<ThumbnailList>();

@@ -1,0 +1,44 @@
+﻿<mvvm:DisposableUserControl
+    x:Class="ICV.Control.ZoomableImage.Views.Controls.ImageOverlapSamplingFrame"
+    xmlns:mvvm="clr-namespace:ImageComparisonViewer.Common.Mvvm;assembly=ImageComparisonViewer.Common"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:vb="clr-namespace:ICV.Control.ZoomableImage.Views.Behaviors"
+    xmlns:vcnv="clr-namespace:ICV.Control.ZoomableImage.Views.Converters"
+    x:Name="root"
+    HorizontalAlignment="Left"
+    VerticalAlignment="Top"
+    mc:Ignorable="d" 
+    d:DesignHeight="50" d:DesignWidth="50">
+
+    <UserControl.Resources>
+        <vcnv:PointToMarginConverter x:Key="PointToMarginConverter" />
+    </UserControl.Resources>
+
+    <!--
+            Background="Red" Opacity="0.5"
+    -->
+    <Canvas HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="{Binding GroundPanelTopLeft, ElementName=root, Converter={StaticResource PointToMarginConverter}, Mode=OneWay}"
+            Width="{Binding ActualWidth, ElementName=root, Mode=OneWay}"
+            Height="{Binding ActualHeight, ElementName=root, Mode=OneWay}" >
+
+        <Border MinWidth="5"
+                MinHeight="5"
+                BorderBrush="{Binding BorderBrush, ElementName=root, Mode=OneWay}"
+                Background="Transparent"
+                BorderThickness="2" >
+
+            <i:Interaction.Behaviors>
+                <vb:MouseCaptureBehavior />
+                <vb:MovableFrameBehavior FrameRectRatio="{Binding FrameRectRatio, ElementName=root, Mode=OneWayToSource}"
+                                         IsFrameInterlock="{Binding IsFrameInterlock, ElementName=root, Mode=OneWay}" />
+            </i:Interaction.Behaviors>
+        </Border>
+
+    </Canvas>
+</mvvm:DisposableUserControl>

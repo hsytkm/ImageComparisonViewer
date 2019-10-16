@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj" />
+    <ProjectReference Include="..\ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,59 @@
+﻿<Window x:Class="ICV.Control.ZoomableImage.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:v="clr-namespace:ICV.Control.ZoomableImage.Views"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        mc:Ignorable="d"
+        Title="ZoomThumbInterlocking2"
+        Height="400" Width="650">
+
+    <Grid AllowDrop="True" >
+        <!--
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="10,5,0,0" Orientation="Horizontal">
+            <CheckBox Margin="0,0,10,0"
+                      IsChecked="{Binding IsImageViewerInterlock.Value, Mode=TwoWay}"
+                      Content="各画像表示(枠)の連動フラグ" />
+
+            <CheckBox Margin="0,0,10,0"
+                      IsChecked="{Binding CanVisibleReducedImage.Value, Mode=TwoWay}"
+                      Content="縮小画像の表示フラグ" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Margin="10,5,0,0" Orientation="Horizontal">
+            <CheckBox Margin="0,0,10,0"
+                      IsChecked="{Binding IsVisibleImageOverlapSamplingFrame.Value, Mode=TwoWay}"
+                      Content="サンプリング枠の表示フラグ" />
+
+            <CheckBox Margin="0,0,10,0"
+                      IsChecked="{Binding IsSamplingFrameOnImage.Value, Mode=TwoWay}"
+                      Content="枠レイヤー：画像上" />
+        </StackPanel>
+
+        <Grid Grid.Row="2" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ContentControl Grid.Column="0"
+                            prism:RegionManager.RegionName="ImageScrollControl0" />
+
+            <Grid Grid.Column="1" Background="SkyBlue" Width="4" />
+
+            <ContentControl Grid.Column="2"
+                            prism:RegionManager.RegionName="ImageScrollControl1" />
+        </Grid>
+        -->
+    </Grid>
+
+</Window>
