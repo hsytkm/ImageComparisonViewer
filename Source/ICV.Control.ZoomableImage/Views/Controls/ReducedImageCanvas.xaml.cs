@@ -63,6 +63,12 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
                     if (scrollViewer.TryGetChildControl<Image>(out var mainImage))
                     {
+                        // Loaded時点で画像が読み込まれてたら取り込んでおく
+                        if (mainImage.Source is BitmapImage bitmapImage && bitmapImage != null)
+                        {
+                            ThumbImage.Source = bitmapImage;
+                        }
+
                         // 主画像の更新時に縮小画像も連動して更新
                         mainImage.TargetUpdatedAsObservable()
                             .Select(e => e.OriginalSource as Image)

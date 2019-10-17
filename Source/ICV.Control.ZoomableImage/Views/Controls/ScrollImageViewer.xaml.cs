@@ -385,29 +385,20 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                     };
                 }
 
-                // 起動時に画像がある場合の処理　◆無茶苦茶でヤバい
+                // 起動時に画像がある場合の処理
                 MainImage.Loaded += (sender, e) =>
                 {
-                    if (!(e.OriginalSource is Image image)) return;
-                    ImageSourcePixelSize.Value = ViewHelperLocal.GetImageSourcePixelSize(image);
-                    IsLoadImage = true;     // 画像読み込み済みフラグ
+                    // 表示元画像のサイズ更新
+                    UpdateImageSourcePixelSize(e);
 
-                    if (!(sender is FrameworkElement fe)) return;
-                    ImageViewActualSize.Value = new Size(fe.ActualWidth, fe.ActualHeight);
-                    MainImage_SizeChanged(ImageViewActualSize.Value);
+                    // 画像コントロールのサイズ更新
+                    if (sender is FrameworkElement fe)
+                    {
+                        UpdateImageViewActualSize(fe.ActualWidth, fe.ActualHeight);
+                    }
                 };
-
-                MainImage.TargetUpdated += (sender, e) =>
-                {
-                    if (!(e.OriginalSource is Image image)) return;
-                    ImageSourcePixelSize.Value = ViewHelperLocal.GetImageSourcePixelSize(image);
-                    IsLoadImage = true;     // 画像読み込み済みフラグ
-                };
-                MainImage.SizeChanged += (sender, e) =>
-                {
-                    ImageViewActualSize.Value = e.NewSize; //=ActualSize
-                    MainImage_SizeChanged(ImageViewActualSize.Value);
-                };
+                MainImage.TargetUpdated += (sender, e) => UpdateImageSourcePixelSize(e);
+                MainImage.SizeChanged += (sender, e) => UpdateImageViewActualSize(e.NewSize.Width, e.NewSize.Height); // e.NewSize=ActualSize
                 MainImage.MouseMove += (sender, e) =>
                 {
                     static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
@@ -449,15 +440,19 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
             // ScrollContentの開始位置とサイズ(TopLeft:全体表示なら設定されて、拡大画面なら0になる)
             ScrollContentActualSize
-                .CombineLatest(ImageViewActualSize, (contentSize, imageSize) => (contentSize, imageSize))
+                .CombineLatest(ImageViewActualSize,
+                    (contentSize, imageSize) => (contentSize, imageSize))
                 .Subscribe(x =>
                 {
                     double left = 0, top = 0;
 
                     // 画像全体表示ならLeft/Topを計算
-                    if (x.contentSize.Width >= x.imageSize.Width && x.contentSize.Height >= x.imageSize.Height)
+                    if (Math.Round(x.contentSize.Width) >= Math.Round(x.imageSize.Width))
                     {
                         left = (x.contentSize.Width - x.imageSize.Width) / 2;
+                    }
+                    if (Math.Round(x.contentSize.Height) >= Math.Round(x.imageSize.Height))
+                    {
                         top = (x.contentSize.Height - x.imageSize.Height) / 2;
                     }
 
@@ -472,7 +467,8 @@ namespace ICV.Control.ZoomableImage.Views.Controls
             #region ImageZoomMag
 
             // ズーム倍率変更
-            ImageZoomMag.CombineLatest(ImageSourcePixelSize, ScrollContentActualSize,
+            ImageZoomMag
+                .CombineLatest(ImageSourcePixelSize, ScrollContentActualSize,
                     (mag, imageSourceSize, scrollContentSize) => (mag, imageSourceSize, scrollContentSize))
                 .Subscribe(x =>
                 {
@@ -587,10 +583,11 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
             // 標準スクロールバー操作による移動
             ImageScrollOffsetRatio
-                .CombineLatest(ScrollContentActualSize, ImageViewActualSize, (offset, sview, iview) => (offset, sview, iview))
+                .CombineLatest(ScrollContentActualSize, ImageViewActualSize,
+                    (offset, sview, iview) => (offset, sview, iview))
                 .Subscribe(x =>
                 {
-                    double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
+                    static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
 
                     var scrollViewer = MainScrollViewer;
 
@@ -652,6 +649,42 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                     ImageScrollOffsetRatio.Value =
                         ScrollOffsetRequest.GetInstanceWithInterlocked(ImageScrollOffsetRatio.Value.CenterRatio, vecRatio);
                 })
+                .AddTo(CompositeDisposable);
+
+            #endregion
+
+            #region ImageViewSizeChanged
+
+            // ズーム倍率の更新
+            ImageViewActualSize
+                .CombineLatest(ImageSourcePixelSize, 
+                    (imageViewSize, imageSourceSize) => (imageViewSize, imageSourceSize))
+                .Where(x => x.imageViewSize.IsValidValue() && x.imageSourceSize.IsValidValue())
+                .Subscribe(x =>
+                {
+                    // ズーム倍率プロパティの更新
+                    var magRatio = GetCurrentZoomMagRatio(x.imageViewSize, x.imageSourceSize);
+                    ZoomPayload = new ImageZoomPayload(ImageZoomMag.Value.IsEntire, magRatio);
+                })
+                .AddTo(CompositeDisposable);
+
+            // 縮小画像の更新
+            ImageViewActualSize
+                .CombineLatest(ScrollContentActualSize,
+                    (imageViewSize, scrollContentSize) => (imageViewSize, scrollContentSize))
+                .Subscribe(x =>
+                {
+                    UpdateReducedImageVisibility(x.imageViewSize, x.scrollContentSize);
+                })
+                .AddTo(CompositeDisposable);
+
+            #endregion
+
+            #region IsLoadImage
+
+            // 画像読み込み済みフラグ
+            ImageSourcePixelSize
+                .Subscribe(x => IsLoadImage = (x.Width != 0 && x.Height != 0))
                 .AddTo(CompositeDisposable);
 
             #endregion
@@ -734,20 +767,24 @@ namespace ICV.Control.ZoomableImage.Views.Controls
             GetZoomMagRatio(imageViewSize, imageSourceSize);
 
         // 引数サイズのズーム倍率を求める
-        private static double GetZoomMagRatio(in Size newSize, in Size baseSize) =>
-            Math.Min(newSize.Width / baseSize.Width, newSize.Height / baseSize.Height);
+        private static double GetZoomMagRatio(in Size newSize, in Size baseSize)
+        {
+            if (baseSize.Width == 0) throw new DivideByZeroException(nameof(Width));
+            if (baseSize.Height == 0) throw new DivideByZeroException(nameof(Height));
+            return Math.Min(newSize.Width / baseSize.Width, newSize.Height / baseSize.Height);
+        }
 
         #endregion
 
         #region ImageSizeChanged
 
-        // 画像のサイズ変更(ズーム操作)
-        private void MainImage_SizeChanged(in Size imageViewActualSize)
+        // 縮小画像の表示更新
+        private void UpdateReducedImageVisibility(in Size imageViewActualSize, in Size scrollContentActualSize)
         {
             // 全画面表示よりもズームしてるかフラグ(e.NewSize == Size of MainImage)
             // 小数点以下がちょいずれして意図通りの判定にならないことがあるので整数化する
-            bool isZoomOverEntire = (Math.Floor(imageViewActualSize.Width) > Math.Floor(ScrollContentActualSize.Value.Width)
-                || Math.Floor(imageViewActualSize.Height) > Math.Floor(ScrollContentActualSize.Value.Height));
+            bool isZoomOverEntire = (Math.Round(imageViewActualSize.Width) > Math.Round(scrollContentActualSize.Width)
+                || Math.Round(imageViewActualSize.Height) > Math.Round(scrollContentActualSize.Height));
 
             // 全画面よりズームインしてたら縮小画像を表示
             IsVisibleReducedImage = isZoomOverEntire;
@@ -757,10 +794,26 @@ namespace ICV.Control.ZoomableImage.Views.Controls
             {
                 ImageScrollOffsetRatio.Value = ScrollOffsetRequest.GetDefaultInstance();
             }
+        }
 
-            // ズーム倍率プロパティの更新
-            var magRatio = GetCurrentZoomMagRatio(imageViewActualSize, ImageSourcePixelSize.Value);
-            ZoomPayload = new ImageZoomPayload(ImageZoomMag.Value.IsEntire, magRatio);
+        // 表示元画像のサイズ更新
+        private void UpdateImageSourcePixelSize(RoutedEventArgs e)
+        {
+            var size = default(Size);
+            if (e.OriginalSource is Image image && image.Source is BitmapSource source)
+            {
+                size = new Size(source.PixelWidth, source.PixelHeight);
+            }
+            ImageSourcePixelSize.Value = size;
+        }
+
+        // 表示元画像のサイズ更新
+        private void UpdateImageViewActualSize(double width, double height)
+        {
+            if (width.IsValidValue() && height.IsValidValue())
+            {
+                ImageViewActualSize.Value = new Size(Math.Round(width), Math.Round(height));
+            }
         }
 
         #endregion
@@ -782,7 +835,7 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                 // ズーム表示への切り替えならスクロールバーを移動(ImageViewSizeを変更した後に実施する)
                 if (ImageViewActualSize.Value.IsValidValue())
                 {
-                    double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
+                    static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
 
                     // 親ScrollViewerから子Imageまでのサイズ
                     var imageControlSizeOffset = new Size(

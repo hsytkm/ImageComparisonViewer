@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 
 namespace ICV.Control.ZoomableImage.Views.Common
 {
@@ -9,12 +7,6 @@ namespace ICV.Control.ZoomableImage.Views.Common
     {
         public static Size GetControlActualSize(FrameworkElement fe) =>
             (fe is null) ? default : new Size(fe.ActualWidth, fe.ActualHeight);
-
-        public static Size GetImageSourcePixelSize(Image image)
-        {
-            if (!(image?.Source is BitmapSource source)) return default;
-            return new Size(source.PixelWidth, source.PixelHeight);
-        }
 
         public static bool IsValidValue(this double d)
         {
