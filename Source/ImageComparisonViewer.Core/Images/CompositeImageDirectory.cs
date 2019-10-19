@@ -18,7 +18,7 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>
         /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
         /// </summary>
-        public IReadOnlyList<ImageDirectory> ImageDirectries { get; } =
+        public IList<ImageDirectory> ImageDirectries { get; } =
             new List<ImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory()));
 
         public CompositeImageDirectory() { }
@@ -33,13 +33,14 @@ namespace ImageComparisonViewer.Core.Images
             if (baseIndex >= ImageDirectries.Count)
                 throw new ArgumentOutOfRangeException(nameof(baseIndex));
 
+            // ドロップPATH(ディレクトリPATHかも)をファイルPATHに変換
             var filesPath = droppedPaths.Select(x => x.ToImagePath()).ToArray();
             var length = Math.Min(filesPath.Length, ImageDirectries.Count);
 
             for (int i = 0; i < length; i++)
             {
                 int index = (baseIndex + i) % ImageDirectries.Count;
-                ImageDirectries[index].DirectoryPath = filesPath[i];
+                ImageDirectries[index].SelectedFilePath = filesPath[i];
             }
         }
 
@@ -61,15 +62,29 @@ namespace ImageComparisonViewer.Core.Images
             // 周回する分は捨てる
             rightShiftCount %= contentCount;
 
-            if (rightShiftCount != 0)
+            // このメソッド呼ばれてるときはViewからObserveされていないのでコレクションを入れ替え
+            if (rightShiftCount > 0)
             {
-                // 対象画像数のみ回転させる
-                var seeds = sourceList.Select(x => ImageDirectorySeed.CreateInstance(x)).ToArray();
-                Span<ImageDirectorySeed> sortedSeeds = seeds.AsSpan().Slice(0, contentCount).RightShift(rightShiftCount);
-
-                for (int i = 0; i < sortedSeeds.Length; i++)
+                for (int i = 0; i < rightShiftCount; i++)
                 {
-                    sourceList[i].UpdateFromSeed(sortedSeeds[i]);
+                    var tail = sourceList[tailIndex];
+                    for (int j = tailIndex; j > 0; j--)
+                    {
+                        sourceList[j] = sourceList[j - 1];
+                    }
+                    sourceList[0] = tail;
+                }
+            }
+            else if (rightShiftCount < 0)
+            {
+                for (int i = 0; i < -rightShiftCount; i++)
+                {
+                    var head = sourceList[0];
+                    for (int j = 0; j < tailIndex; j++)
+                    {
+                        sourceList[j] = sourceList[j + 1];
+                    }
+                    sourceList[tailIndex] = head;
                 }
             }
         }

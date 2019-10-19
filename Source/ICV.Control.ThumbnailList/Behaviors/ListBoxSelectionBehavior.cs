@@ -9,6 +9,9 @@ namespace ICV.Control.ThumbnailList.Behavior
         {
             base.OnLoaded();
             AssociatedObject.SelectionChanged += AssociatedObject_SelectionChanged;
+
+            // x画面切り替えだとLoaded時点で画像選択されていることがあるので移動する
+            ScrollIntoView(AssociatedObject);
         }
 
         protected override void OnUnloaded()
@@ -17,25 +20,16 @@ namespace ICV.Control.ThumbnailList.Behavior
             AssociatedObject.SelectionChanged -= AssociatedObject_SelectionChanged;
         }
 
-        // 選択中アイテムの番号バッファ(選択中アイテムが消されたときの再選択用)
-        //private int _selectedIndexBuffer;
-
-        private void AssociatedObject_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private static void AssociatedObject_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is ListBox listBox)) return;
 
-#if false
-            // 選択中アイテムが消されたときの再選択
-            if (listBox.SelectedItem == null && listBox.Items.Count > 0)
-            {
-                static int clip(int v, int max) => (v <= 0) ? 0 : (max < v ? max : v);
-                var newIndex = clip(_selectedIndexBuffer, listBox.Items.Count - 1);
-                listBox.SelectedItem = listBox.Items[newIndex];
-            }
-            _selectedIndexBuffer = listBox.SelectedIndex;
-#endif
+            ScrollIntoView(listBox);
+        }
 
-            // 選択項目まで表示をスクロール
+        // 選択項目まで表示をスクロール
+        private static void ScrollIntoView(ListBox listBox)
+        {
             listBox.ScrollIntoView(listBox.SelectedItem);
         }
 

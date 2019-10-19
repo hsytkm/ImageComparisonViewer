@@ -10,7 +10,7 @@ namespace ImageComparisonViewer.Core.Images
     /// <summary>
     /// 画像ファイル
     /// </summary>
-    public class ImageFile : BindableBase
+    public class ImageFile : BindableBase, IDisposable
     {
         // サムネイルの最大幅
         private const int ThumbnailWidthMax = 80;
@@ -34,11 +34,11 @@ namespace ImageComparisonViewer.Core.Images
         public bool IsLoadThumbnailImage => !(Thumbnail is null);
         public bool IsUnloadThumbnailImage => Thumbnail is null;
 
-        public void LoadThumbnailImageAsync()
+        public async Task LoadThumbnailImageAsync()
         {
             if (Thumbnail is null)
             {
-                Task.Run(() => Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
+                await Task.Run(() => Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
                 //Debug.WriteLine($"Load Thumbnail: {FilePath}");
             }
         }
@@ -73,15 +73,6 @@ namespace ImageComparisonViewer.Core.Images
             }
         }
 
-        public void LoadFullImage()
-        {
-            if (FullImage is null)
-            {
-                FullImage = FilePath.ToBitmapImage();
-                //Debug.WriteLine($"Load FullImage: {FilePath}");
-            }
-        }
-
         public void UnloadFullImage()
         {
             if (FullImage != null)
@@ -95,6 +86,11 @@ namespace ImageComparisonViewer.Core.Images
         public ImageFile(string path)
         {
             FilePath = path;
+        }
+
+        public void Dispose()
+        {
+            //Debug.WriteLine($"Dispose: {FilePath}");
         }
 
     }
