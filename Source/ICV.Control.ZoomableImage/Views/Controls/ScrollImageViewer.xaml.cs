@@ -5,6 +5,7 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -161,19 +162,30 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
         #endregion
 
-        #region BitmapSourceProperty(OneWay)
+        #region ImageSourceProperty(OneWay/Inherits)
 
-        // ソース画像
-        private static readonly DependencyProperty BitmapSourceProperty =
-            DependencyProperty.Register(
-                nameof(BitmapSource),
-                typeof(BitmapSource),
-                SelfType);
+        // ソース画像は親から継承する
+        private static readonly DependencyProperty ImageSourceProperty =
+            ZoomableImageGrid.ImageSourceProperty.AddOwner(SelfType,
+                new FrameworkPropertyMetadata(default,
+                    FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits));
 
-        public BitmapSource BitmapSource
+        public BitmapSource ImageSource
         {
-            get => (BitmapSource)GetValue(BitmapSourceProperty);
-            set => SetValue(BitmapSourceProperty, value);
+            get => (BitmapSource)GetValue(ImageSourceProperty);
+            set => SetValue(ImageSourceProperty, value);
+        }
+
+        // 元画像の読込み中フラグ
+        internal static readonly DependencyProperty IsLoadingImageProperty =
+            ZoomableImageGrid.IsLoadingImageProperty.AddOwner(SelfType,
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.Inherits));
+
+        public bool IsLoadingImage
+        {
+            get => (bool)GetValue(IsLoadingImageProperty);
+            set => SetValue(IsLoadingImageProperty, value);
         }
 
         #endregion
@@ -243,23 +255,6 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
         #endregion
 
-        #region IsLoadImageProperty(OneWayToSource)
-
-        // 画像の読み込み済みフラグ
-        private static readonly DependencyProperty IsLoadImageProperty =
-            DependencyProperty.Register(
-                nameof(IsLoadImage),
-                typeof(bool),
-                SelfType);
-
-        public bool IsLoadImage
-        {
-            get => (bool)GetValue(IsLoadImageProperty);
-            set => SetValue(IsLoadImageProperty, value);
-        }
-
-        #endregion
-
         #region IsVisibleReducedImageProperty(OneWayToSource)
 
         // 縮小画像の表示切り替えフラグ(画像の全体表示中は非表示)
@@ -281,10 +276,7 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
         // View画像上のカーソル位置(画像Pixel座標系)
         private static readonly DependencyProperty ImageCursorPointProperty =
-            DependencyProperty.Register(
-                nameof(ImageCursorPoint),
-                typeof(Point),
-                SelfType);
+            DependencyProperty.Register(nameof(ImageCursorPoint), typeof(Point), SelfType);
 
         public Point ImageCursorPoint
         {
@@ -294,19 +286,19 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
         #endregion
 
-        #region IsVisibleImageSamplingFrameProperty(OneWay)
+        #region IsVisibleSamplingFrameProperty(OneWay)
 
         // サンプリング枠の表示フラグ
-        private static readonly DependencyProperty IsVisibleImageSamplingFrameProperty =
+        private static readonly DependencyProperty IsVisibleSamplingFrameProperty =
             DependencyProperty.Register(
-                nameof(IsVisibleImageSamplingFrame),
+                nameof(IsVisibleSamplingFrame),
                 typeof(bool),
                 SelfType);
 
-        public bool IsVisibleImageSamplingFrame
+        public bool IsVisibleSamplingFrame
         {
-            get => (bool)GetValue(IsVisibleImageSamplingFrameProperty);
-            set => SetValue(IsVisibleImageSamplingFrameProperty, value);
+            get => (bool)GetValue(IsVisibleSamplingFrameProperty);
+            set => SetValue(IsVisibleSamplingFrameProperty, value);
         }
 
         #endregion
@@ -346,7 +338,7 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                         {
                             //Debug.WriteLine($"FrameRect1: {rectRatio.X:f3}  {rectRatio.Y:f3}  {rectRatio.Width:f3}  {rectRatio.Height:f3} ");
                             var rect = rectRatio;
-                            rect.Scale(siViewer.BitmapSource.PixelWidth, siViewer.BitmapSource.PixelHeight);
+                            rect.Scale(siViewer.ImageSource.PixelWidth, siViewer.ImageSource.PixelHeight);
                             siViewer.ImageOverlapSamplingFrameRect = rect.Round().MinLength(1.0);
                         }
                     }));
@@ -356,6 +348,8 @@ namespace ICV.Control.ZoomableImage.Views.Controls
             get => (Rect)GetValue(ImageOverlapSamplingFrameRectRatioProperty);
             set => SetValue(ImageOverlapSamplingFrameRectRatioProperty, value);
         }
+
+        public static DependencyProperty ImageSourceProperty1 => ImageSourceProperty;
 
         #endregion
 
@@ -399,24 +393,6 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                 };
                 MainImage.TargetUpdated += (sender, e) => UpdateImageSourcePixelSize(e);
                 MainImage.SizeChanged += (sender, e) => UpdateImageViewActualSize(e.NewSize.Width, e.NewSize.Height); // e.NewSize=ActualSize
-                MainImage.MouseMove += (sender, e) =>
-                {
-                    static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
-
-                    // 原画像のピクセル位置を返す
-                    if (ImageViewActualSize.Value.IsValidValue())
-                    {
-                        var cursorPoint = e.GetPosition((IInputElement)sender);
-                        var ox = Math.Floor(cursorPoint.X * ImageSourcePixelSize.Value.Width / (ImageViewActualSize.Value.Width - 1));
-                        var x = clip(ox, 0, ImageSourcePixelSize.Value.Width - 1);
-                        var oy = Math.Floor(cursorPoint.Y * ImageSourcePixelSize.Value.Height / (ImageViewActualSize.Value.Height - 1));
-                        var y = clip(oy, 0, ImageSourcePixelSize.Value.Height - 1);
-
-                        //Debug.WriteLine($"({ImageSourcePixelSize.Value.Width}, {ImageSourcePixelSize.Value.Height})  ({ImageViewActualSize.Value.Width}, {ImageViewActualSize.Value.Height})  ({cursorPoint.X}, {cursorPoint.Y})  ({ox}, {oy})  ({x}, {y})");
-
-                        ImageCursorPoint = new Point(x, y);
-                    }
-                };
 
                 if (VisualTreeHelper.GetParent(this) is Panel parentPanel)
                 {
@@ -438,27 +414,17 @@ namespace ICV.Control.ZoomableImage.Views.Controls
 
             #region ContentViewRect
 
-            // ScrollContentの開始位置とサイズ(TopLeft:全体表示なら設定されて、拡大画面なら0になる)
+            // UIサイズ変更
             ScrollContentActualSize
                 .CombineLatest(ImageViewActualSize,
-                    (contentSize, imageSize) => (contentSize, imageSize))
+                    (scrollContentSize, imageViewSize) => (scrollContentSize, imageViewSize))
                 .Subscribe(x =>
                 {
-                    double left = 0, top = 0;
+                    // ScrollContentの開始位置とサイズ(TopLeft:全体表示なら設定されて、拡大画面なら0になる)
+                    UpdateContentViewRect(x.imageViewSize, x.scrollContentSize);
 
-                    // 画像全体表示ならLeft/Topを計算
-                    if (Math.Round(x.contentSize.Width) >= Math.Round(x.imageSize.Width))
-                    {
-                        left = (x.contentSize.Width - x.imageSize.Width) / 2;
-                    }
-                    if (Math.Round(x.contentSize.Height) >= Math.Round(x.imageSize.Height))
-                    {
-                        top = (x.contentSize.Height - x.imageSize.Height) / 2;
-                    }
-
-                    double width = Math.Min(x.contentSize.Width, x.imageSize.Width);
-                    double height = Math.Min(x.contentSize.Height, x.imageSize.Height);
-                    ContentViewRect = new Rect(left, top, width, height);
+                    // 縮小画像の更新
+                    UpdateReducedImageVisibility(x.imageViewSize, x.scrollContentSize);
                 })
                 .AddTo(CompositeDisposable);
 
@@ -668,25 +634,6 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                 })
                 .AddTo(CompositeDisposable);
 
-            // 縮小画像の更新
-            ImageViewActualSize
-                .CombineLatest(ScrollContentActualSize,
-                    (imageViewSize, scrollContentSize) => (imageViewSize, scrollContentSize))
-                .Subscribe(x =>
-                {
-                    UpdateReducedImageVisibility(x.imageViewSize, x.scrollContentSize);
-                })
-                .AddTo(CompositeDisposable);
-
-            #endregion
-
-            #region IsLoadImage
-
-            // 画像読み込み済みフラグ
-            ImageSourcePixelSize
-                .Subscribe(x => IsLoadImage = (x.Width != 0 && x.Height != 0))
-                .AddTo(CompositeDisposable);
-
             #endregion
 
         }
@@ -777,6 +724,26 @@ namespace ICV.Control.ZoomableImage.Views.Controls
         #endregion
 
         #region ImageSizeChanged
+
+        // ScrollContentの開始位置とサイズ(TopLeft:全体表示なら設定されて、拡大画面なら0になる)
+        private void UpdateContentViewRect(in Size imageViewActualSize, in Size scrollContentActualSize)
+        {
+            double left = 0, top = 0;
+
+            // 画像全体表示ならLeft/Topを計算
+            if (Math.Round(scrollContentActualSize.Width) >= Math.Round(imageViewActualSize.Width))
+            {
+                left = (scrollContentActualSize.Width - imageViewActualSize.Width) / 2;
+            }
+            if (Math.Round(scrollContentActualSize.Height) >= Math.Round(imageViewActualSize.Height))
+            {
+                top = (scrollContentActualSize.Height - imageViewActualSize.Height) / 2;
+            }
+
+            double width = Math.Min(scrollContentActualSize.Width, imageViewActualSize.Width);
+            double height = Math.Min(scrollContentActualSize.Height, imageViewActualSize.Height);
+            ContentViewRect = new Rect(left, top, width, height);
+        }
 
         // 縮小画像の表示更新
         private void UpdateReducedImageVisibility(in Size imageViewActualSize, in Size scrollContentActualSize)

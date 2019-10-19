@@ -45,8 +45,11 @@ namespace ImageComparisonViewer.Core.Images
 
         public void UnloadThumbnailImage()
         {
-            Thumbnail = null;
-            //Debug.WriteLine($"Unload Thumbnail: {FilePath}");
+            if (Thumbnail != null)
+            {
+                Thumbnail = null;
+                //Debug.WriteLine($"Unload Thumbnail: {FilePath}");
+            }
         }
         #endregion
 
@@ -81,8 +84,11 @@ namespace ImageComparisonViewer.Core.Images
 
         public void UnloadFullImage()
         {
-            FullImage = null;
-            //Debug.WriteLine($"Unload FullImage: {FilePath}");
+            if (FullImage != null)
+            {
+                FullImage = null;
+                //Debug.WriteLine($"Unload FullImage: {FilePath}");
+            }
         }
         #endregion
 

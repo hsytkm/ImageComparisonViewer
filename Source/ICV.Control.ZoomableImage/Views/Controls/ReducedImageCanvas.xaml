@@ -5,22 +5,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    x:Name="root"
     mc:Ignorable="d" 
     d:DesignHeight="100" d:DesignWidth="100">
 
     <Canvas HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Margin="5,5,0,0"
-            Width="{Binding ElementName=ThumbImage, Path=ActualWidth}"
-            Height="{Binding ElementName=ThumbImage, Path=ActualHeight}" >
+            Width="{Binding ActualWidth, ElementName=ThumbImage, Mode=OneWay}"
+            Height="{Binding ActualHeight, ElementName=ThumbImage, Mode=OneWay}" >
 
         <Image x:Name="ThumbImage"
                Width="100"
-               Stretch="Uniform" />
+               Stretch="Uniform"
+               Source="{Binding ImageSource, ElementName=root, Mode=OneWay}" />
             
-        <Path Fill="#7FFFFFFF">
+        <Path Fill="#7FFFFFFF" >
             <Path.Data>
-                <CombinedGeometry x:Name="CombinedGeometry"
+                <CombinedGeometry x:Name="CombinedGeometryFilter"
                                   GeometryCombineMode="Xor" />
             </Path.Data>
         </Path>

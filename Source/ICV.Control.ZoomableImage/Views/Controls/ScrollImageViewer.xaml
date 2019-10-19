@@ -18,6 +18,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Styles/ImageScrollControlStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <vcnv:BooleansToVisibilityConverter x:Key="BooleansToVisibilityConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
@@ -32,36 +33,22 @@
 
         <Grid>
             <Image x:Name="MainImage"
-                   Source="{Binding BitmapSource, ElementName=root, Mode=OneWay, NotifyOnTargetUpdated=True}" >
+                   Source="{Binding ImageSource, ElementName=root, Mode=OneWay, NotifyOnTargetUpdated=True}" >
                 <i:Interaction.Behaviors>
                     <!-- 画像ズーム時のスケーリング更新 -->
                     <vb:ImageBitmapScalingBehavior />
+                    <vb:MouseCursorOnImageBehavior ImageCursorPoint="{Binding ImageCursorPoint, ElementName=root, Mode=OneWayToSource}"/>
                 </i:Interaction.Behaviors>
             </Image>
 
             <!-- 画像上のサンプリング枠 -->
             <vc:ImageOverlapSamplingFrame BorderBrush="Cyan"
+                                          Visibility="{Binding IsVisibleSamplingFrame, ElementName=root, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                          IsFrameInterlock="{Binding IsViewerInterlock, ElementName=root, Mode=OneWay}"
+                                          GroundPanelTopLeft="{Binding ContentViewRect.TopLeft, ElementName=root, Mode=OneWay}"
                                           Width="{Binding ActualWidth, ElementName=MainImage, Mode=OneWay}"
                                           Height="{Binding ActualHeight, ElementName=MainImage, Mode=OneWay}"
-                                          GroundPanelTopLeft="{Binding ContentViewRect.TopLeft, ElementName=root, Mode=OneWay}"
-                                          IsFrameInterlock="{Binding IsViewerInterlock, ElementName=root, Mode=OneWay}"
-                                          FrameRectRatio="{Binding ImageOverlapSamplingFrameRectRatio, ElementName=root, Mode=OneWayToSource}" >
-                <vc:ImageOverlapSamplingFrame.Style>
-                    <Style TargetType="{x:Type vc:ImageOverlapSamplingFrame}">
-                        <Setter Property="Visibility">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource BooleansToVisibilityConverter}">
-                                    <MultiBinding.Bindings>
-                                        <Binding Path="IsVisibleImageSamplingFrame" ElementName="root" Mode="OneWay" />
-                                        <Binding Path="IsLoadImage" ElementName="root" Mode="OneWay" />
-                                    </MultiBinding.Bindings>
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </vc:ImageOverlapSamplingFrame.Style>
-            </vc:ImageOverlapSamplingFrame>
-            
+                                          FrameRectRatio="{Binding ImageOverlapSamplingFrameRectRatio, ElementName=root, Mode=OneWayToSource}" />
         </Grid>
            
     </ScrollViewer>

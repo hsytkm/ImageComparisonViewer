@@ -18,6 +18,7 @@ namespace ICV.Control.ZoomableImage.ViewModels
     {
         // 主画像
         public ReadOnlyReactiveProperty<BitmapSource?> ImageSource { get; }
+        public ReadOnlyReactiveProperty<bool> IsLoadingImage { get; }
 
         // 各画像の表示エリアを連動させるかフラグ(false=連動しない)
         public ReadOnlyReactiveProperty<bool> IsImageViewerInterlock { get; }
@@ -26,10 +27,10 @@ namespace ICV.Control.ZoomableImage.ViewModels
         public ReadOnlyReactiveProperty<bool> CanVisibleReducedImage { get; }
 
         // サンプリング枠のレイヤー(true=画像上, false=スクロール上)
-        public ReadOnlyReactiveProperty<bool> IsSamplingFrameOnImage { get; }
+        public ReadOnlyReactiveProperty<bool> IsVisibleSamplingFrameOnImage { get; }
 
         // サンプリング枠のレイヤー(false=画像上, true=スクロール上)
-        public ReadOnlyReactiveProperty<bool> IsSamplingFrameOnScrollContent { get; }
+        public ReadOnlyReactiveProperty<bool> IsVisibleSamplingFrameOnScroll { get; }
 
         // ズーム倍率の管理(TwoWay)
         public ReactiveProperty<ImageZoomPayload> ImageZoomPayload { get; } =
@@ -58,6 +59,10 @@ namespace ICV.Control.ZoomableImage.ViewModels
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
 
+            IsLoadingImage = ImageSource.Select(x => x != null)
+                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.DistinctUntilChanged)
+                .AddTo(CompositeDisposable);
+
             var viewSettings = container.Resolve<ViewSettings>();
 
             IsImageViewerInterlock = viewSettings.ObserveProperty(x => x.IsImageViewerInterlock)
@@ -68,19 +73,21 @@ namespace ICV.Control.ZoomableImage.ViewModels
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
-            IsSamplingFrameOnImage = new[]
+            IsVisibleSamplingFrameOnImage = new[]
                 {
+                    IsLoadingImage,
                     viewSettings.ObserveProperty(x => x.IsVisibleImageOverlapSamplingFrame),
-                    viewSettings.ObserveProperty(x => x.IsSamplingFrameOnImage)
+                    viewSettings.ObserveProperty(x => x.IsVisibleSamplingFrameOnImage)
                 }
                 .CombineLatestValuesAreAllTrue()
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
-            IsSamplingFrameOnScrollContent = new[]
+            IsVisibleSamplingFrameOnScroll = new[]
                 {
+                    IsLoadingImage,
                     viewSettings.ObserveProperty(x => x.IsVisibleImageOverlapSamplingFrame),
-                    viewSettings.ObserveProperty(x => x.IsSamplingFrameOnImage).Inverse()
+                    viewSettings.ObserveProperty(x => x.IsVisibleSamplingFrameOnImage).Inverse()
                 }
                 .CombineLatestValuesAreAllTrue()
                 .ToReadOnlyReactiveProperty()

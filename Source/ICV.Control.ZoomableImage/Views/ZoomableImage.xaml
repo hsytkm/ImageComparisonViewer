@@ -15,13 +15,12 @@
     d:DesignHeight="450" d:DesignWidth="800">
 
     <UserControl.Resources>
-        <!--
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <vcnv:BooleansToVisibilityConverter x:Key="BooleansToVisibilityConverter" />
     </UserControl.Resources>
 
-    <Grid>
+    <v:ZoomableImageGrid ImageSource="{Binding ImageSource.Value, Mode=OneWay}"
+                         IsLoadingImage="{Binding IsLoadingImage.Value, Mode=OneWay}" >
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -34,36 +33,21 @@
         </StackPanel>
 
         <vc:ScrollImageViewer x:Name="MainScrollImageViewer"
-                              BitmapSource="{Binding ImageSource.Value, Mode=OneWay}"
+                              IsVisibleSamplingFrame="{Binding IsVisibleSamplingFrameOnImage.Value, Mode=OneWay}"
                               IsViewerInterlock="{Binding IsImageViewerInterlock.Value, Mode=OneWay}"
                               ZoomPayload="{Binding ImageZoomPayload.Value, Mode=TwoWay}"
                               ScrollOffsetCenterRatio="{Binding ImageScrollOffsetCenterRatio.Value, Mode=TwoWay}"
                               ImageCursorPoint="{Binding PointTest.Value, Mode=OneWayToSource}"
-                              IsVisibleImageSamplingFrame="{Binding IsSamplingFrameOnImage.Value, Mode=OneWay}"
                               ImageOverlapSamplingFrameRect="{Binding SamplingFrameRect.Value, Mode=OneWayToSource}" />
 
         <!-- ScrollViewer上のサンプリング枠 -->
         <vc:ImageOverlapSamplingFrame BorderBrush="Magenta"
+                                      Visibility="{Binding IsVisibleSamplingFrameOnScroll.Value, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                      IsFrameInterlock="{Binding IsImageViewerInterlock.Value, Mode=OneWay}"
                                       Width="{Binding ContentViewRect.Width, ElementName=MainScrollImageViewer, Mode=OneWay}"
                                       Height="{Binding ContentViewRect.Height, ElementName=MainScrollImageViewer, Mode=OneWay}"
                                       GroundPanelTopLeft="{Binding ContentViewRect.TopLeft, ElementName=MainScrollImageViewer, Mode=OneWay}"
-                                      IsFrameInterlock="{Binding IsImageViewerInterlock.Value, Mode=OneWay}"
-                                      FrameRectRatio="{Binding ImageOverlapSamplingFrameRectRatio, ElementName=MainScrollImageViewer, Mode=OneWayToSource}" >
-            <vc:ImageOverlapSamplingFrame.Style>
-                <Style TargetType="{x:Type vc:ImageOverlapSamplingFrame}">
-                    <Setter Property="Visibility">
-                        <Setter.Value>
-                            <MultiBinding Converter="{StaticResource BooleansToVisibilityConverter}">
-                                <MultiBinding.Bindings>
-                                    <Binding Path="IsSamplingFrameOnScrollContent.Value" Mode="OneWay" />
-                                    <Binding Path="IsLoadImage" ElementName="MainScrollImageViewer" Mode="OneWay" />
-                                </MultiBinding.Bindings>
-                            </MultiBinding>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </vc:ImageOverlapSamplingFrame.Style>
-        </vc:ImageOverlapSamplingFrame>
+                                      FrameRectRatio="{Binding ImageOverlapSamplingFrameRectRatio, ElementName=MainScrollImageViewer, Mode=OneWayToSource}" />
 
         <vc:ReducedImageCanvas ScrollOffsetVectorRatioRequest="{Binding ScrollOffsetVectorRatio, ElementName=MainScrollImageViewer, Mode=OneWayToSource}" >
             <vc:ReducedImageCanvas.Style>
@@ -82,6 +66,6 @@
             </vc:ReducedImageCanvas.Style>
         </vc:ReducedImageCanvas>
 
-    </Grid>
+    </v:ZoomableImageGrid>
 
 </mvvm:DisposableUserControl>

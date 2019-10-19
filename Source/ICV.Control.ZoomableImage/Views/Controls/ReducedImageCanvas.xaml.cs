@@ -2,7 +2,6 @@
 using ImageComparisonViewer.Common.Mvvm;
 using Reactive.Bindings.Extensions;
 using System;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +16,22 @@ namespace ICV.Control.ZoomableImage.Views.Controls
     public partial class ReducedImageCanvas : DisposableUserControl
     {
         private static readonly Type SelfType = typeof(ReducedImageCanvas);
+
+        #region ImageSourceProperty(OneWay/Inherits)
+
+        // ソース画像は親から継承する
+        private static readonly DependencyProperty ImageSourceProperty =
+            ZoomableImageGrid.ImageSourceProperty.AddOwner(SelfType,
+                new FrameworkPropertyMetadata(default,
+                    FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits));
+
+        public BitmapSource ImageSource
+        {
+            get => (BitmapSource)GetValue(ImageSourceProperty);
+            set => SetValue(ImageSourceProperty, value);
+        }
+
+        #endregion
 
         #region ScrollOffsetVectorRatioRequestProperty(OneWayToSource)
 
@@ -60,23 +75,6 @@ namespace ICV.Control.ZoomableImage.Views.Controls
                     scrollViewer.ScrollChangedAsObservable()
                         .Subscribe(UpdateThumbnailViewport)
                         .AddTo(CompositeDisposable);
-
-                    if (scrollViewer.TryGetChildControl<Image>(out var mainImage))
-                    {
-                        // Loaded時点で画像が読み込まれてたら取り込んでおく
-                        if (mainImage.Source is BitmapImage bitmapImage && bitmapImage != null)
-                        {
-                            ThumbImage.Source = bitmapImage;
-                        }
-
-                        // 主画像の更新時に縮小画像も連動して更新
-                        mainImage.TargetUpdatedAsObservable()
-                            .Select(e => e.OriginalSource as Image)
-                            .Select(image => image?.Source as BitmapSource)
-                            .Where(x => x != null)
-                            .Subscribe(x => ThumbImage.Source = x)
-                            .AddTo(CompositeDisposable);
-                    }
                 }
             };
         }
@@ -115,7 +113,7 @@ namespace ICV.Control.ZoomableImage.Views.Controls
             thumbViewport.Width = width;
             thumbViewport.Height = height;
 
-            CombinedGeometry.Geometry2 = new RectangleGeometry(new Rect(left, top, width, height));
+            CombinedGeometryFilter.Geometry2 = new RectangleGeometry(new Rect(left, top, width, height));
         }
 
     }

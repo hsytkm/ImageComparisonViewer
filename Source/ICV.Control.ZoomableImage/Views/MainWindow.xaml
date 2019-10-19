@@ -34,7 +34,7 @@
                       Content="サンプリング枠の表示フラグ" />
 
             <CheckBox Margin="0,0,10,0"
-                      IsChecked="{Binding IsSamplingFrameOnImage.Value, Mode=TwoWay}"
+                      IsChecked="{Binding IsVisibleSamplingFrameOnImage.Value, Mode=TwoWay}"
                       Content="枠レイヤー：画像上" />
         </StackPanel>
 

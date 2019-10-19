@@ -5,7 +5,7 @@ namespace ICV.Control.ZoomableImage.Views.Common
 {
     static class ViewHelperLocal
     {
-        public static Size GetControlActualSize(FrameworkElement fe) =>
+        public static Size GetControlActualSize(this FrameworkElement fe) =>
             (fe is null) ? default : new Size(fe.ActualWidth, fe.ActualHeight);
 
         public static bool IsValidValue(this double d)
