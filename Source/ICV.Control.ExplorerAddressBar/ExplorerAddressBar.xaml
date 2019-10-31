@@ -10,12 +10,10 @@
     xmlns:v="clr-namespace:ICV.Control.ExplorerAddressBar"
     xmlns:vb="clr-namespace:ICV.Control.ExplorerAddressBar.Behaviors"
     xmlns:vc="clr-namespace:ICV.Control.ExplorerAddressBar.Converters"
-    xmlns:ve="clr-namespace:ICV.Control.ExplorerAddressBar.EventConverters"
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="False"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800"
-    x:Name="ground"
     Height="20" >
 
     <UserControl.Resources>
@@ -33,88 +31,47 @@
         <vb:WindowClickCommandBehavior ClickCommand="{Binding CollapsedTextBoxCommand, Mode=OneTime}" />
     </i:Interaction.Behaviors>
 
-    <!-- UserControlのサイズ取得 -->
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="Loaded">
-            <r:EventToReactiveProperty ReactiveProperty="{Binding UserControlWidth, Mode=OneTime}" >
-                <ve:LoadedWidthConverter/>
-            </r:EventToReactiveProperty>
-        </i:EventTrigger>
-        <i:EventTrigger EventName="SizeChanged">
-            <r:EventToReactiveProperty ReactiveProperty="{Binding UserControlWidth, Mode=OneTime}" >
-                <ve:SizeChangedWidthConverter/>
-            </r:EventToReactiveProperty>
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
+    <Grid>
+        <!-- ディレクトリノード(内部でViewをリスト管理) -->
+        <!-- ItemsControl攻略 ～ 外観のカスタマイズ http://grabacr.net/archives/1240 -->
+        <!-- Standard Controls - ItemsControl http://yujiro15.net/YKSoftware/StandardControls_ItemsControl.html -->
+        <v:HorizontalItemsThinControl VisibleItemMin="1"
+                                      Background="Transparent"
+                                      Width="{Binding ActualWidth, Mode=OneWay,
+                                                      RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      ItemsSource="{Binding ViewItemsSource.Value, Mode=OneWay}"
+                                      Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
+                                                           Converter={StaticResource BoolToVisibilityConverter}}" >
+            <!-- 右横の余白クリックでTextBox表示 -->
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseLeftButtonDown">
+                    <r:EventToReactiveCommand Command="{Binding VisibleTextBoxCommand, Mode=OneTime}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
 
-    <!-- MainWindowが小さくなっても本来のサイズを取得するためScrollViewerで包む -->
-    <ScrollViewer IsTabStop="False" 
-                  VerticalScrollBarVisibility="Hidden"
-                  HorizontalScrollBarVisibility="Hidden" >
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </v:HorizontalItemsThinControl>
 
-        <!-- ItemsControlの不使用領域を含ませないためGridで包む -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- ディレクトリノード(内部でViewをリスト管理) -->
-            <!-- ItemsControl攻略 ～ 外観のカスタマイズ http://grabacr.net/archives/1240 -->
-            <!-- Standard Controls - ItemsControl http://yujiro15.net/YKSoftware/StandardControls_ItemsControl.html -->
-            <ItemsControl ItemsSource="{Binding ViewItemsSource.Value, Mode=OneWay}"
-                          Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
-                                               Converter={StaticResource BoolToVisibilityConverter}}" >
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Loaded">
-                        <r:EventToReactiveProperty ReactiveProperty="{Binding ItemsControlWidth, Mode=OneTime}" >
-                            <ve:LoadedWidthConverter/>
-                        </r:EventToReactiveProperty>
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="SizeChanged">
-                        <r:EventToReactiveProperty ReactiveProperty="{Binding ItemsControlWidth, Mode=OneTime}" >
-                            <ve:SizeChangedWidthConverter/>
-                        </r:EventToReactiveProperty>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-
-            <!-- ディレクトリ横の余白(クリック用) -->
-            <Border Grid.Column="1"
-                    Background="Transparent"
-                    Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
-                                         Converter={StaticResource BoolToVisibilityConverter}}" >
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="MouseLeftButtonDown">
-                        <r:EventToReactiveCommand Command="{Binding VisibleTextBoxCommand, Mode=OneTime}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Border>
-
-            <!-- 入力用(EnterKeyで確定) -->
-            <TextBox Grid.ColumnSpan="2"
-                     Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
-                                          Converter={StaticResource InvBoolToVisibilityConverter}}"
-                     Text="{Binding TargetDirectory.Value, Mode=OneWay}"
-                     VerticalContentAlignment="Center" >
-                <i:Interaction.Behaviors>
-                    <vb:VisibilityFocusGetTextBoxBehavior />
-                </i:Interaction.Behaviors>
+        <!-- 入力用(EnterKeyで確定) -->
+        <TextBox VerticalContentAlignment="Center"
+                 Visibility="{Binding IsVisibleDirectoryNode.Value, Mode=OneWay,
+                                      Converter={StaticResource InvBoolToVisibilityConverter}}"
+                 Text="{Binding TargetDirectory.Value, Mode=OneWay}" >
+            <i:Interaction.Behaviors>
+                <vb:VisibilityFocusGetTextBoxBehavior />
+            </i:Interaction.Behaviors>
                 
-                <TextBox.InputBindings>
-                    <KeyBinding Gesture="Enter"
-                                Command="{Binding TextInputCommand, Mode=OneTime}"
-                                CommandParameter="{Binding Text, Mode=OneWay,
-                                                   RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
-                </TextBox.InputBindings>
-            </TextBox>
-        </Grid>
-    </ScrollViewer>
+            <TextBox.InputBindings>
+                <KeyBinding Gesture="Enter"
+                            Command="{Binding TextInputCommand, Mode=OneTime}"
+                            CommandParameter="{Binding Text, Mode=OneWay,
+                                                       RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
+            </TextBox.InputBindings>
+        </TextBox>
+    </Grid>
 
 </mvvm:DisposableUserControl>
