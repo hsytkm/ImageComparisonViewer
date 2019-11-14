@@ -5,7 +5,6 @@ using Prism.Regions;
 using Prism.Unity;
 using System.Windows;
 using Unity;
-using Unity.Lifetime;
 
 namespace ImageComparisonViewer
 {
@@ -32,6 +31,7 @@ namespace ImageComparisonViewer
 
             #endregion
 
+            containerRegistry.RegisterSingleton<IApplicationCommands, ApplicationCommands>();
             containerRegistry.RegisterSingleton<Core.Images.CompositeImageDirectory>();
         }
 

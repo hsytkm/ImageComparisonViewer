@@ -13,9 +13,16 @@
         <ResourceDictionary Source="Styles/MainTabControlStyle.xaml" />
     </Window.Resources>
 
-    <Grid>
+    <Window.InputBindings>
+        <KeyBinding Key="F3" Command="{Binding ApplicationCommands.ImagesLeftShiftCommand, Mode=OneTime}"/>
+        <KeyBinding Key="F4" Command="{Binding ApplicationCommands.ImagesRightShiftCommand, Mode=OneTime}"/>
+        <KeyBinding Key="F7" Command="{Binding ApplicationCommands.SelectPrevImageCommand, Mode=OneTime}"/>
+        <KeyBinding Key="F8" Command="{Binding ApplicationCommands.SelectNextImageCommand, Mode=OneTime}"/>
+    </Window.InputBindings>
+
+    <Border>
         <TabControl Style="{StaticResource MainTabControlStyle}"
                     prism:RegionManager.RegionName="MainTabContentRegion" />
-    </Grid>
+    </Border>
 
 </Window>

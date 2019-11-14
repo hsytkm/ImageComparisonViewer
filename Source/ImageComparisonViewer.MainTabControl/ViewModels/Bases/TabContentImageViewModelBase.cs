@@ -1,6 +1,8 @@
-﻿using ImageComparisonViewer.ImagePanels.Views;
-using ImageComparisonViewer.Common.Extensions;
+﻿using ImageComparisonViewer.Common.Extensions;
+using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Common.Prism;
 using ImageComparisonViewer.Core.Images;
+using ImageComparisonViewer.ImagePanels.Views;
 using ImageComparisonViewer.MainTabControl.Common;
 using Prism.Commands;
 using Prism.Events;
@@ -10,8 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using ImageComparisonViewer.Common.Mvvm;
 
 namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
@@ -22,25 +22,36 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         private readonly IContainerExtension _container;
         private readonly IRegionManager _regionManager;
         private readonly CompositeImageDirectory _compositeDirectory;
+        private readonly IApplicationCommands _applicationCommands;
 
         public DelegateCommand ImagesRightShiftCommand { get; }
         public DelegateCommand ImagesLeftShiftCommand { get; }
+        private readonly DelegateCommand _selectImageMoveNext;
+        private readonly DelegateCommand _selectImageMovePrev;
 
-        public TabContentImageViewModelBase(IContainerExtension container, IRegionManager regionManager, string title, int index)
+        public TabContentImageViewModelBase(
+            IContainerExtension container, IRegionManager regionManager, IApplicationCommands applicationCommands,
+            string title, int index)
             : base(title)
         {
             _container = container;
             _regionManager = regionManager;
+            _applicationCommands = applicationCommands;
             _contentCount = index;
             _compositeDirectory = container.Resolve<CompositeImageDirectory>();
 
             ImagesRightShiftCommand = new DelegateCommand(() => RightShiftViewModels());
-            //_applicationCommands.SwapInnerTrackCommand.RegisterCommand(RightShiftCommand);
-
             ImagesLeftShiftCommand = new DelegateCommand(() => LeftShiftViewModels());
-            //_applicationCommands.SwapOuterTrackCommand.RegisterCommand(LeftShiftCommand);
+            _selectImageMoveNext = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MoveNextImage()));
+            _selectImageMovePrev = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MovePrevImage()));
 
             IsActiveChanged += ViewModel_IsActiveChanged;
+        }
+
+        private IEnumerable<ImageDirectory> GetImageDirectories()
+        {
+            for (int i = 0; i < _contentCount; i++)
+                yield return _compositeDirectory.ImageDirectries[i];
         }
 
         // アクティブ状態変化時の処理
@@ -53,12 +64,24 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             {
                 RegisterImagePanelViewRegions();
 
+                // 有効時にコマンドを登録
+                _applicationCommands.ImagesRightShiftCommand.RegisterCommand(ImagesRightShiftCommand);
+                _applicationCommands.ImagesLeftShiftCommand.RegisterCommand(ImagesLeftShiftCommand);
+                _applicationCommands.SelectNextImageCommand.RegisterCommand(_selectImageMoveNext);
+                _applicationCommands.SelectPrevImageCommand.RegisterCommand(_selectImageMovePrev);
+
                 // Modelへのリソース破棄要求(1画面に切り替わったら2画面以上の情報は捨てる)
                 _compositeDirectory.ReleaseResources(_contentCount);
             }
             else
             {
                 RemoveImagePanelViewRegions();
+
+                // 無効時にコマンドを解除
+                _applicationCommands.ImagesRightShiftCommand.UnregisterCommand(ImagesRightShiftCommand);
+                _applicationCommands.ImagesLeftShiftCommand.UnregisterCommand(ImagesLeftShiftCommand);
+                _applicationCommands.SelectNextImageCommand.UnregisterCommand(_selectImageMoveNext);
+                _applicationCommands.SelectPrevImageCommand.UnregisterCommand(_selectImageMovePrev);
 
                 // 非アクティブ時に溜まった回転数をModelに通知する
                 AdaptImagesShift();
