@@ -32,7 +32,7 @@ namespace ImageComparisonViewer.Core.Images
                     _imageFiles.ClearWithDispose();
                     if (value != null)
                     {
-                        foreach (var path in value.GetImageFilesPathInDirectory())
+                        foreach (var path in value.GetImageFilesPathInDirectory(SearchOption.TopDirectoryOnly))
                             _imageFiles.Add(new ImageFile(path));
                     }
 
@@ -75,6 +75,9 @@ namespace ImageComparisonViewer.Core.Images
             private set => SetProperty(ref _selectedImage, value);
         }
         private BitmapSource? _selectedImage;
+
+        /// <summary>画像ディレクトリの読込み済みフラグ</summary>
+        public bool IsLoaded() => (DirectoryPath != null && SelectedFilePath != null);
 
         /// <summary>
         /// 画像ファイルたち

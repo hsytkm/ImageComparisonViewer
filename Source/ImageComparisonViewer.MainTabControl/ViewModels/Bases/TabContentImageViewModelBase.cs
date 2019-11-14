@@ -65,8 +65,8 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 RegisterImagePanelViewRegions();
 
                 // 有効時にコマンドを登録
-                _applicationCommands.ImagesRightShiftCommand.RegisterCommand(ImagesRightShiftCommand);
-                _applicationCommands.ImagesLeftShiftCommand.RegisterCommand(ImagesLeftShiftCommand);
+                _applicationCommands.RightShiftImageGroupCommand.RegisterCommand(ImagesRightShiftCommand);
+                _applicationCommands.LeftShiftImageGroupCommand.RegisterCommand(ImagesLeftShiftCommand);
                 _applicationCommands.SelectNextImageCommand.RegisterCommand(_selectImageMoveNext);
                 _applicationCommands.SelectPrevImageCommand.RegisterCommand(_selectImageMovePrev);
 
@@ -78,8 +78,8 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 RemoveImagePanelViewRegions();
 
                 // 無効時にコマンドを解除
-                _applicationCommands.ImagesRightShiftCommand.UnregisterCommand(ImagesRightShiftCommand);
-                _applicationCommands.ImagesLeftShiftCommand.UnregisterCommand(ImagesLeftShiftCommand);
+                _applicationCommands.RightShiftImageGroupCommand.UnregisterCommand(ImagesRightShiftCommand);
+                _applicationCommands.LeftShiftImageGroupCommand.UnregisterCommand(ImagesLeftShiftCommand);
                 _applicationCommands.SelectNextImageCommand.UnregisterCommand(_selectImageMoveNext);
                 _applicationCommands.SelectPrevImageCommand.UnregisterCommand(_selectImageMovePrev);
 

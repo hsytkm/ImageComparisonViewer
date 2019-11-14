@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ImageComparisonViewer.Core.Extensions
 {
-    static class StringPathExtension
+    public static class StringPathExtension
     {
         /// <summary>
         /// サポート対象拡張子
@@ -18,6 +18,22 @@ namespace ImageComparisonViewer.Core.Extensions
             ".png",
             ".tif", ".tiff",
         };
+
+        /// <summary>
+        /// 引数PATHが画像PATHとして有効か判定する
+        /// </summary>
+        /// <param name="sourcePath"></param>
+        /// <returns></returns>
+        public static bool IsSupportedImagePath(this string sourcePath)
+        {
+            if (File.Exists(sourcePath))
+                return IsSupportedImageFile(sourcePath);
+
+            if (Directory.Exists(sourcePath))
+                return GetImageFilesPathInDirectory(sourcePath, SearchOption.TopDirectoryOnly).Any();
+
+            return false;
+        }
 
         /// <summary>
         /// サポート画像の拡張子チェック
@@ -39,7 +55,7 @@ namespace ImageComparisonViewer.Core.Extensions
         /// </summary>
         /// <param name="sourcePath"></param>
         /// <returns>ディレクトリPATH</returns>
-        public static string ToDirectoryPath(this string sourcePath)
+        internal static string ToDirectoryPath(this string sourcePath)
         {
             if (Directory.Exists(sourcePath)) return sourcePath;
 
@@ -57,7 +73,7 @@ namespace ImageComparisonViewer.Core.Extensions
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <returns></returns>
-        public static string GetFirstImageFilePathInDirectory(this string directoryPath, SearchOption searchOption)
+        internal static string GetFirstImageFilePathInDirectory(this string directoryPath, SearchOption searchOption)
         {
             return directoryPath.GetImageFilesPathInDirectory(searchOption)
                     .FirstOrDefault(p => p.IsSupportedImageFile());
@@ -69,7 +85,7 @@ namespace ImageComparisonViewer.Core.Extensions
         /// <param name="directoryPath"></param>
         /// <param name="searchOption"></param>
         /// <returns></returns>
-        public static IEnumerable<string> GetImageFilesPathInDirectory(this string directoryPath, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        internal static IEnumerable<string> GetImageFilesPathInDirectory(this string directoryPath, SearchOption searchOption)
         {
             if (!Directory.Exists(directoryPath))
                 throw new DirectoryNotFoundException(directoryPath);
@@ -82,7 +98,7 @@ namespace ImageComparisonViewer.Core.Extensions
         /// 引数ディレクトリ以下の画像を含むディレクトリを返す
         /// </summary>
         /// <param name="sourcePath"></param>
-        public static string ToImagePath(this string sourcePath)
+        internal static string ToImagePath(this string sourcePath)
         {
             //Debug.WriteLine($"Drag&Drop: {sourcePath}");
             string outputPath = default!;

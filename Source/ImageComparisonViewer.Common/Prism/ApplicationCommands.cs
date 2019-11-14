@@ -4,16 +4,32 @@ namespace ImageComparisonViewer.Common.Prism
 {
     public interface IApplicationCommands
     {
-        CompositeCommand ImagesRightShiftCommand { get; }
-        CompositeCommand ImagesLeftShiftCommand { get; }
+        /// <summary>初期化時のタブの画像表示数(1画面=1, null=切替えなし)</summary>
+        int? OnInitializedTabContentImageCount { get; set; }
+
+        /// <summary>タブの画像表示数の切り替えコマンド</summary>
+        CompositeCommand NavigateImageTabContent { get; }
+
+        /// <summary>画像グループの右シフトコマンド</summary>
+        CompositeCommand RightShiftImageGroupCommand { get; }
+
+        /// <summary>画像グループの左シフトコマンド</summary>
+        CompositeCommand LeftShiftImageGroupCommand { get; }
+
+        /// <summary>表示画像の切り替え(進)コマンド</summary>
         CompositeCommand SelectNextImageCommand { get; }
+
+        /// <summary>表示画像の切り替え(戻)コマンド</summary>
         CompositeCommand SelectPrevImageCommand { get; }
     }
 
     public class ApplicationCommands : IApplicationCommands
     {
-        public CompositeCommand ImagesRightShiftCommand { get; } = new CompositeCommand();
-        public CompositeCommand ImagesLeftShiftCommand { get; } = new CompositeCommand();
+        public int? OnInitializedTabContentImageCount { get; set; }
+        public CompositeCommand NavigateImageTabContent { get; } = new CompositeCommand();
+
+        public CompositeCommand RightShiftImageGroupCommand { get; } = new CompositeCommand();
+        public CompositeCommand LeftShiftImageGroupCommand { get; } = new CompositeCommand();
 
         public CompositeCommand SelectNextImageCommand { get; } = new CompositeCommand();
         public CompositeCommand SelectPrevImageCommand { get; } = new CompositeCommand();

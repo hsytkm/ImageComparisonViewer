@@ -1,8 +1,12 @@
 ﻿using ImageComparisonViewer.Common.Prism;
+using ImageComparisonViewer.Core.Extensions;
+using ImageComparisonViewer.Core.Images;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
 using Prism.Unity;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using Unity;
 
@@ -13,6 +17,11 @@ namespace ImageComparisonViewer
     /// </summary>
     public partial class App : PrismApplication
     {
+        public App()
+        {
+            Startup += Startup_CommandLineArgs;
+        }
+
         protected override Window CreateShell()
         {
             return Container.Resolve<MainWindow>();
@@ -32,7 +41,9 @@ namespace ImageComparisonViewer
             #endregion
 
             containerRegistry.RegisterSingleton<IApplicationCommands, ApplicationCommands>();
-            containerRegistry.RegisterSingleton<Core.Images.CompositeImageDirectory>();
+            containerRegistry.RegisterSingleton<CompositeImageDirectory>();
+
+            LoadStartupImages(Container);
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
@@ -45,6 +56,30 @@ namespace ImageComparisonViewer
             regionBehaviors.AddIfMissing(DisposeBehavior.Key, typeof(DisposeBehavior));
             base.ConfigureDefaultRegionBehaviors(regionBehaviors);
         }
+
+        #region CommandLineArgs
+        private static IReadOnlyList<string> _commandLineImagePathArgs = default!;
+
+        private void Startup_CommandLineArgs(object sender, StartupEventArgs e)
+        {
+            // 有効な画像PATHのみをコマンドライン引数として採用
+            if (e.Args.Length > 0)
+                _commandLineImagePathArgs = e.Args.Where(arg => arg.IsSupportedImagePath()).ToList();
+        }
+
+        private static void LoadStartupImages(IContainerProvider container)
+        {
+            var paths = _commandLineImagePathArgs;
+            if (paths?.Count > 0)
+            {
+                var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+                var tabImageUpdate = compositeDirectory.SetDroppedPaths(baseIndex: 0, paths);
+
+                var applicationCommands = container.Resolve<IApplicationCommands>();
+                applicationCommands.OnInitializedTabContentImageCount = tabImageUpdate;
+            }
+        }
+        #endregion
 
     }
 }

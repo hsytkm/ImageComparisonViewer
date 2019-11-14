@@ -1,11 +1,21 @@
-﻿using System;
+﻿using ImageComparisonViewer.MainTabControl.Views;
+using System;
 using System.Collections.Generic;
 
 namespace ImageComparisonViewer.MainTabControl.Common
 {
     static class RegionNames
     {
-        //public static string TabContentRegion { get; } = nameof(TabContentRegion);
+        internal static string GetTabContentName(int index)
+        {
+            return index switch
+            {
+                1 => nameof(TabContentSingle),
+                2 => nameof(TabContentDouble),
+                3 => nameof(TabContentTriple),
+                _ => throw new ArgumentOutOfRangeException(index.ToString())
+            };
+        }
 
         private static string GetImageContentRegionName(int count, int index)
         {
@@ -18,7 +28,7 @@ namespace ImageComparisonViewer.MainTabControl.Common
         /// </summary>
         /// <param name="contentCount"></param>
         /// <returns></returns>
-        public static IEnumerable<string> GetImageContentRegionNames(int contentCount)
+        internal static IEnumerable<string> GetImageContentRegionNames(int contentCount)
         {
             for (int index = 0; index < contentCount; index++)
                 yield return GetImageContentRegionName(contentCount, index);

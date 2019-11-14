@@ -23,14 +23,31 @@ namespace ImageComparisonViewer.Core.Images
         public CompositeImageDirectory() { }
 
         /// <summary>
+        /// 各画像ディレクトリが1つも読み込まれていないか判定
+        /// </summary>
+        /// <returns></returns>
+        private bool UnloadedAllImageDirectories()
+        {
+            foreach (var imageDir in ImageDirectries)
+            {
+                if (imageDir.IsLoaded()) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// ドロップされた複数のPATHを設定する
         /// </summary>
         /// <param name="baseIndex"></param>
         /// <param name="droppedPaths"></param>
-        public void SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths)
+        /// <returns>画像タブの指定(1画面=1, null=切替えなし)</returns>
+        public int? SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths)
         {
             if (baseIndex >= ImageDirectries.Count)
                 throw new ArgumentOutOfRangeException(nameof(baseIndex));
+
+            // 画像が1グループも読み込まれていなかったらドロップ後に画像タブを切り替え(読み込み前に状態を取得)
+            var isNavigate = UnloadedAllImageDirectories();
 
             // ドロップPATH(ディレクトリPATHかも)をファイルPATHに変換
             var filesPath = droppedPaths.Select(x => x.ToImagePath()).ToArray();
@@ -41,6 +58,8 @@ namespace ImageComparisonViewer.Core.Images
                 int index = (baseIndex + i) % ImageDirectries.Count;
                 ImageDirectries[index].SelectedFilePath = filesPath[i];
             }
+
+            return !isNavigate ? default(int?) : length;
         }
 
         /// <summary>

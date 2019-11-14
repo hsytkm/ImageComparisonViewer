@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Common.Prism;
 using ImageComparisonViewer.Core.Images;
 using Prism.Ioc;
 using Reactive.Bindings;
@@ -36,12 +37,17 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             ContentIndex = parameter.ContentIndex;
             ContentCount = parameter.ContentCount;
 
+            var applicationCommands = container.Resolve<IApplicationCommands>();
             var compositeDirectory = container.Resolve<CompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[ContentIndex];
 
-            // ドロップファイル通知
+            // ドロップファイル通知(ドロップ数に応じたTabに移行する)
             DropEvent
-                .Subscribe(paths => compositeDirectory.SetDroppedPaths(ContentIndex, paths))
+                .Subscribe(paths =>
+                {
+                    var tabImageUpdate = compositeDirectory.SetDroppedPaths(ContentIndex, paths);
+                    applicationCommands.NavigateImageTabContent.Execute(tabImageUpdate);
+                })
                 .AddTo(CompositeDisposable);
 
             // 読み出しディレクトリ購読(デバッグ用)
