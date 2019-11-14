@@ -1,12 +1,23 @@
-﻿using ImageComparisonViewer.Core.Extensions;
+﻿using ImageComparisonViewer.Common.Utils;
+using ImageComparisonViewer.Core.Extensions;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Media.Imaging;
 
 namespace ImageComparisonViewer.Core.Images
 {
+    internal class ImageContentBackyard
+    {
+        public RefCountValueWarehouse<string, BitmapSource> ThumbnailWarehouse =
+            new RefCountValueWarehouse<string, BitmapSource>();
+
+        public RefCountValueWarehouse<string, BitmapSource> FullImageWarehouse =
+            new RefCountValueWarehouse<string, BitmapSource>();
+    }
+
     public class CompositeImageDirectory : BindableBase
     {
         // 画像ディレクトリの最大数
@@ -14,11 +25,13 @@ namespace ImageComparisonViewer.Core.Images
 
         //private readonly Guid guid = Guid.NewGuid();
 
+        private static readonly ImageContentBackyard _imageContentBackyard = new ImageContentBackyard();
+
         /// <summary>
         /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
         /// </summary>
         public IList<ImageDirectory> ImageDirectries { get; } =
-            new List<ImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory()));
+            new List<ImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory(_imageContentBackyard)));
 
         public CompositeImageDirectory() { }
 

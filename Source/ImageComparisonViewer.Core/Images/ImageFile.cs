@@ -39,7 +39,10 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (Thumbnail is null)
             {
-                Thumbnail = await Task.Run(() => FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
+                BitmapSource? loadThumb() => FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
+                BitmapSource rentThumb() => _imageContentBackyard.ThumbnailWarehouse.RentValue(FilePath, loadThumb);
+
+                Thumbnail = await Task.Run(() => rentThumb());
                 //Debug.WriteLine($"Load Thumbnail: {FilePath}");
             }
         }
@@ -48,6 +51,7 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (Thumbnail != null)
             {
+                _imageContentBackyard.ThumbnailWarehouse.ReturnValue(FilePath);
                 Thumbnail = null;
                 //Debug.WriteLine($"Unload Thumbnail: {FilePath}");
             }
@@ -70,7 +74,10 @@ namespace ImageComparisonViewer.Core.Images
             var image = FullImage;
             if (image is null)
             {
-                image = await Task.Run(() => FilePath.ToBitmapImage());
+                BitmapSource? loadImage() => FilePath.ToBitmapImage();
+                BitmapSource rentImage() => _imageContentBackyard.FullImageWarehouse.RentValue(FilePath, loadImage);
+
+                image = await Task.Run(() => rentImage());
                 //Debug.WriteLine($"Load FullImage: {FilePath}");
 
                 if (cancelToken.IsCancellationRequested)
@@ -87,15 +94,19 @@ namespace ImageComparisonViewer.Core.Images
         {
             if (FullImage != null)
             {
+                _imageContentBackyard.FullImageWarehouse.ReturnValue(FilePath);
                 FullImage = null;
                 //Debug.WriteLine($"Unload FullImage: {FilePath}");
             }
         }
         #endregion
 
-        public ImageFile(string path)
+        private readonly ImageContentBackyard _imageContentBackyard;
+
+        internal ImageFile(string path, ImageContentBackyard backyard)
         {
             FilePath = path;
+            _imageContentBackyard = backyard;
         }
 
         public void ReleaseResource()

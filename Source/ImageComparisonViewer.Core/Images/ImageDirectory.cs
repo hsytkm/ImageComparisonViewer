@@ -40,7 +40,7 @@ namespace ImageComparisonViewer.Core.Images
             if (dirPath != null)
             {
                 foreach (var path in dirPath.GetImageFilesPathInDirectory(SearchOption.TopDirectoryOnly))
-                    _imageFiles.Add(new ImageFile(path));
+                    _imageFiles.Add(new ImageFile(path, _imageContentBackyard));
             }
         }
 
@@ -99,7 +99,12 @@ namespace ImageComparisonViewer.Core.Images
         public ReadOnlyObservableCollection<ImageFile> ImageFiles => new ReadOnlyObservableCollection<ImageFile>(_imageFiles);
         private readonly ObservableCollection<ImageFile> _imageFiles = new ObservableCollection<ImageFile>();
 
-        public ImageDirectory() { }
+        private readonly ImageContentBackyard _imageContentBackyard;
+
+        internal ImageDirectory(ImageContentBackyard backyard)
+        {
+            _imageContentBackyard = backyard;
+        }
 
         // 主画像のTask管理(最終の処理のみを採用)
         private readonly CompositeCancellationTokenSource _mainImageCompositeCancellationTokenSource = new CompositeCancellationTokenSource();
