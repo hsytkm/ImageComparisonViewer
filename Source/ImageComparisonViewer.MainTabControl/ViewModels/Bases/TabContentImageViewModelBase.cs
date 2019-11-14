@@ -26,8 +26,9 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 
         public DelegateCommand ImagesRightShiftCommand { get; }
         public DelegateCommand ImagesLeftShiftCommand { get; }
-        private readonly DelegateCommand _selectImageMoveNext;
-        private readonly DelegateCommand _selectImageMovePrev;
+        private readonly DelegateCommand _selectImageMoveNextCommand;
+        private readonly DelegateCommand _selectImageMovePrevCommand;
+        private readonly DelegateCommand _reloadImageDirectoryCommand;
 
         public TabContentImageViewModelBase(
             IContainerExtension container, IRegionManager regionManager, IApplicationCommands applicationCommands,
@@ -42,8 +43,9 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 
             ImagesRightShiftCommand = new DelegateCommand(() => RightShiftViewModels());
             ImagesLeftShiftCommand = new DelegateCommand(() => LeftShiftViewModels());
-            _selectImageMoveNext = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MoveNextImage()));
-            _selectImageMovePrev = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MovePrevImage()));
+            _selectImageMoveNextCommand = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MoveNextImage()));
+            _selectImageMovePrevCommand = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MovePrevImage()));
+            _reloadImageDirectoryCommand = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.ReloadImageDirectory()));
 
             IsActiveChanged += ViewModel_IsActiveChanged;
         }
@@ -67,8 +69,9 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 // 有効時にコマンドを登録
                 _applicationCommands.RightShiftImageGroupCommand.RegisterCommand(ImagesRightShiftCommand);
                 _applicationCommands.LeftShiftImageGroupCommand.RegisterCommand(ImagesLeftShiftCommand);
-                _applicationCommands.SelectNextImageCommand.RegisterCommand(_selectImageMoveNext);
-                _applicationCommands.SelectPrevImageCommand.RegisterCommand(_selectImageMovePrev);
+                _applicationCommands.SelectNextImageCommand.RegisterCommand(_selectImageMoveNextCommand);
+                _applicationCommands.SelectPrevImageCommand.RegisterCommand(_selectImageMovePrevCommand);
+                _applicationCommands.ReloadImageDirectoryCommand.RegisterCommand(_reloadImageDirectoryCommand);
 
                 // Modelへのリソース破棄要求(1画面に切り替わったら2画面以上の情報は捨てる)
                 _compositeDirectory.ReleaseResources(_contentCount);
@@ -80,8 +83,9 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 // 無効時にコマンドを解除
                 _applicationCommands.RightShiftImageGroupCommand.UnregisterCommand(ImagesRightShiftCommand);
                 _applicationCommands.LeftShiftImageGroupCommand.UnregisterCommand(ImagesLeftShiftCommand);
-                _applicationCommands.SelectNextImageCommand.UnregisterCommand(_selectImageMoveNext);
-                _applicationCommands.SelectPrevImageCommand.UnregisterCommand(_selectImageMovePrev);
+                _applicationCommands.SelectNextImageCommand.UnregisterCommand(_selectImageMoveNextCommand);
+                _applicationCommands.SelectPrevImageCommand.UnregisterCommand(_selectImageMovePrevCommand);
+                _applicationCommands.ReloadImageDirectoryCommand.UnregisterCommand(_reloadImageDirectoryCommand);
 
                 // 非アクティブ時に溜まった回転数をModelに通知する
                 AdaptImagesShift();

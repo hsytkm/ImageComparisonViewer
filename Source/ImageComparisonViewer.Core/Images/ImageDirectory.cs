@@ -27,24 +27,22 @@ namespace ImageComparisonViewer.Core.Images
             set
             {
                 if (SetProperty(ref _directoryPath, value))
-                {
-                    // ディレクトリ内の画像PATHを読み出し
-                    _imageFiles.ClearWithDispose();
-                    if (value != null)
-                    {
-                        foreach (var path in value.GetImageFilesPathInDirectory(SearchOption.TopDirectoryOnly))
-                            _imageFiles.Add(new ImageFile(path));
-                    }
-
-                    // ディレクトリが変化したら先頭ファイルに上書きする
-                    if (SelectedFilePath?.ToDirectoryPath() != value)
-                    {
-                        SelectedFilePath = value?.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
-                    }
-                }
+                    UpdateDirectoryPath(_directoryPath);
             }
         }
         private string? _directoryPath = default!;
+
+        /// <summary>ディレクトリ内の画像PATHを読み出し</summary>
+        /// <param name="dirPath"></param>
+        private void UpdateDirectoryPath(string? dirPath)
+        {
+            _imageFiles.ClearWithDispose();
+            if (dirPath != null)
+            {
+                foreach (var path in dirPath.GetImageFilesPathInDirectory(SearchOption.TopDirectoryOnly))
+                    _imageFiles.Add(new ImageFile(path));
+            }
+        }
 
         /// <summary>
         /// 選択中のファイル(未選択ならnull)
@@ -55,16 +53,32 @@ namespace ImageComparisonViewer.Core.Images
             set
             {
                 if (SetProperty(ref _selectedFilePath, value))
-                {
-                    // ファイルドロップ時のディレクトリ変更(常に書き込みしてOK)
-                    DirectoryPath = value?.ToDirectoryPath();
-
-                    // ディレクトリ更新後に主画像を読み込み
                     _ = UpdateSelectedMainImageAsync();
-                }
             }
         }
         private string? _selectedFilePath = default!;
+
+        /// <summary>画像ファイルドロップ時の処理</summary>
+        /// <param name="filePath"></param>
+        public void SetDroppedFilePath(string filePath)
+        {
+            var newDirPath = filePath?.ToDirectoryPath();
+            if (DirectoryPath != newDirPath)
+            {
+                DirectoryPath = newDirPath;
+            }
+            else
+            {
+                // ディレクトリに変化がない場合は明示的に再読込みを指示する
+                UpdateDirectoryPath(DirectoryPath);
+            }
+
+            // ディレクトリ更新後にファイルを選択するルール
+            SelectedFilePath = filePath;
+
+            // 同フォルダの更新だとViewportのサイズ変更が発生しないので自分でサムネイルを更新
+            UpdateThumbnails(_thumbnailLoadParam);
+        }
 
         /// <summary>
         /// 選択中の主画像(未選択ならnull)
@@ -133,8 +147,16 @@ namespace ImageComparisonViewer.Core.Images
         /// <param name="viewportRatio">表示領域の割合(0~1)</param>
         public void UpdateThumbnails(double centerRatio, double viewportRatio)
         {
+            _thumbnailLoadParam = (centerRatio, viewportRatio);
+            UpdateThumbnails(_thumbnailLoadParam);
+        }
+
+        private (double centerRatio, double viewportRatio) _thumbnailLoadParam;
+
+        private void UpdateThumbnails((double centerRatio, double viewportRatio) input)
+        {
             // 画像が0個のときは0が通知される
-            if (centerRatio == 0 || viewportRatio == 0) return;
+            if (input.centerRatio == 0 || input.viewportRatio == 0) return;
 
             int length = ImageFiles.Count;
             if (length == 0) return;
@@ -142,8 +164,8 @@ namespace ImageComparisonViewer.Core.Images
             //Debug.WriteLine($"Thumbnail Update() center={centerRatio:f2} viewport={viewportRatio:f2}");
 
             int margin = 1; // 表示マージン(左右に1個余裕持たせる)
-            int centerIndex = (int)Math.Floor(length * centerRatio);        // 切り捨て
-            int countRaw = (int)Math.Ceiling(length * viewportRatio);       // 切り上げ
+            int centerIndex = (int)Math.Floor(length * input.centerRatio);  // 切り捨て
+            int countRaw = (int)Math.Ceiling(length * input.viewportRatio); // 切り上げ
             int start = Math.Max(0, centerIndex - (countRaw / 2) - margin); // 一つ余分に描画する
             int end = Math.Min(length - 1, start + countRaw + margin);      // 一つ余分に描画する
             int count = end - start + 1;
@@ -185,6 +207,19 @@ namespace ImageComparisonViewer.Core.Images
                 sb.Append(thumb.IsUnloadThumbnailImage ? "□" : "■");
             }
             Debug.WriteLine(sb.ToString());
+        }
+
+        /// <summary>画像再読み込み(F5)</summary>
+        public void ReloadImageDirectory()
+        {
+            var path = SelectedFilePath;
+
+            // 更新時に選択画像が消えていた場合はディレクトリの先頭画像に切り替える
+            if (!File.Exists(path))
+                path = DirectoryPath?.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
+
+            // 同じ画像をドロップされた扱いにすることで再読み込みする
+            if (path != null) SetDroppedFilePath(path);
         }
 
         /// <summary>

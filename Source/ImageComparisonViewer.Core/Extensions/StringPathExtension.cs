@@ -30,7 +30,7 @@ namespace ImageComparisonViewer.Core.Extensions
                 return IsSupportedImageFile(sourcePath);
 
             if (Directory.Exists(sourcePath))
-                return GetImageFilesPathInDirectory(sourcePath, SearchOption.TopDirectoryOnly).Any();
+                return GetImageFilesPathInDirectory(sourcePath, SearchOption.AllDirectories).Any();
 
             return false;
         }

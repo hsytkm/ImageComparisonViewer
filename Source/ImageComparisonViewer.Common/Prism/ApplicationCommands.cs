@@ -21,6 +21,9 @@ namespace ImageComparisonViewer.Common.Prism
 
         /// <summary>表示画像の切り替え(戻)コマンド</summary>
         CompositeCommand SelectPrevImageCommand { get; }
+
+        /// <summary>画像ディレクトリの再読込み(F5)</summary>
+        CompositeCommand ReloadImageDirectoryCommand { get; }
     }
 
     public class ApplicationCommands : IApplicationCommands
@@ -33,6 +36,8 @@ namespace ImageComparisonViewer.Common.Prism
 
         public CompositeCommand SelectNextImageCommand { get; } = new CompositeCommand();
         public CompositeCommand SelectPrevImageCommand { get; } = new CompositeCommand();
+
+        public CompositeCommand ReloadImageDirectoryCommand { get; } = new CompositeCommand();
 
     }
 }

@@ -6,7 +6,9 @@ using Prism.Ioc;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
 namespace ICV.Control.ThumbnailList
@@ -46,7 +48,7 @@ namespace ICV.Control.ThumbnailList
 
             // 選択候補サムネイル要素の作成
             ThumbnailSources = imageDirectory.ImageFiles
-                .ToReadOnlyReactiveCollection(x => new Thumbnail(x.FilePath))
+                .ToReadOnlyReactiveCollection(x => new Thumbnail(x.FilePath), scheduler: Scheduler.CurrentThread)
                 .AddTo(CompositeDisposable);
 
 #pragma warning disable CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。

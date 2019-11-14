@@ -37,9 +37,7 @@ namespace ICV.Control.ExplorerAddressBar
         public DelegateCommand CollapsedTextBoxCommand { get; } = default!;
         #endregion
 
-        /// <summary>
-        /// 対象ディレクトリ
-        /// </summary>
+        /// <summary>対象ディレクトリ</summary>
         public ReactiveProperty<string> TargetDirectory { get; } = default!;
 
         #region ItemsControl(DirectoryNodes)
@@ -55,10 +53,11 @@ namespace ICV.Control.ExplorerAddressBar
              new ReactiveProperty<IList<DirectoryPathNode>>(mode: ReactivePropertyMode.None);
         #endregion
 
-        /// <summary>
-        /// TextBox確定時のコマンド
-        /// </summary>
-        public DelegateCommand<string> TextInputCommand { get; } = default!;
+        /// <summary>TextBox入力の確定コマンド</summary>
+        public DelegateCommand<string> TextEnterCommand { get; } = default!;
+
+        /// <summary>TextBox入力のキャンセルコマンド</summary>
+        public DelegateCommand TextCancelCommand { get; } = default!;
 
         public ExplorerAddressBarViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
@@ -99,13 +98,16 @@ namespace ICV.Control.ExplorerAddressBar
             #endregion
 
             // TextBox入力確定時のディレクトリ通知
-            TextInputCommand = new DelegateCommand<string>(path =>
+            TextEnterCommand = new DelegateCommand<string>(path =>
             {
                 if (Directory.Exists(path))
                     TargetDirectory.Value = path;
 
                 IsVisibleDirectoryNode.TurnOn();
             });
+
+            // キャンセル時は表示切替のみ(テキストボックスに入力中の文字は残している)
+            TextCancelCommand = new DelegateCommand(() => IsVisibleDirectoryNode.TurnOn());
 
         }
 

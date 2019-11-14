@@ -56,7 +56,7 @@ namespace ImageComparisonViewer.Core.Images
             for (int i = 0; i < length; i++)
             {
                 int index = (baseIndex + i) % ImageDirectries.Count;
-                ImageDirectries[index].SelectedFilePath = filesPath[i];
+                ImageDirectries[index].SetDroppedFilePath(filesPath[i]);
             }
 
             return !isNavigate ? default(int?) : length;

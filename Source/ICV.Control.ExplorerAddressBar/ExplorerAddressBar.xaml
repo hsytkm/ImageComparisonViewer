@@ -67,9 +67,11 @@
                 
             <TextBox.InputBindings>
                 <KeyBinding Gesture="Enter"
-                            Command="{Binding TextInputCommand, Mode=OneTime}"
+                            Command="{Binding TextEnterCommand, Mode=OneTime}"
                             CommandParameter="{Binding Text, Mode=OneWay,
                                                        RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
+                <KeyBinding Gesture="Escape"
+                            Command="{Binding TextCancelCommand, Mode=OneTime}" />
             </TextBox.InputBindings>
         </TextBox>
     </Grid>
