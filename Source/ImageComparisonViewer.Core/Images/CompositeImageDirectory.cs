@@ -1,5 +1,4 @@
-﻿using ImageComparisonViewer.Common.Extensions;
-using ImageComparisonViewer.Core.Extensions;
+﻿using ImageComparisonViewer.Core.Extensions;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -90,7 +89,7 @@ namespace ImageComparisonViewer.Core.Images
         }
 
         /// <summary>
-        /// 指定された画像グループ以降の保持リソースを破棄する
+        /// 保持リソースを破棄する(指定された画像グループ以降のリソース破棄に使用)
         /// </summary>
         /// <param name="targetContentCount">対象の画像コンテンツ数(2なら2画面なので3画面以上の情報を削除)</param>
         public void ReleaseResources(int targetContentCount)

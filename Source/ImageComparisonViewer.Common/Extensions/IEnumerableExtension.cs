@@ -28,5 +28,20 @@ namespace ImageComparisonViewer.Common.Extensions
             return impl();
         }
 
+        /// <summary>
+        /// ForEach for IEnumerable
+        /// </summary>
+        /// <typeparam name="T">Type</typeparam>
+        /// <param name="sequence">Sequence</param>
+        /// <param name="action">Action</param>
+        public static void ForEach<T>(this IEnumerable<T> sequence, Action<T> action)
+        {
+            if (sequence is null) throw new ArgumentNullException(nameof(sequence));
+            if (action is null) throw new ArgumentNullException(nameof(action));
+
+            foreach (T item in sequence)
+                action(item);
+        }
+
     }
 }

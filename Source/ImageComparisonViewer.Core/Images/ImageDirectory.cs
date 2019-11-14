@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.Common.Extensions;
+using ImageComparisonViewer.Common.Utils;
 using ImageComparisonViewer.Core.Extensions;
 using Prism.Mvvm;
 using System;
@@ -15,7 +16,7 @@ namespace ImageComparisonViewer.Core.Images
     /// <summary>
     /// 画像ディレクトリ
     /// </summary>
-    public class ImageDirectory : BindableBase
+    public class ImageDirectory : BindableBase, IDisposable
     {
         /// <summary>
         /// ディレクトリPATH(未選択ならnull)
@@ -83,6 +84,9 @@ namespace ImageComparisonViewer.Core.Images
 
         public ImageDirectory() { }
 
+        // 主画像のTask管理(最終の処理のみを採用)
+        private readonly CompositeCancellationTokenSource _mainImageCompositeCancellationTokenSource = new CompositeCancellationTokenSource();
+
         /// <summary>
         /// 主画像の読み込み
         /// </summary>
@@ -95,21 +99,28 @@ namespace ImageComparisonViewer.Core.Images
                 return;
             }
 
-            var unloads = ImageFiles.Where(x => x.FilePath != imagePath);
-            foreach (var unload in unloads)
-            {
-                unload.UnloadFullImage();
-            }
-
             // 以下なら更新不要(いる?)
             //if (SelectedImage?.StreamSource is FileStream fs && fs.Name == imagePath) return;
 
             var load = ImageFiles.FirstOrDefault(x => x.FilePath == imagePath);
             if (load != null)
             {
-                await load.LoadFullImageAsync();
-                SelectedImage = load.FullImage;
+                var cancelToken = _mainImageCompositeCancellationTokenSource.GetCancellationToken();
+                var image = await load.LoadFullImageAsync(cancelToken);
+
+                if (cancelToken.IsCancellationRequested)
+                {
+                    //Debug.WriteLine($"Discard FullImage: {load.FilePath}");
+                    return;
+                }
+
+                // 正常終了時に処理中のTokenをクリア
+                _mainImageCompositeCancellationTokenSource.Clear();
+                SelectedImage = image;
             }
+
+            // 画像読出し完了後に他画像を開放
+            ImageFiles.Where(x => x.FilePath != imagePath).ForEach(unload => unload.UnloadFullImage());
         }
 
         /// <summary>
@@ -176,13 +187,7 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>
         /// 保持リソースの破棄
         /// </summary>
-        public void ReleaseResources()
-        {
-            foreach (var imageFile in ImageFiles)
-            {
-                imageFile.UnloadThumbnailImage();
-            }
-        }
+        public void ReleaseResources() => ImageFiles.ForEach(imageFile => imageFile.ReleaseResource());
 
         /// <summary>
         /// 選択画像を1つ進める
@@ -209,6 +214,26 @@ namespace ImageComparisonViewer.Core.Images
         }
 
         public override string ToString() => SelectedFilePath ?? "null";
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                }
+                _mainImageCompositeCancellationTokenSource.Dispose();
+
+                disposedValue = true;
+            }
+        }
+
+        void IDisposable.Dispose() => Dispose(true);
+        #endregion
     }
 
 }

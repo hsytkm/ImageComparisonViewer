@@ -2,6 +2,7 @@
 using Prism.Mvvm;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -31,14 +32,14 @@ namespace ImageComparisonViewer.Core.Images
         }
         private BitmapSource? _thumbnail;
 
-        public bool IsLoadThumbnailImage => !(Thumbnail is null);
+        public bool IsLoadThumbnailImage => Thumbnail != null;
         public bool IsUnloadThumbnailImage => Thumbnail is null;
 
         public async Task LoadThumbnailImageAsync()
         {
             if (Thumbnail is null)
             {
-                await Task.Run(() => Thumbnail = FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
+                Thumbnail = await Task.Run(() => FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax));
                 //Debug.WriteLine($"Load Thumbnail: {FilePath}");
             }
         }
@@ -64,13 +65,22 @@ namespace ImageComparisonViewer.Core.Images
         }
         private BitmapSource? _fullImage;
 
-        public async Task LoadFullImageAsync()
+        public async Task<BitmapSource?> LoadFullImageAsync(CancellationToken cancelToken)
         {
-            if (FullImage is null)
+            var image = FullImage;
+            if (image is null)
             {
-                await Task.Run(() => FullImage = FilePath.ToBitmapImage());
+                image = await Task.Run(() => FilePath.ToBitmapImage());
                 //Debug.WriteLine($"Load FullImage: {FilePath}");
+
+                if (cancelToken.IsCancellationRequested)
+                {
+                    //Debug.WriteLine($"Discard FullImage: {FilePath}");
+                    return null;
+                }
+                FullImage = image;
             }
+            return image;
         }
 
         public void UnloadFullImage()
@@ -88,9 +98,16 @@ namespace ImageComparisonViewer.Core.Images
             FilePath = path;
         }
 
+        public void ReleaseResource()
+        {
+            UnloadThumbnailImage();
+            UnloadFullImage();
+        }
+
         public void Dispose()
         {
             //Debug.WriteLine($"Dispose: {FilePath}");
+            ReleaseResource();
         }
 
     }

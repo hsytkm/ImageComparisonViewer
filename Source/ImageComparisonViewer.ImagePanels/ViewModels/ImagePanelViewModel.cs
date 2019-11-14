@@ -44,13 +44,13 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
                 .Subscribe(paths => compositeDirectory.SetDroppedPaths(ContentIndex, paths))
                 .AddTo(CompositeDisposable);
 
-            // 読み出しディレクトリ購読
+            // 読み出しディレクトリ購読(デバッグ用)
             DirectoryPath = imageDirectory
                 .ObserveProperty(x => x.DirectoryPath)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
 
-            // 選択ファイル購読
+            // 選択ファイル購読(デバッグ用)
             SelectedImagePath = imageDirectory
                 .ObserveProperty(x => x.SelectedFilePath)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.DistinctUntilChanged)
