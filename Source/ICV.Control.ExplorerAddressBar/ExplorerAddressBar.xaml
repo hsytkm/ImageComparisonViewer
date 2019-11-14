@@ -35,7 +35,7 @@
         <!-- ディレクトリノード(内部でViewをリスト管理) -->
         <!-- ItemsControl攻略 ～ 外観のカスタマイズ http://grabacr.net/archives/1240 -->
         <!-- Standard Controls - ItemsControl http://yujiro15.net/YKSoftware/StandardControls_ItemsControl.html -->
-        <v:HorizontalItemsThinControl VisibleItemMin="1"
+        <v:HorizontalItemsThinControl VisibleItemMin="2"
                                       Background="Transparent"
                                       Width="{Binding ActualWidth, Mode=OneWay,
                                                       RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -48,12 +48,6 @@
                     <r:EventToReactiveCommand Command="{Binding VisibleTextBoxCommand, Mode=OneTime}" />
                 </i:EventTrigger>
             </i:Interaction.Triggers>
-
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
         </v:HorizontalItemsThinControl>
 
         <!-- 入力用(EnterKeyで確定) -->
@@ -64,7 +58,7 @@
             <i:Interaction.Behaviors>
                 <vb:VisibilityFocusGetTextBoxBehavior />
             </i:Interaction.Behaviors>
-                
+
             <TextBox.InputBindings>
                 <KeyBinding Gesture="Enter"
                             Command="{Binding TextEnterCommand, Mode=OneTime}"

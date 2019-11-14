@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace ICV.Control.ExplorerAddressBar
 {
@@ -11,6 +12,9 @@ namespace ICV.Control.ExplorerAddressBar
     /// </summary>
     class HorizontalItemsThinControl : ItemsControl
     {
+        // バー右側の非表示領域の幅
+        private const double _marginWidth = 25;
+
         // ItemsSourceの最小表示数
         public int VisibleItemMin
         {
@@ -22,18 +26,35 @@ namespace ICV.Control.ExplorerAddressBar
 
         public HorizontalItemsThinControl()
         {
-            SizeChanged += OnSizeChanged;
+            SizeChanged += ItemsControl_OnSizeChanged;
+
+            // ItemsSource変化時の再描画
+            //  <ItemsControl.ItemsPanel>
+            //      <ItemsPanelTemplate>
+            //          <StackPanel Orientation="Horizontal" />
+            //      </ItemsPanelTemplate>
+            //  </ItemsControl.ItemsPanel>
+            var factoryPanel = new FrameworkElementFactory(typeof(StackPanel));
+            factoryPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+            factoryPanel.AddHandler(FrameworkElement.SizeChangedEvent, new SizeChangedEventHandler(ChildPanel_OnSizeChanged));
+            this.ItemsPanel = new ItemsPanelTemplate { VisualTree = factoryPanel };
         }
 
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void ItemsControl_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            OnParentWidthChanged(e.NewSize.Width);
+            UpdateItemsSourceVisibility(e.NewSize.Width);
         }
 
-        private void OnParentWidthChanged(double visibleWidth)
+        private void ChildPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var parent = VisualTreeHelper.GetParent((DependencyObject)sender);
+            UpdateItemsSourceVisibility(((FrameworkElement)parent).ActualWidth);
+        }
+
+        private void UpdateItemsSourceVisibility(double visibleWidth)
         {
             var elements = this.ItemsSource.Cast<FrameworkElement>().ToArray();
-            double sumWidth = 0;
+            double sumWidth = _marginWidth;   // 余白分を確保しておく
 
             for (int counter = 1; counter <= elements.Length; counter++)
             {

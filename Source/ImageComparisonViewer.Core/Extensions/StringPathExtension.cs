@@ -90,8 +90,13 @@ namespace ImageComparisonViewer.Core.Extensions
             if (!Directory.Exists(directoryPath))
                 throw new DirectoryNotFoundException(directoryPath);
 
-            return Directory.EnumerateFiles(directoryPath, "*", searchOption)
-                .Where(p => p.IsSupportedImageFile());
+            try
+            {
+                return Directory.EnumerateFiles(directoryPath, "*", searchOption)
+                    .Where(p => p.IsSupportedImageFile());
+            }
+            catch (UnauthorizedAccessException) { }
+            return Enumerable.Empty<string>();
         }
 
         /// <summary>
