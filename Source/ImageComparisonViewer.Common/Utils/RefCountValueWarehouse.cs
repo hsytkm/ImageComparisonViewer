@@ -74,6 +74,40 @@ namespace ImageComparisonViewer.Common.Utils
         private readonly ReaderWriterLockSlim _rwlock = new ReaderWriterLockSlim();
 
         /// <summary>
+        /// 辞書にデータがあれば取得(存在しなければnull)
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private TValueType? GetValueFromDictionary(TKey key)
+        {
+            if (_keyValues.TryGetValue(key, out var pair))
+            {
+                pair.IncrementReferenceCounter();
+                //Debug.WriteLine($"GetValue(n): Count={pair.GetRefCounter()} Key={key}");
+                return pair.GetValue();
+            }
+            return default;
+        }
+
+        /// <summary>
+        /// 辞書にデータがあれば取得(存在しなければnull)
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public TValueType? RentValueIfExist(TKey key)
+        {
+            try
+            {
+                _rwlock.EnterReadLock();
+                return GetValueFromDictionary(key);
+            }
+            finally
+            {
+                _rwlock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
         /// 辞書からデータを取得(辞書に存在しなければ作成して登録)
         /// </summary>
         /// <param name="key"></param>
@@ -85,12 +119,8 @@ namespace ImageComparisonViewer.Common.Utils
             {
                 _rwlock.EnterUpgradeableReadLock();
 
-                if (_keyValues.TryGetValue(key, out var pair))
-                {
-                    pair.IncrementReferenceCounter();
-                    //Debug.WriteLine($"RentValue(n): Count={pair.GetRefCounter()} Key={key}");
-                    return pair.GetValue();
-                }
+                var value = GetValueFromDictionary(key);
+                if (value != default) return value;
 
                 // Create -> Add
                 var newValue = func.Invoke();
@@ -105,6 +135,13 @@ namespace ImageComparisonViewer.Common.Utils
             {
                 _rwlock.ExitUpgradeableReadLock();
             }
+        }
+
+        public TValueType RentValueAsync(TKey key, Func<TValueType?> func)
+        {
+            // 非同期：awaitを含むコードをロックするには？（SemaphoreSlim編）
+            // https://www.atmarkit.co.jp/ait/articles/1411/11/news117.html
+            throw new NotImplementedException();
         }
 
         /// <summary>

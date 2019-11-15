@@ -62,11 +62,11 @@ namespace ICV.Control.ExplorerAddressBar
         //}
 
         /// <summary>
-        /// FullPathを整形(ViewModelに入ってくるPATH)
+        /// FullPathを整形(ModelからViewModelに入ってくるPATH)
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static string EmendFullPathToViewModel(string path)
+        public static string EmendFullPathFromModel(string path)
         {
             if (string.IsNullOrEmpty(path)) return path;
 

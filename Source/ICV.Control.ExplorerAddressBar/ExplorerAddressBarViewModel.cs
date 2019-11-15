@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows;
+using System.Reactive.Linq;
 
 namespace ICV.Control.ExplorerAddressBar
 {
@@ -38,7 +38,8 @@ namespace ICV.Control.ExplorerAddressBar
         #endregion
 
         /// <summary>対象ディレクトリ</summary>
-        public ReactiveProperty<string> TargetDirectory { get; } = default!;
+        public ReactiveProperty<string> TargetDirectory { get; } =
+            new ReactiveProperty<string>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
         #region ItemsControl(DirectoryNodes)
         /// <summary>
@@ -71,12 +72,16 @@ namespace ICV.Control.ExplorerAddressBar
 
             #endregion
 
-            // Modelのディレクトリ(TwoWay)
-            TargetDirectory = imageDirectory
-                .ToReactivePropertyAsSynchronized(x => x.DirectoryPath,
-                    convert: m => DirectoryNode.EmendFullPathToViewModel((m is null) ? _defaultDirectory : m),
-                    convertBack: vm => DirectoryNode.EmendFullPathFromViewModel(vm),
-                    mode: ReactivePropertyMode.DistinctUntilChanged)
+            // directory from model
+            imageDirectory
+                .ObserveProperty(x => x.DirectoryPath)
+                .Select(path => (path is null) ? _defaultDirectory : path)
+                .Subscribe(path => DirectoryNode.EmendFullPathFromModel(path))
+                .AddTo(CompositeDisposable);
+
+            // directory to model
+            TargetDirectory
+                .Subscribe(path => imageDirectory.SetSelectedDictionaryPath(DirectoryNode.EmendFullPathFromViewModel(path)))
                 .AddTo(CompositeDisposable);
 
             #region ItemsControl(DirectoryNodes)

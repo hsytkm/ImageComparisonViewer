@@ -35,15 +35,21 @@ namespace ImageComparisonViewer.Core.Images
         public bool IsLoadThumbnailImage => Thumbnail != null;
         public bool IsUnloadThumbnailImage => Thumbnail is null;
 
-        public async Task LoadThumbnailImageAsync()
+        public async ValueTask LoadThumbnailImageAsync()
         {
             if (Thumbnail is null)
             {
-                BitmapSource? loadThumb() => FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
-                BitmapSource rentThumb() => _imageContentBackyard.ThumbnailWarehouse.RentValue(FilePath, loadThumb);
+                var warehouse = _imageContentBackyard.ThumbnailWarehouse;
 
-                Thumbnail = await Task.Run(() => rentThumb());
+                var image = warehouse.RentValueIfExist(FilePath);
+                if (image is null)
+                {
+                    // 辞書に存在しないのでTaskで登録
+                    BitmapSource? loadThumb() => FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
+                    image = await Task.Run(() => warehouse.RentValue(FilePath, loadThumb));
+                }
                 //Debug.WriteLine($"Load Thumbnail: {FilePath}");
+                Thumbnail = image;
             }
         }
 
@@ -69,15 +75,18 @@ namespace ImageComparisonViewer.Core.Images
         }
         private BitmapSource? _fullImage;
 
-        public async Task<BitmapSource?> LoadFullImageAsync(CancellationToken cancelToken)
+        public async ValueTask<BitmapSource?> LoadFullImageAsync(CancellationToken cancelToken)
         {
-            var image = FullImage;
-            if (image is null)
+            if (FullImage is null)
             {
-                BitmapSource? loadImage() => FilePath.ToBitmapImage();
-                BitmapSource rentImage() => _imageContentBackyard.FullImageWarehouse.RentValue(FilePath, loadImage);
+                var warehouse = _imageContentBackyard.FullImageWarehouse;
 
-                image = await Task.Run(() => rentImage());
+                var image = warehouse.RentValueIfExist(FilePath);
+                if (image is null)
+                {
+                    BitmapSource? loadImage() => FilePath.ToBitmapImage();
+                    image = await Task.Run(() => warehouse.RentValue(FilePath, loadImage));
+                }
                 //Debug.WriteLine($"Load FullImage: {FilePath}");
 
                 if (cancelToken.IsCancellationRequested)
@@ -87,7 +96,7 @@ namespace ImageComparisonViewer.Core.Images
                 }
                 FullImage = image;
             }
-            return image;
+            return FullImage;
         }
 
         public void UnloadFullImage()

@@ -80,6 +80,17 @@ namespace ImageComparisonViewer.Core.Images
             UpdateThumbnails(_thumbnailLoadParam);
         }
 
+        /// <summary>ディレクトリ選択時の処理</summary>
+        /// <param name="dirPath"></param>
+        public void SetSelectedDictionaryPath(string dirPath)
+        {
+            var path = dirPath.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
+            SetDroppedFilePath(path);
+            
+            // ディレクトリ設定を後出しにしないと、画像が存在しないのでディレクトリがnullになってしまう…
+            DirectoryPath = dirPath;
+        }
+
         /// <summary>
         /// 選択中の主画像(未選択ならnull)
         /// </summary>
@@ -112,7 +123,7 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>
         /// 主画像の読み込み
         /// </summary>
-        private async Task UpdateSelectedMainImageAsync()
+        private async ValueTask UpdateSelectedMainImageAsync()
         {
             var imagePath = SelectedFilePath;
             if (imagePath is null)
