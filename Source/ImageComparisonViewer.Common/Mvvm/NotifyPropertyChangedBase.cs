@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ImageComparisonViewer.Common.Mvvm
 {
+#if false
     // https://blog.okazuki.jp/entry/2015/05/09/124333
     public class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
@@ -18,4 +19,5 @@ namespace ImageComparisonViewer.Common.Mvvm
             return true;
         }
     }
+#endif
 }

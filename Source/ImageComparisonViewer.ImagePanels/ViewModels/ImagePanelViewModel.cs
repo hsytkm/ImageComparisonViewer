@@ -38,7 +38,7 @@ namespace ImageComparisonViewer.ImagePanels.ViewModels
             ContentCount = parameter.ContentCount;
 
             var applicationCommands = container.Resolve<IApplicationCommands>();
-            var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+            var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[ContentIndex];
 
             // ドロップファイル通知(ドロップ数に応じたTabに移行する)

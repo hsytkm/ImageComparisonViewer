@@ -1,24 +1,42 @@
-﻿using ImageComparisonViewer.Common.Utils;
-using ImageComparisonViewer.Core.Extensions;
+﻿using ImageComparisonViewer.Core.Extensions;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows.Media.Imaging;
 
 namespace ImageComparisonViewer.Core.Images
 {
-    internal class ImageContentBackyard
+    public interface ICompositeImageDirectory
     {
-        public RefCountValueWarehouse<string, BitmapSource> ThumbnailWarehouse =
-            new RefCountValueWarehouse<string, BitmapSource>();
+        /// <summary>
+        /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
+        /// </summary>
+        IList<ImageDirectory> ImageDirectries { get; }
 
-        public RefCountValueWarehouse<string, BitmapSource> FullImageWarehouse =
-            new RefCountValueWarehouse<string, BitmapSource>();
+        /// <summary>
+        /// ドロップされた複数のPATHを設定する
+        /// </summary>
+        /// <param name="baseIndex"></param>
+        /// <param name="droppedPaths"></param>
+        /// <returns>画像タブの指定(1画面=1, null=切替えなし)</returns>
+        int? SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths);
+
+        /// <summary>
+        /// 外部からの回転数通知に応じてコレクション要素をシフトする
+        /// </summary>
+        /// <param name="contentCount">通知元の最大コンテンツ数(2画面=2)</param>
+        /// <param name="rightShiftCount">右シフト回数(0=シフトなし)</param>
+        void AdaptImageListTracks(int contentCount, int rightShiftCount);
+
+        /// <summary>
+        /// 保持リソースを破棄する(指定された画像グループ以降のリソース破棄に使用)
+        /// </summary>
+        /// <param name="targetContentCount">対象の画像コンテンツ数(2なら2画面なので3画面以上の情報を削除)</param>
+        void ReleaseResources(int targetContentCount);
     }
 
-    public class CompositeImageDirectory : BindableBase
+    public class CompositeImageDirectory : BindableBase, ICompositeImageDirectory
     {
         // 画像ディレクトリの最大数
         private const int DirectriesCountMax = 3;
@@ -79,7 +97,7 @@ namespace ImageComparisonViewer.Core.Images
         /// 外部からの回転数通知に応じてコレクション要素をシフトする
         /// </summary>
         /// <param name="contentCount">通知元の最大コンテンツ数(2画面=2)</param>
-        /// <param name="rightShiftCount">右シフト回数</param>
+        /// <param name="rightShiftCount">右シフト回数(0=シフトなし)</param>
         public void AdaptImageListTracks(int contentCount, int rightShiftCount)
         {
             if (rightShiftCount == 0) return;   // 処理不要

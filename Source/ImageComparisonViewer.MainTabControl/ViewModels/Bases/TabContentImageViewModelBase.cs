@@ -21,7 +21,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 
         private readonly IContainerExtension _container;
         private readonly IRegionManager _regionManager;
-        private readonly CompositeImageDirectory _compositeDirectory;
+        private readonly ICompositeImageDirectory _compositeDirectory;
         private readonly IApplicationCommands _applicationCommands;
 
         public DelegateCommand ImagesRightShiftCommand { get; }
@@ -31,15 +31,14 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         private readonly DelegateCommand _reloadImageDirectoryCommand;
 
         public TabContentImageViewModelBase(
-            IContainerExtension container, IRegionManager regionManager, IApplicationCommands applicationCommands,
-            string title, int index)
+            IContainerExtension container, IRegionManager regionManager, string title, int index)
             : base(title)
         {
             _container = container;
             _regionManager = regionManager;
-            _applicationCommands = applicationCommands;
             _contentCount = index;
-            _compositeDirectory = container.Resolve<CompositeImageDirectory>();
+            _compositeDirectory = container.Resolve<ICompositeImageDirectory>();
+            _applicationCommands = container.Resolve<IApplicationCommands>();
 
             ImagesRightShiftCommand = new DelegateCommand(() => RightShiftViewModels());
             ImagesLeftShiftCommand = new DelegateCommand(() => LeftShiftViewModels());

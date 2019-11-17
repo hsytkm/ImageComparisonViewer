@@ -26,7 +26,7 @@ namespace ImageComparisonViewer.Common.Utils
 
         public void Clear()
         {
-            _tokenSources.ForEach(x => x.Dispose());
+            _tokenSources.ForEach(cts => cts.Dispose());
             _tokenSources.Clear();
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageComparisonViewer.Common.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -108,9 +109,11 @@ namespace ImageComparisonViewer.Core.Extensions
             //Debug.WriteLine($"Drag&Drop: {sourcePath}");
             string outputPath = default!;
 
-            // ショートカットを実PATHに変換
-            if (Path.GetExtension(sourcePath).ToLower() == ".lnk")
-                sourcePath = ToShortCutDestinationPath(sourcePath);
+            // ショートカットなら実PATHで上書き
+            if (sourcePath.TryGetShortCutDestinationPath(out var destPath))
+            {
+                sourcePath = destPath;
+            }
 
             // ディレクトリなら先頭のJPEGを取得
             if (Directory.Exists(sourcePath))
@@ -144,24 +147,6 @@ namespace ImageComparisonViewer.Core.Extensions
                 throw new NullReferenceException(nameof(outputPath));
 
             return outputPath;
-        }
-
-        /// <summary>
-        /// ショートカットPATHからターゲットPATHを取得する
-        /// </summary>
-        /// <param name="source"></param>
-        private static string ToShortCutDestinationPath(this string source)
-        {
-            // 参照の追加で「COM」の「Windows Script Host Object Model」をチェック
-
-            // オブジェクトの生成、注意：WshShellClassでない
-            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-
-            // ショートカットオブジェクトの生成、注意：キャストが必要
-            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(source);
-
-            //System.Diagnostics.Trace.WriteLine($"ShortcutTargetPath: {shortcut.TargetPath}");
-            return shortcut.TargetPath;
         }
 
     }

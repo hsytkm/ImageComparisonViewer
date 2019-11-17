@@ -41,7 +41,7 @@ namespace ImageComparisonViewer
             #endregion
 
             containerRegistry.RegisterSingleton<IApplicationCommands, ApplicationCommands>();
-            containerRegistry.RegisterSingleton<CompositeImageDirectory>();
+            containerRegistry.RegisterSingleton<ICompositeImageDirectory, CompositeImageDirectory>();
 
             LoadStartupImages(Container);
         }
@@ -58,7 +58,7 @@ namespace ImageComparisonViewer
         }
 
         #region CommandLineArgs
-        private static IReadOnlyList<string> _commandLineImagePathArgs = default!;
+        private static IReadOnlyList<string>? _commandLineImagePathArgs = default;
 
         private void Startup_CommandLineArgs(object sender, StartupEventArgs e)
         {
@@ -72,12 +72,13 @@ namespace ImageComparisonViewer
             var paths = _commandLineImagePathArgs;
             if (paths?.Count > 0)
             {
-                var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+                var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
                 var tabImageUpdate = compositeDirectory.SetDroppedPaths(baseIndex: 0, paths);
 
                 var applicationCommands = container.Resolve<IApplicationCommands>();
                 applicationCommands.OnInitializedTabContentImageCount = tabImageUpdate;
             }
+            _commandLineImagePathArgs = null;
         }
         #endregion
 

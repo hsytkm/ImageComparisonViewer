@@ -11,8 +11,8 @@ namespace ImageComparisonViewer.MainTabControl
 {
     public class MainTabControlModule : IModule
     {
-        private static readonly string MainTabContentRegion = nameof(MainTabContentRegion);
-        private static readonly int _imageCountMax = 3;  // Tripleまで対応
+        private const string MainTabContentRegion = nameof(MainTabContentRegion);
+        private const int _imageCountMax = 3;  // Tripleまで対応
 
         // Tabに登録するViews
         private static readonly Type[] _tabContentViewsType = new[]

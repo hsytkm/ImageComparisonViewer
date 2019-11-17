@@ -52,7 +52,7 @@ namespace ICV.Control.ZoomableImage.ViewModels
 
         public ZoomableImageViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
-            var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+            var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
             ImageSource = imageDirectory.ObserveProperty(x => x.SelectedImage)

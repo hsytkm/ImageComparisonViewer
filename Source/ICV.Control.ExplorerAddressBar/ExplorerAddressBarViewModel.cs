@@ -62,7 +62,7 @@ namespace ICV.Control.ExplorerAddressBar
 
         public ExplorerAddressBarViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
-            var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+            var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
             #region Visibility

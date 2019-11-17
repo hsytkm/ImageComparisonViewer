@@ -11,8 +11,8 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels
         private const string _title = "Double";
         private const int _index = 2;
 
-        public TabContentDoubleViewModel(IContainerExtension container, IRegionManager regionManager, IApplicationCommands applicationCommands)
-            : base(container, regionManager, applicationCommands, _title, _index)
+        public TabContentDoubleViewModel(IContainerExtension container, IRegionManager regionManager)
+            : base(container, regionManager, _title, _index)
         {
             Debug.WriteLine($"{nameof(TabContentDoubleViewModel): ctor}");
         }

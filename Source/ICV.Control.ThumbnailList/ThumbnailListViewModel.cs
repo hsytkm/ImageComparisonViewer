@@ -43,7 +43,7 @@ namespace ICV.Control.ThumbnailList
 
         public ThumbnailListViewModel(IContainerExtension container, ImageViewParameter parameter)
         {
-            var compositeDirectory = container.Resolve<CompositeImageDirectory>();
+            var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
             // 選択候補サムネイル要素の作成
