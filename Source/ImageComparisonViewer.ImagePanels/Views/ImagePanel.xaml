@@ -56,5 +56,8 @@
 
         <ContentControl Grid.Row="5" x:Name="ZoomableImageControl" />
 
+        <!--
+        <ContentControl Grid.Row="5" x:Name="ScrollImageViewer" />
+        -->
     </Grid>
 </mvvm:DisposableUserControl>

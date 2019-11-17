@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ICV.Control.ThumbnailList",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ICV.Control.ExplorerAddressBar", "ICV.Control.ExplorerAddressBar\ICV.Control.ExplorerAddressBar.csproj", "{C8B6D9F2-49BE-487D-A584-1D9A58F23A1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICV.Control.ZoomableImage", "ICV.Control.ZoomableImage\ICV.Control.ZoomableImage.csproj", "{C1E64ACA-D34B-46CF-AB24-D05439D6E094}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ICV.Control.ZoomableImage", "ICV.Control.ZoomableImage\ICV.Control.ZoomableImage.csproj", "{C1E64ACA-D34B-46CF-AB24-D05439D6E094}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICV.Control.ScrollImageViewer", "ICV.Control.ScrollImageViewer\ICV.Control.ScrollImageViewer.csproj", "{9ED2F2D0-2E33-4CE8-9DBB-2188A488DE15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{C1E64ACA-D34B-46CF-AB24-D05439D6E094}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1E64ACA-D34B-46CF-AB24-D05439D6E094}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1E64ACA-D34B-46CF-AB24-D05439D6E094}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ED2F2D0-2E33-4CE8-9DBB-2188A488DE15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ED2F2D0-2E33-4CE8-9DBB-2188A488DE15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ED2F2D0-2E33-4CE8-9DBB-2188A488DE15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ED2F2D0-2E33-4CE8-9DBB-2188A488DE15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
