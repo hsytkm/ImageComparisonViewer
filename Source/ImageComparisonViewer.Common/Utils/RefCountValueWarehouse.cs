@@ -49,11 +49,14 @@ namespace ImageComparisonViewer.Common.Utils
         {
             if (!disposedValue)
             {
-                if (disposing) { /* TODO: マネージ状態を破棄します (マネージ オブジェクト) */ }
+                if (disposing)
+                {
+                    /* TODO: マネージ状態を破棄します (マネージ オブジェクト) */
+                    if (_value is IDisposable d) d.Dispose();
+                }
 
                 // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
                 // TODO: 大きなフィールドを null に設定します。
-                if (_value is IDisposable d) d.Dispose();
                 _value = null;
 
                 disposedValue = true;
@@ -201,13 +204,15 @@ namespace ImageComparisonViewer.Common.Utils
         {
             if (!disposedValue)
             {
-                if (disposing) { /* TODO: マネージ状態を破棄します (マネージ オブジェクト) */ }
+                if (disposing)
+                {
+                    /* TODO: マネージ状態を破棄します (マネージ オブジェクト) */
+                    Clear();
+                    _rwlock.Dispose();
+                }
 
                 // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
                 // TODO: 大きなフィールドを null に設定します。
-
-                Clear();
-                _rwlock.Dispose();
 
                 disposedValue = true;
             }

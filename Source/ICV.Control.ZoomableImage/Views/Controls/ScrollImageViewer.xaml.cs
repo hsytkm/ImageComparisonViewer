@@ -1,6 +1,7 @@
 ﻿using ICV.Control.ZoomableImage.ViewModels;
 using ICV.Control.ZoomableImage.Views.Common;
 using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Common.Wpf;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;

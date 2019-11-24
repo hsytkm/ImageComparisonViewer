@@ -40,10 +40,10 @@ namespace ImageComparisonViewer.Common.Utils
                 if (disposing)
                 {
                     // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    this.Clear();
                 }
 
                 // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
-                this.Clear();
 
                 disposedValue = true;
             }

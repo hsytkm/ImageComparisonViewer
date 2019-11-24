@@ -37,7 +37,8 @@ namespace ICV.Control.ScrollImageViewer.Behaviors
             if (!(image.Source is BitmapSource bitmap)) return;
 
             var mode = (image.ActualWidth < bitmap.PixelWidth) || (image.ActualHeight < bitmap.PixelHeight)
-                ? BitmapScalingMode.HighQuality : BitmapScalingMode.NearestNeighbor;
+                ? BitmapScalingMode.Fant                // ズームで滲むが全体表示でジャギらない
+                : BitmapScalingMode.NearestNeighbor;    // ズームで画素見える
 
             RenderOptions.SetBitmapScalingMode(image, mode);
         }

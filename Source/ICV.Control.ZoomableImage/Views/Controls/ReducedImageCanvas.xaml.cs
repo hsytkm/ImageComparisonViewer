@@ -1,5 +1,6 @@
 ﻿using ICV.Control.ZoomableImage.Views.Common;
 using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Common.Wpf;
 using Reactive.Bindings.Extensions;
 using System;
 using System.Reactive.Linq;

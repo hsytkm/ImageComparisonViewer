@@ -15,9 +15,24 @@
     <ctrl:BasePanel ImageSource="{Binding ImageSource.Value, Mode=OneWay}"
                     IsLoadingImage="{Binding IsLoadingImage.Value, Mode=OneWay}" >
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button Height="20" Width="100" Content="ZoomAll" Command="{Binding ZoomAllCommand, Mode=OneTime}" />
+            <Button Height="20" Width="100" Content="ZoomX1" Command="{Binding ZoomX1Command, Mode=OneTime}" />
+            <Button Height="20" Width="100" Content="ZoomOffsetCenter" Command="{Binding OffsetCenterCommand, Mode=OneTime}" />
+        </StackPanel>
+
         <ctrl:ZoomableScrollViewer
             HorizontalScrollBarVisibility="Auto"
-            VerticalScrollBarVisibility="Auto" />
+            VerticalScrollBarVisibility="Auto"
+            ZoomPayload="{Binding ImageZoomPayload.Value, Mode=TwoWay}"
+            ScrollOffsetCenterRatioPayload="{Binding ImageScrollOffsetCenterRatio.Value, Mode=TwoWay}"
+            ImageCursorPoint="{Binding PointTest.Value, Mode=OneWayToSource}"
+            />
         
     </ctrl:BasePanel>
 </mvvm:DisposableUserControl>

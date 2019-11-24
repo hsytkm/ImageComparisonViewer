@@ -19,7 +19,7 @@ namespace ICV.Control.ScrollImageViewer.Behaviors
             get => (Point)GetValue(ImageCursorPointProperty);
             set => SetValue(ImageCursorPointProperty, value);
         }
-        private static readonly DependencyProperty ImageCursorPointProperty =
+        public static readonly DependencyProperty ImageCursorPointProperty =
             DependencyProperty.Register(nameof(ImageCursorPoint), typeof(Point), typeof(ImageMouseCursorBehavior));
 
         #endregion
@@ -55,7 +55,7 @@ namespace ICV.Control.ScrollImageViewer.Behaviors
                 var oy = Math.Floor(cursorPoint.Y * imageSourceSize.Height / (imageViewSize.Height - 1));
                 var y = clip(oy, 0, imageSourceSize.Height - 1);
 
-                Debug.WriteLine($"({imageSourceSize.Width:f2}, {imageSourceSize.Height:f2})  ({imageViewSize.Width:f2}, {imageViewSize.Height:f2})  ({cursorPoint.X:f2}, {cursorPoint.Y:f2})  ({ox}, {oy})  ({x}, {y})");
+                //Debug.WriteLine($"({imageSourceSize.Width:f2}, {imageSourceSize.Height:f2})  ({imageViewSize.Width:f2}, {imageViewSize.Height:f2})  ({cursorPoint.X:f2}, {cursorPoint.Y:f2})  ({ox}, {oy})  ({x}, {y})");
 
                 ImageCursorPoint = new Point(x, y);
             }

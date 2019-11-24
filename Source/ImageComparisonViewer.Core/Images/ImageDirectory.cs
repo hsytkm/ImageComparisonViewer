@@ -279,8 +279,8 @@ namespace ImageComparisonViewer.Core.Images
                 if (disposing)
                 {
                     // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    _mainImageCompositeCancellationTokenSource.Dispose();
                 }
-                _mainImageCompositeCancellationTokenSource.Dispose();
 
                 disposedValue = true;
             }

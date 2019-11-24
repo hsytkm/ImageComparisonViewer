@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageComparisonViewer.Common.Wpf;
+using System;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Windows.Controls;
@@ -27,18 +28,14 @@ namespace ImageComparisonViewer.Common.Mvvm
                     {
                         vmodel.Dispose();
                     }
-                    DataContext = null;     // メモリリークしてる気がするので明示的に(気のせいかも…)
 
                     // 全ての子コントロールをDispose(◆孫が何度もDisposeされて気になる…)
-                    foreach (var child in ViewHelper.Descendants(this))
-                    {
-                        if (child is IDisposable disposable)
-                            disposable.Dispose();
-                    }
+                    this.DisposeDescendants();
                 }
 
                 // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
                 // TODO: 大きなフィールドを null に設定します。
+                DataContext = null; // メモリリークしてる気がするので明示的に(気のせいかも…)
 
                 disposedValue = true;
             }
