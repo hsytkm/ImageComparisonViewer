@@ -4,9 +4,9 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
 {
     public readonly struct ImageZoomPayload : IEquatable<ImageZoomPayload>
     {
-        private static readonly double _magRatioMin = Math.Pow(2, -5);   // 3.1%
-        private static readonly double _magRatioMax = Math.Pow(2, 7);    // 12800%
-        private static readonly double _magStep = 2.0;                   // 2倍
+        private static readonly double _magRatioMin = Math.Pow(2, -5);  // 3.1%
+        private static readonly double _magRatioMax = Math.Pow(2, 7);   // 12800%
+        private const double _magStep = 2.0;                            // 2倍
 
         /// <summary>全体表示フラグ</summary>
         public readonly bool IsEntire;
@@ -31,7 +31,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             return new ImageZoomPayload(false, newMag);
         }
 
-        public ImageZoomPayload ZoomMagnification(double currentMag, bool isZoomIn)
+        public static ImageZoomPayload ZoomMagnification(double currentMag, bool isZoomIn)
         {
             var step = isZoomIn ? _magStep : (1 / _magStep);
             return ZoomMagnification(currentMag, step);
@@ -53,6 +53,16 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         public override int GetHashCode()
         {
             return HashCode.Combine(IsEntire, MagRatio);
+        }
+
+        public static bool operator ==(ImageZoomPayload left, ImageZoomPayload right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ImageZoomPayload left, ImageZoomPayload right)
+        {
+            return !(left == right);
         }
         #endregion
 

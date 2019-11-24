@@ -225,11 +225,12 @@ namespace ICV.Control.ScrollImageViewer.Controls
              * [] ControlのリストをGridに詰め込んで、Contentにしたい
              * [x] ViewModelから倍率と表示位置を要求する
              * [x] ViewModelに倍率と表示位置を通知する
+             * [x] マウスホイールでズーム倍率を変更する
+             * [x] マウスドラッグで表示位置を変更する
+             * [x] ViewModelにカーソル位置を通知する
+             * [] ズーム変更時に表示中央にズームする
              * [] ダブルクリックでズーム倍率を変更する
              * [] シングルクリックでズーム倍率を一時的に変更する
-             * [x] マウスホイールでズーム倍率を変更する
-             * [] マウスドラッグで表示位置を変更する
-             * [x] ViewModelにカーソル位置を通知する
              * [] ViewModelからサンプリング枠の表示を切り替えたい
              * [] ViewModelにサンプリング枠の位置を通知したい
              */
@@ -286,7 +287,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
                 double oldZoomMagRatio = GetCurrentImageZoomMagRatio();
 
                 // ズーム適用
-                var newImageZoom = oldImageZoom.ZoomMagnification(oldZoomMagRatio, isZoomIn);
+                var newImageZoom = ImageZoomPayload.ZoomMagnification(oldZoomMagRatio, isZoomIn);
 
                 // 全画面表示時を跨ぐ場合は全画面表示にする
                 // ◆厳密に比較しすぎて、マウスズーム変更時に似たようなズーム位置が連続するので、もっと雑に比較したほうが良い
@@ -377,20 +378,18 @@ namespace ICV.Control.ScrollImageViewer.Controls
         /// <summary>主画像</summary>
         private Image CreateMainImageControl()
         {
-            var image = new Image();
-
-            // ◆ズーム処理が無限ループで終わらないの暫定対策
-            image.UseLayoutRounding = true;
+            var image = new Image
+            {
+                UseLayoutRounding = true    // ◆ズーム処理が無限ループで終わらないの暫定対策
+            };
 
             var behaviors = Interaction.GetBehaviors(image);
-
             behaviors.Add(new ImageBitmapScalingBehavior());
 
-            var behavior = new ImageMouseCursorBehavior();
-            behavior.ToReadOnlyReactiveProperty<Point>(ImageMouseCursorBehavior.ImageCursorPointProperty)
-                .Subscribe(x => ImageCursorPoint = x)
+            // Imageコントロール上のマウス位置を実画像の座標系を取得
+            image.MouseMoveCursorOnImageAsObservable()
+                .Subscribe(point => ImageCursorPoint = point)
                 .AddTo(CompositeDisposable);
-            behaviors.Add(behavior);
 
             return image;
         }

@@ -4,6 +4,7 @@ using System.Windows.Input;
 
 namespace ICV.Control.ScrollImageViewer.Behaviors
 {
+#if false
     class MouseCaptureBehavior : BehaviorBase<FrameworkElement>
     {
         protected override void OnLoaded()
@@ -41,4 +42,5 @@ namespace ICV.Control.ScrollImageViewer.Behaviors
         }
 
     }
+#endif
 }

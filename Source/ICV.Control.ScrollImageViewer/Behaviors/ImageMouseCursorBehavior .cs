@@ -9,9 +9,10 @@ using System.Windows.Media.Imaging;
 
 namespace ICV.Control.ScrollImageViewer.Behaviors
 {
+#if false
     class ImageMouseCursorBehavior : BehaviorBase<Image>
     {
-        #region ImageCursorPointProperty(OneWayToSource)
+    #region ImageCursorPointProperty(OneWayToSource)
 
         /// <summary>View画像上のカーソル位置(画像Pixel座標系)</summary>
         public Point ImageCursorPoint
@@ -22,7 +23,7 @@ namespace ICV.Control.ScrollImageViewer.Behaviors
         public static readonly DependencyProperty ImageCursorPointProperty =
             DependencyProperty.Register(nameof(ImageCursorPoint), typeof(Point), typeof(ImageMouseCursorBehavior));
 
-        #endregion
+    #endregion
 
         protected override void OnLoaded()
         {
@@ -60,6 +61,6 @@ namespace ICV.Control.ScrollImageViewer.Behaviors
                 ImageCursorPoint = new Point(x, y);
             }
         }
-
     }
+#endif
 }

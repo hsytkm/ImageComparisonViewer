@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace ICV.Control.ScrollImageViewer.Extensions
 {
-    public static class MouseObservableExtensions
+    static class MouseObservableExtension
     {
 
         private static IObservable<MouseEventArgs> MouseLeaveAsObservable(this UIElement control, bool handled = false)
