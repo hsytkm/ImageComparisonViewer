@@ -4,7 +4,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
 {
     public readonly struct ImageZoomPayload : IEquatable<ImageZoomPayload>
     {
-        private static readonly double _magRatioMin = Math.Pow(2, -5);  // 3.1%
+        private static readonly double _magRatioMin = Math.Pow(2, -6);  // 1.5%
         private static readonly double _magRatioMax = Math.Pow(2, 7);   // 12800%
         private const double _magStep = 2.0;                            // 2倍
 
@@ -13,6 +13,8 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
 
         /// <summary>ズーム倍率(等倍=1.0)</summary>
         public readonly double MagRatio;
+
+        public static readonly ImageZoomPayload Entire = new ImageZoomPayload(true, double.NaN);
 
         public ImageZoomPayload(bool entire, double mag)
         {
@@ -66,5 +68,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         }
         #endregion
 
+        public override string ToString() =>
+            $"{nameof(IsEntire)}={IsEntire}, {nameof(MagRatio)}={MagRatio:f3}";
     }
 }

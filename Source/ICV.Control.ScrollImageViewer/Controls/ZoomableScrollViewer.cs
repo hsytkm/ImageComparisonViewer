@@ -52,24 +52,6 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
         private void OnZoomPayloadChanged(ImageZoomPayload imageZoom)
         {
-            // スクロールバーの表示を切り替える
-            void UpdateScrollBarVisibility(in ImageZoomPayload zoomMag)
-            {
-                var visible = ScrollBarVisibility.Hidden;
-
-                // ズームインならスクロールバーを表示
-                if (!zoomMag.IsEntire)
-                {
-                    if (GetEntireZoomMagRatio() < zoomMag.MagRatio)
-                        visible = ScrollBarVisibility.Visible;
-                }
-
-                this.HorizontalScrollBarVisibility = this.VerticalScrollBarVisibility = visible;
-            }
-
-            // 画像サイズの更新前にスクロールバーの表示を更新
-            UpdateScrollBarVisibility(imageZoom);
-
             var image = _mainImage;
             if (!imageZoom.IsEntire)
             {
@@ -128,6 +110,8 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var contentSize = _scrollContentPresenter.GetControlActualSize();
             var imageSize = _mainImage.GetControlActualSize();
 
+            if (contentSize.Width == 0 || contentSize.Height == 0) return;
+
             // 好き勝手に要求された位置を範囲制限する
             var rateRange = GetScrollOffsetRateRange(scrollViewer);
             var newOffset = new Point(
@@ -185,12 +169,17 @@ namespace ICV.Control.ScrollImageViewer.Controls
                 new FrameworkPropertyMetadata(default,
                     FrameworkPropertyMetadataOptions.AffectsMeasure
                     | FrameworkPropertyMetadataOptions.AffectsRender
+                    | FrameworkPropertyMetadataOptions.AffectsParentArrange
+                    | FrameworkPropertyMetadataOptions.AffectsParentMeasure
                     | FrameworkPropertyMetadataOptions.Inherits,
                     (d, e) => ((ZoomableScrollViewer)d).OnImageSourceChanged((BitmapSource)(e.NewValue))));
 
         private void OnImageSourceChanged(BitmapSource bitmapSource)
         {
             _mainImage.Source = bitmapSource;
+
+            // 画像変化時の表示更新
+            OnZoomPayloadChanged(ZoomPayload);
         }
 
         /// <summary>元画像の読込み中フラグ</summary>
@@ -227,8 +216,9 @@ namespace ICV.Control.ScrollImageViewer.Controls
              * [x] ViewModelに倍率と表示位置を通知する
              * [x] マウスホイールでズーム倍率を変更する
              * [x] マウスドラッグで表示位置を変更する
+             * [x] スクロールバー操作で表示位置を更新する
              * [x] ViewModelにカーソル位置を通知する
-             * [] ズーム変更時に表示中央にズームする
+             * [x] ズーム変更時に表示中央にズームする
              * [] ダブルクリックでズーム倍率を変更する
              * [] シングルクリックでズーム倍率を一時的に変更する
              * [] ViewModelからサンプリング枠の表示を切り替えたい
@@ -239,9 +229,11 @@ namespace ICV.Control.ScrollImageViewer.Controls
             {
                 if (((DependencyObject)sender).TryGetChildControl<ScrollContentPresenter>(out var presenter))
                 {
+                    presenter.Loaded += Presenter_Loaded;
                     presenter.SizeChanged += ScrollContentPresenter_SizeChanged;
 
                     presenter.MouseLeftDragVectorAsObservable()
+                        .Where(_ => IsZoomingIn(ZoomPayload))   // ズーム中以外は必要ない
                         .Subscribe(vec => Image_ScrollByVectorActualSize(vec))
                         .AddTo(CompositeDisposable);
 
@@ -249,20 +241,32 @@ namespace ICV.Control.ScrollImageViewer.Controls
                 }
             };
 
+            this.ScrollChanged += ScrollViewer_ScrollChanged;
+
             var selfBehaviors = Interaction.GetBehaviors(this);
             selfBehaviors.Add(new MouseHorizontalShiftBehavior());
             this.PreviewMouseWheel += ZoomableScrollViewer_PreviewMouseWheel;
 
             _mainImage = CreateMainImageControl();
-            _mainImage.SizeChanged += MainImage_SizeChanged;
+            _mainImage.SizeChanged += MainImage_SizeChanged_UpdateZoomPayload;
+            _mainImage.SizeChanged += MainImage_SizeChanged_UpdateScrollBarOffset;
 
             _contentGrid = CreateContentGridControl(_mainImage);
             this.Content = _contentGrid;
         }
 
+        private void Presenter_Loaded(object sender, RoutedEventArgs e)
+        {
+            // 全体表示中のタブ切り替えで画像表示
+            if (ZoomPayload.IsEntire)
+            {
+                OnZoomPayloadChanged(ZoomPayload);
+            }
+        }
+
         private void ScrollContentPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // 全画面表示中にスクロールバー削除なのでサイズが変化したらズーム倍率を更新する
+            // 全画面表示中にスクロールバー削除などでサイズが変化したらズーム倍率を更新する
             if (ZoomPayload.IsEntire)
             {
                 var entireRatio = GetEntireZoomMagRatio();
@@ -301,14 +305,98 @@ namespace ICV.Control.ScrollImageViewer.Controls
             }
         }
 
-        private void MainImage_SizeChanged(object sender, SizeChangedEventArgs e)
+        /// <summary>サイズ変更時にズーム倍率を設定</summary>
+        private void MainImage_SizeChanged_UpdateZoomPayload(object sender, SizeChangedEventArgs e)
         {
             var actualSize = e.NewSize;
             if (actualSize.Width == 0 || actualSize.Height == 0) return;
 
-            var sourceSize = ((Image)sender).GetImageSourcePixelSize();
+            var sourceSize = _mainImage.GetImageSourcePixelSize();
             var magRatio = GetZoomMagRatio(actualSize, sourceSize);
             ZoomPayload = new ImageZoomPayload(ZoomPayload.IsEntire, magRatio);
+        }
+
+        /// <summary>サイズ変更時にViewのスクロールバー位置を更新</summary>
+        private void MainImage_SizeChanged_UpdateScrollBarOffset(object sender, SizeChangedEventArgs e)
+        {
+            static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
+
+            var imageViewSize = e.NewSize;
+            var contentSize = _scrollContentPresenter.GetControlActualSize();
+            var centerRatio = ScrollOffsetCenterRatioPayload;
+
+            // 好き勝手に要求された位置を範囲制限する
+            var rateRange = GetScrollOffsetRateRange(this);
+            var newOffset = new Point(
+                clip(centerRatio.X, rateRange.widthMin, rateRange.widthMax),
+                clip(centerRatio.Y, rateRange.heightMin, rateRange.heightMax));
+
+            var contentSizeHalf = new Size(contentSize.Width / 2.0, contentSize.Height / 2.0);
+            //if (!contentSizeHalf.IsValidValue()) return;
+
+            var horiOffset = Math.Max(0.0, newOffset.X * imageViewSize.Width - contentSizeHalf.Width);
+            var vertOffset = Math.Max(0.0, newOffset.Y * imageViewSize.Height - contentSizeHalf.Height);
+
+            ScrollToHorizontalOffset(horiOffset);
+            ScrollToVerticalOffset(vertOffset);
+        }
+
+        /// <summary>スクロールバー操作時の表示位置の更新</summary>
+        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var imageViewActualSize = _mainImage.GetControlActualSize();
+            //if (!imageViewActualSize.IsValidValue()) return;
+
+            //var isEntire = !(e.ViewportWidth < e.ExtentWidth || e.ViewportHeight < e.ExtentHeight);
+
+            // サイズの判定が意図通り動作しないので、スクロールバーで判定する
+            var isEntire = this.HorizontalScrollBarVisibility == ScrollBarVisibility.Hidden
+                && this.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden;
+
+            Point newCenterRatio;
+
+            // 全体表示なら中央位置を上書き
+            if (isEntire)
+            {
+                newCenterRatio = new Point(0.5, 0.5);
+            }
+            else
+            {
+                // 表示が収まる場合は中央(0.5)
+                var pointX = (e.ViewportWidth >= imageViewActualSize.Width) ? 0.5
+                    : (e.HorizontalOffset + (e.ViewportWidth / 2.0)) / imageViewActualSize.Width;
+                var pointY = (e.ViewportHeight >= imageViewActualSize.Height) ? 0.5
+                    : (e.VerticalOffset + (e.ViewportHeight / 2.0)) / imageViewActualSize.Height;
+
+                newCenterRatio = new Point(pointX, pointY);
+            }
+            ScrollOffsetCenterRatioPayload = newCenterRatio;
+
+            // スクロールバーの表示切替
+            UpdateScrollBarVisibility(ZoomPayload);
+        }
+
+        /// <summary>スクロールバーの表示を切り替える</summary>
+        private void UpdateScrollBarVisibility(in ImageZoomPayload zoomMag)
+        {
+            var horiVisible = ScrollBarVisibility.Hidden;
+            var vertVisible = ScrollBarVisibility.Hidden;
+
+            // ズームインならスクロールバーを表示
+            if (IsZoomingIn(zoomMag))
+            {
+                var imageSize = _mainImage.GetControlActualSize();
+                var contentSize = _scrollContentPresenter.GetControlActualSize();
+
+                if (contentSize.Width < imageSize.Width)
+                    horiVisible = ScrollBarVisibility.Visible;
+
+                if (contentSize.Height < imageSize.Height)
+                    vertVisible = ScrollBarVisibility.Visible;
+            }
+
+            this.HorizontalScrollBarVisibility = horiVisible;
+            this.VerticalScrollBarVisibility = vertVisible;
         }
 
         #region ZoomSize/Ratio
@@ -351,6 +439,10 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var entireZoomImageSize = GetEntireZoomImageSize();
             return GetZoomMagRatio(entireZoomImageSize, imageSize);
         }
+
+        /// <summary>ズームイン中(全体orズームアウトでない)</summary>
+        private bool IsZoomingIn(in ImageZoomPayload zoom) =>
+            !zoom.IsEntire && GetEntireZoomMagRatio() < zoom.MagRatio;
 
         /// <summary>表示中画像のズーム倍率を返す</summary>
         /// <returns>ズーム倍率(1=100%=等倍)、計算不可時はNaN</returns>

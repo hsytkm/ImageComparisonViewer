@@ -33,11 +33,14 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
 
         // ズーム倍率の管理(TwoWay)
         public ReactiveProperty<ImageZoomPayload> ImageZoomPayload { get; } =
-            new ReactiveProperty<ImageZoomPayload>(mode: ReactivePropertyMode.DistinctUntilChanged);
+            new ReactiveProperty<ImageZoomPayload>(mode: ReactivePropertyMode.DistinctUntilChanged,
+                //initialValue: ViewModels.ImageZoomPayload.Entire);
+                initialValue: new ImageZoomPayload(false, 1.0));
 
         // スクロールオフセット位置(TwoWay)
         public ReactiveProperty<Point> ImageScrollOffsetCenterRatio { get; } =
-            new ReactiveProperty<Point>(mode: ReactivePropertyMode.DistinctUntilChanged);
+            new ReactiveProperty<Point>(mode: ReactivePropertyMode.DistinctUntilChanged,
+                initialValue: new Point(0.5, 0.5));
 
         // 実座標系のサンプリング枠の位置(TwoWay)
         public ReactiveProperty<Rect> SamplingFrameRect { get; } =
@@ -100,7 +103,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
                 .AddTo(CompositeDisposable);
 
             ImageScrollOffsetCenterRatio
-                .Subscribe(x => Debug.WriteLine($"{indexMessage}-ImageScrollOffsetCenterRatio: ({x.X:f2}, {x.Y:f2})"))
+                .Subscribe(x => Debug.WriteLine($"{indexMessage}-ImageScrollOffsetCenterRatio: ({x.X:f4}, {x.Y:f4})"))
                 .AddTo(CompositeDisposable);
 
             SamplingFrameRect
