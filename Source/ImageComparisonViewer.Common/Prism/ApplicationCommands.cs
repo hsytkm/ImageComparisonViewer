@@ -24,6 +24,9 @@ namespace ImageComparisonViewer.Common.Prism
 
         /// <summary>画像ディレクトリの再読込み(F5)</summary>
         CompositeCommand ReloadImageDirectoryCommand { get; }
+
+        /// <summary>画像サチリ部の点滅</summary>
+        CompositeCommand ImageBlinkHighlightCommand { get; }
     }
 
     public class ApplicationCommands : IApplicationCommands
@@ -38,6 +41,8 @@ namespace ImageComparisonViewer.Common.Prism
         public CompositeCommand SelectPrevImageCommand { get; } = new CompositeCommand();
 
         public CompositeCommand ReloadImageDirectoryCommand { get; } = new CompositeCommand();
+
+        public CompositeCommand ImageBlinkHighlightCommand { get; } = new CompositeCommand();
 
     }
 }

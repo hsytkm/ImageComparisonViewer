@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
@@ -29,6 +30,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
         private readonly DelegateCommand _selectImageMoveNextCommand;
         private readonly DelegateCommand _selectImageMovePrevCommand;
         private readonly DelegateCommand _reloadImageDirectoryCommand;
+        private readonly DelegateCommand _imageBlinkHighlightCommand;
 
         public TabContentImageViewModelBase(
             IContainerExtension container, IRegionManager regionManager, string title, int index)
@@ -45,11 +47,12 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
             _selectImageMoveNextCommand = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MoveNextImage()));
             _selectImageMovePrevCommand = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.MovePrevImage()));
             _reloadImageDirectoryCommand = new DelegateCommand(() => GetImageDirectories().ForEach(x => x.ReloadImageDirectory()));
+            _imageBlinkHighlightCommand = new DelegateCommand(() => GetImageDirectories().First().BlinkHighlight()); // testなので画像1のみ
 
             IsActiveChanged += ViewModel_IsActiveChanged;
         }
 
-        private IEnumerable<ImageDirectory> GetImageDirectories()
+        private IEnumerable<IImageDirectory> GetImageDirectories()
         {
             for (int i = 0; i < _contentCount; i++)
                 yield return _compositeDirectory.ImageDirectries[i];
@@ -71,6 +74,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 _applicationCommands.SelectNextImageCommand.RegisterCommand(_selectImageMoveNextCommand);
                 _applicationCommands.SelectPrevImageCommand.RegisterCommand(_selectImageMovePrevCommand);
                 _applicationCommands.ReloadImageDirectoryCommand.RegisterCommand(_reloadImageDirectoryCommand);
+                _applicationCommands.ImageBlinkHighlightCommand.RegisterCommand(_imageBlinkHighlightCommand);
 
                 // Modelへのリソース破棄要求(1画面に切り替わったら2画面以上の情報は捨てる)
                 _compositeDirectory.ReleaseResources(_contentCount);
@@ -85,6 +89,7 @@ namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
                 _applicationCommands.SelectNextImageCommand.UnregisterCommand(_selectImageMoveNextCommand);
                 _applicationCommands.SelectPrevImageCommand.UnregisterCommand(_selectImageMovePrevCommand);
                 _applicationCommands.ReloadImageDirectoryCommand.UnregisterCommand(_reloadImageDirectoryCommand);
+                _applicationCommands.ImageBlinkHighlightCommand.UnregisterCommand(_imageBlinkHighlightCommand);
 
                 // 非アクティブ時に溜まった回転数をModelに通知する
                 AdaptImagesShift();

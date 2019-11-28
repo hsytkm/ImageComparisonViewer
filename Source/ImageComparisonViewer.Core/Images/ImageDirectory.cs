@@ -1,30 +1,75 @@
 ﻿using ImageComparisonViewer.Common.Extensions;
 using ImageComparisonViewer.Common.Utils;
+using ImageComparisonViewer.Common.Wpf;
 using ImageComparisonViewer.Core.Extensions;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace ImageComparisonViewer.Core.Images
 {
-    /// <summary>
-    /// 画像ディレクトリ
-    /// </summary>
-    public class ImageDirectory : BindableBase, IDisposable
+    /// <summary>ディレクトリ内の画像たち</summary>
+    public interface IImageDirectory : INotifyPropertyChanged
     {
-        /// <summary>
-        /// ディレクトリPATH(未選択ならnull)
-        /// </summary>
+        /// <summary>ディレクトリPATH(未選択ならnull)</summary>
+        string? DirectoryPath { get; }
+
+        /// <summary>選択中のファイル(未選択ならnull)</summary>
+        string? SelectedFilePath { get; }
+
+        /// <summary>画像ファイルドロップ時の処理</summary>
+        /// <param name="filePath"></param>
+        void SetDroppedFilePath(string filePath);
+
+        /// <summary>ディレクトリ選択時の処理</summary>
+        /// <param name="dirPath"></param>
+        void SetSelectedDictionaryPath(string dirPath);
+
+        /// <summary>選択中の主画像(未選択ならnull)</summary>
+        public BitmapSource? SelectedImage { get; }
+
+        /// <summary>画像ディレクトリの読込み済みフラグ</summary>
+        bool IsLoaded();
+
+        /// <summary>画像ファイルたち</summary>
+        ReadOnlyObservableCollection<ImageFile> ImageFiles { get; }
+
+        /// <summary>サムネイルの読み出し状態を切り替える(Load+Unload)</summary>
+        /// <param name="centerRatio">表示領域の中央位置の割合(0~1)</param>
+        /// <param name="viewportRatio">表示領域の割合(0~1)</param>
+        void UpdateThumbnails(double centerRatio, double viewportRatio);
+
+        /// <summary>画像再読み込み(F5)</summary>
+        void ReloadImageDirectory();
+
+        /// <summary>保持リソースの破棄</summary>
+        void ReleaseResources();
+
+        /// <summary>選択画像を1つ進める</summary>
+        void MoveNextImage();
+
+        /// <summary>選択画像を1つ戻す</summary>
+        void MovePrevImage();
+
+        /// <summary>画像サチリ部の点滅</summary>
+        void BlinkHighlight();
+    }
+
+    public class ImageDirectory : BindableBase, IImageDirectory, IDisposable
+    {
+        /// <summary>ディレクトリPATH(未選択ならnull)</summary>
         public string? DirectoryPath
         {
             get => _directoryPath;
-            set
+            private set
             {
                 if (SetProperty(ref _directoryPath, value))
                     UpdateDirectoryPath(_directoryPath);
@@ -44,13 +89,11 @@ namespace ImageComparisonViewer.Core.Images
             }
         }
 
-        /// <summary>
-        /// 選択中のファイル(未選択ならnull)
-        /// </summary>
+        /// <summary>選択中のファイル(未選択ならnull)</summary>
         public string? SelectedFilePath
         {
             get => _selectedFilePath;
-            set
+            private set
             {
                 if (SetProperty(ref _selectedFilePath, value))
                     _ = UpdateSelectedMainImageAsync();
@@ -91,9 +134,7 @@ namespace ImageComparisonViewer.Core.Images
             DirectoryPath = dirPath;
         }
 
-        /// <summary>
-        /// 選択中の主画像(未選択ならnull)
-        /// </summary>
+        /// <summary>選択中の主画像(未選択ならnull)</summary>
         public BitmapSource? SelectedImage
         {
             get => _selectedImage;
@@ -104,12 +145,20 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>画像ディレクトリの読込み済みフラグ</summary>
         public bool IsLoaded() => (DirectoryPath != null && SelectedFilePath != null);
 
-        /// <summary>
-        /// 画像ファイルたち
-        /// </summary>
-        public ReadOnlyObservableCollection<ImageFile> ImageFiles => new ReadOnlyObservableCollection<ImageFile>(_imageFiles);
+        /// <summary>画像ファイルたち</summary>
+        public ReadOnlyObservableCollection<ImageFile> ImageFiles
+        {
+            get
+            {
+                if (_readOnlyImageFiles is null)
+                    _readOnlyImageFiles = new ReadOnlyObservableCollection<ImageFile>(_imageFiles);
+                return _readOnlyImageFiles;
+            }
+        }
+        private ReadOnlyObservableCollection<ImageFile> _readOnlyImageFiles = default!;
         private readonly ObservableCollection<ImageFile> _imageFiles = new ObservableCollection<ImageFile>();
 
+        /// <summary>読み出し画像の倉庫</summary>
         private readonly ImageContentBackyard _imageContentBackyard;
 
         internal ImageDirectory(ImageContentBackyard backyard)
@@ -120,11 +169,12 @@ namespace ImageComparisonViewer.Core.Images
         // 主画像のTask管理(最終の処理のみを採用)
         private readonly CompositeCancellationTokenSource _mainImageCompositeCancellationTokenSource = new CompositeCancellationTokenSource();
 
-        /// <summary>
-        /// 主画像の読み込み
-        /// </summary>
+        /// <summary>主画像の読み込み</summary>
         private async ValueTask UpdateSelectedMainImageAsync()
         {
+            // 点滅中なら辞めさせる
+            _blinkHighlightCancellationTokenSource?.Cancel();
+
             var imagePath = SelectedFilePath;
             if (imagePath is null)
             {
@@ -156,9 +206,7 @@ namespace ImageComparisonViewer.Core.Images
             ImageFiles.Where(x => x.FilePath != imagePath).ForEach(unload => unload.UnloadFullImage());
         }
 
-        /// <summary>
-        /// サムネイルの読み出し状態を切り替える(Load+Unload)
-        /// </summary>
+        /// <summary>サムネイルの読み出し状態を切り替える(Load+Unload)</summary>
         /// <param name="centerRatio">表示領域の中央位置の割合(0~1)</param>
         /// <param name="viewportRatio">表示領域の割合(0~1)</param>
         public void UpdateThumbnails(double centerRatio, double viewportRatio)
@@ -238,14 +286,10 @@ namespace ImageComparisonViewer.Core.Images
             if (path != null) SetDroppedFilePath(path);
         }
 
-        /// <summary>
-        /// 保持リソースの破棄
-        /// </summary>
+        /// <summary>保持リソースの破棄</summary>
         public void ReleaseResources() => ImageFiles.ForEach(imageFile => imageFile.ReleaseResource());
 
-        /// <summary>
-        /// 選択画像を1つ進める
-        /// </summary>
+        /// <summary>選択画像を1つ進める</summary>
         public void MoveNextImage()
         {
             if (SelectedFilePath is null) return;
@@ -255,9 +299,7 @@ namespace ImageComparisonViewer.Core.Images
             SelectedFilePath = next?.FilePath;
         }
 
-        /// <summary>
-        /// 選択画像を1つ戻す
-        /// </summary>
+        /// <summary>選択画像を1つ戻す</summary>
         public void MovePrevImage()
         {
             if (SelectedFilePath is null) return;
@@ -266,6 +308,59 @@ namespace ImageComparisonViewer.Core.Images
             var prev = ImageFiles.PrevOrTargetOrDefault(x => x.FilePath == SelectedFilePath);
             SelectedFilePath = prev?.FilePath;
         }
+
+        #region BlinkHighlight
+        private CancellationTokenSource? _blinkHighlightCancellationTokenSource;
+
+        public void BlinkHighlight()
+        {
+            // 点滅中なら即終了
+            if (_blinkHighlightCancellationTokenSource != null) return;
+
+            _blinkHighlightCancellationTokenSource = new CancellationTokenSource();
+
+            _ = BlinkHighlightAsync(_blinkHighlightCancellationTokenSource.Token)
+                .ContinueWith(task =>
+                {
+                    _blinkHighlightCancellationTokenSource?.Dispose();
+                    _blinkHighlightCancellationTokenSource = null;
+                });
+        }
+
+        private async Task BlinkHighlightAsync(CancellationToken token)
+        {
+            var source = SelectedImage;
+            if (source is null) return;
+
+            var highlight = source.ToHighlightBitmapSource();
+
+            // 差分(飽和画素)がなければ終わり
+            if (source == highlight) return;
+
+            int blinkCount = 4;
+            int waitMsec = 500;
+            for (int i = 0; i < blinkCount; i++)
+            {
+                if (token.IsCancellationRequested) return;
+
+                // ◆ウェイトのためだけに画像設定Taskを作ってるのは効率悪いのでは？
+                var hlTasks = new[]
+                {
+                    Task.Run(() => SelectedImage = highlight),
+                    Task.Delay(waitMsec),
+                };
+                await Task.WhenAll(hlTasks);
+                if (token.IsCancellationRequested) return;
+
+                var sourceTasks = new[]
+                {
+                    Task.Run(() => SelectedImage = source),
+                    Task.Delay(waitMsec),
+                };
+                await Task.WhenAll(sourceTasks);
+            }
+        }
+        #endregion
 
         public override string ToString() => SelectedFilePath ?? "null";
 
@@ -280,6 +375,7 @@ namespace ImageComparisonViewer.Core.Images
                 {
                     // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
                     _mainImageCompositeCancellationTokenSource.Dispose();
+                    _blinkHighlightCancellationTokenSource?.Dispose();
                 }
 
                 disposedValue = true;

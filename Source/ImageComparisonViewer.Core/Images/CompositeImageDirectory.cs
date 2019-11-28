@@ -12,7 +12,7 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>
         /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
         /// </summary>
-        IList<ImageDirectory> ImageDirectries { get; }
+        IList<IImageDirectory> ImageDirectries { get; }
 
         /// <summary>
         /// ドロップされた複数のPATHを設定する
@@ -48,8 +48,8 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>
         /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
         /// </summary>
-        public IList<ImageDirectory> ImageDirectries { get; } =
-            new List<ImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory(_imageContentBackyard)));
+        public IList<IImageDirectory> ImageDirectries { get; } =
+            new List<IImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory(_imageContentBackyard)));
 
         public CompositeImageDirectory() { }
 

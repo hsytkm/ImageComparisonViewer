@@ -19,6 +19,9 @@
         <KeyBinding Key="F5" Command="{Binding ApplicationCommands.ReloadImageDirectoryCommand, Mode=OneTime}"/>
         <KeyBinding Key="F7" Command="{Binding ApplicationCommands.SelectPrevImageCommand, Mode=OneTime}"/>
         <KeyBinding Key="F8" Command="{Binding ApplicationCommands.SelectNextImageCommand, Mode=OneTime}"/>
+
+        <!--for test-->
+        <KeyBinding Key="F9" Command="{Binding ApplicationCommands.ImageBlinkHighlightCommand, Mode=OneTime}"/>
     </Window.InputBindings>
 
     <Border>

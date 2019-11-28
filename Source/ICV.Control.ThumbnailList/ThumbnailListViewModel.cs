@@ -51,15 +51,19 @@ namespace ICV.Control.ThumbnailList
                 .ToReadOnlyReactiveCollection(x => new Thumbnail(x.FilePath), scheduler: Scheduler.CurrentThread)
                 .AddTo(CompositeDisposable);
 
-#pragma warning disable CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
-            // 選択中画像のTwoWay
+            // 選択中画像 from Model
             SelectedItem = imageDirectory
-                .ToReactivePropertyAsSynchronized(x => x.SelectedFilePath,
-                    convert: m => ThumbnailSources.FirstOrDefault(x => x.FilePath == m),
-                    convertBack: vm => vm?.FilePath,
-                    mode: ReactivePropertyMode.DistinctUntilChanged)
+                .ObserveProperty(x => x.SelectedFilePath)
+                .Select(x => (x is null) ? default : ThumbnailSources.FirstOrDefault(y => y.FilePath == x))
+                .ToReactiveProperty(mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
-#pragma warning restore CS8619 // 値における参照型の Null 許容性が、対象の型と一致しません。
+
+            // 選択中画像 to Model
+            SelectedItem
+                .Where(x => x != null)  // 本コントロールViewは画像未選択にできない
+                .Cast<Thumbnail>()      // nullなし型に変換
+                .Subscribe(x => imageDirectory.SetDroppedFilePath(x.FilePath))
+                .AddTo(CompositeDisposable);
 
             // サムネイルScrollの水平表示領域
             ScrollViewerHorizontalScrollRatio
