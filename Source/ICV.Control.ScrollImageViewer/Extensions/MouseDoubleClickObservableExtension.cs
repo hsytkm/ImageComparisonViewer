@@ -4,20 +4,11 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Input;
 
 namespace ICV.Control.ScrollImageViewer.Extensions
 {
     static class MouseDoubleClickObservableExtension
     {
-        private static IObservable<MouseEventArgs> MouseLeftButtonDownAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.MouseLeftButtonDown += handler,
-                handler => control.MouseLeftButtonDown -= handler
-            );
-
         /// <summary>
         /// ダブルクリックイベント
         /// </summary>
@@ -42,7 +33,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double GetDistance(this Point p1, Point p2)
+        private static double GetDistance(this in Point p1, in Point p2)
         {
             return Math.Sqrt((p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p1.Y));
         }

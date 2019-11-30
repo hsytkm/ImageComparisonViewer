@@ -2,59 +2,11 @@
 using System;
 using System.Reactive.Linq;
 using System.Windows;
-using System.Windows.Input;
 
 namespace ICV.Control.ScrollImageViewer.Extensions
 {
     static class MouseObservableExtension
     {
-
-        private static IObservable<MouseEventArgs> MouseLeaveAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseEventHandler, MouseEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.MouseLeave += handler,
-                handler => control.MouseLeave -= handler
-            );
-
-        #region MouseLeftButton
-
-        private static IObservable<MouseEventArgs> MouseLeftButtonDownAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.MouseLeftButtonDown += handler,
-                handler => control.MouseLeftButtonDown -= handler
-            );
-
-        //private static IObservable<MouseEventArgs> PreviewMouseLeftButtonUpAsObservable(this UIElement control, bool handled = false)
-        //    => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
-        //    (
-        //        handler => (sender, e) => { e.Handled = handled; handler(e); },
-        //        handler => control.PreviewMouseLeftButtonUp += handler,
-        //        handler => control.PreviewMouseLeftButtonUp -= handler
-        //    );
-
-        private static IObservable<MouseEventArgs> MouseLeftButtonUpAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.MouseLeftButtonUp += handler,
-                handler => control.MouseLeftButtonUp -= handler
-            );
-
-        #endregion
-
-        #region MouseMove
-
-        private static IObservable<MouseEventArgs> MouseMoveAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseEventHandler, MouseEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.MouseMove += handler,
-                handler => control.MouseMove -= handler
-            );
-
         // 指定コントロール上のマウスポインタの絶対座標を取得
         //public static IObservable<Point> MouseMovePointAsObservable(this UIElement control, bool handled = false) =>
         //    control.MouseMoveAsObservable(handled).Select(e => e.GetPosition((IInputElement)control));
@@ -128,16 +80,6 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         //        .TakeUntil(mouseUp)
         //        .Repeat();
         //}
-
-        #endregion
-
-        public static IObservable<MouseWheelEventArgs> PreviewMouseWheelAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseWheelEventHandler, MouseWheelEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.PreviewMouseWheel += handler,
-                handler => control.PreviewMouseWheel -= handler
-            );
 
     }
 }

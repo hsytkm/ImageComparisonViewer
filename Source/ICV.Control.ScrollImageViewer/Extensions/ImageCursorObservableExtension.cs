@@ -2,20 +2,11 @@
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace ICV.Control.ScrollImageViewer.Extensions
 {
     static class ImageCursorObservableExtension
     {
-        private static IObservable<MouseEventArgs> MouseMoveAsObservable(this UIElement control, bool handled = false)
-            => Observable.FromEvent<MouseEventHandler, MouseEventArgs>
-            (
-                handler => (sender, e) => { e.Handled = handled; handler(e); },
-                handler => control.MouseMove += handler,
-                handler => control.MouseMove -= handler
-            );
-
         /// <summary>
         /// Imageコントロール上のマウス位置を実画像の座標系で返す
         /// </summary>

@@ -222,7 +222,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
              * [x] ViewModelにカーソル位置を通知する
              * [x] ズーム変更時に表示中央にズームする
              * [x] ダブルクリックでズーム倍率を変更する
-             * [] シングルクリックでズーム倍率を一時的に変更する
+             * [x] シングルクリックでズーム倍率を一時的に変更する
              * [] ViewModelからサンプリング枠の表示を切り替えたい
              * [] ViewModelにサンプリング枠の位置を通知したい
              */
@@ -234,15 +234,37 @@ namespace ICV.Control.ScrollImageViewer.Controls
                     presenter.Loaded += Presenter_Loaded;
                     presenter.SizeChanged += ScrollContentPresenter_SizeChanged;
 
+                    // drag viewport shift
                     presenter.MouseLeftDragVectorAsObservable()
                         .ObserveOnUIDispatcher()
                         .Where(_ => IsZoomingIn(ZoomPayload))   // ズーム中以外は必要ない
                         .Subscribe(vec => Image_ScrollByVectorActualSize(vec))
                         .AddTo(CompositeDisposable);
 
+                    // double click zoom
                     presenter.MouseDoubleClickAsObservable()
                         .ObserveOnUIDispatcher()
                         .Subscribe(point => SwitchClickZoomMag(point))
+                        .AddTo(CompositeDisposable);
+
+                    // single click zoom
+                    bool longPushZooming = false;
+                    var mouseLongPushState = presenter.MouseLeftLongPushAsObservable();
+
+                    mouseLongPushState
+                        .Where(x => x.Push == MouseLongPushObservableExtension.MouseLongPush.Start)
+                        .ObserveOnUIDispatcher()
+                        .Where(x => ZoomPayload.IsEntire)
+                        .Do(_ => longPushZooming = true)
+                        .Subscribe(x => SwitchClickZoomMag(x.Point))
+                        .AddTo(CompositeDisposable);
+
+                    mouseLongPushState
+                        .Where(x => x.Push == MouseLongPushObservableExtension.MouseLongPush.End)
+                        .ObserveOnUIDispatcher()
+                        .Where(_ => longPushZooming)
+                        .Do(_ => longPushZooming = false)
+                        .Subscribe(x => SwitchClickZoomMag(x.Point))
                         .AddTo(CompositeDisposable);
 
                     _scrollContentPresenter = presenter;
