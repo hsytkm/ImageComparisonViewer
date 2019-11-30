@@ -67,6 +67,8 @@ namespace ICV.Control.ScrollImageViewer.Controls
                 image.Width = size.Width;
                 image.Height = size.Height;
             }
+
+            //image.UpdateLayout();
         }
 
         #endregion
@@ -219,7 +221,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
              * [x] スクロールバー操作で表示位置を更新する
              * [x] ViewModelにカーソル位置を通知する
              * [x] ズーム変更時に表示中央にズームする
-             * [] ダブルクリックでズーム倍率を変更する
+             * [x] ダブルクリックでズーム倍率を変更する
              * [] シングルクリックでズーム倍率を一時的に変更する
              * [] ViewModelからサンプリング枠の表示を切り替えたい
              * [] ViewModelにサンプリング枠の位置を通知したい
@@ -233,8 +235,14 @@ namespace ICV.Control.ScrollImageViewer.Controls
                     presenter.SizeChanged += ScrollContentPresenter_SizeChanged;
 
                     presenter.MouseLeftDragVectorAsObservable()
+                        .ObserveOnUIDispatcher()
                         .Where(_ => IsZoomingIn(ZoomPayload))   // ズーム中以外は必要ない
                         .Subscribe(vec => Image_ScrollByVectorActualSize(vec))
+                        .AddTo(CompositeDisposable);
+
+                    presenter.MouseDoubleClickAsObservable()
+                        .ObserveOnUIDispatcher()
+                        .Subscribe(point => SwitchClickZoomMag(point))
                         .AddTo(CompositeDisposable);
 
                     _scrollContentPresenter = presenter;
@@ -347,11 +355,12 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var imageViewActualSize = _mainImage.GetControlActualSize();
             //if (!imageViewActualSize.IsValidValue()) return;
 
-            //var isEntire = !(e.ViewportWidth < e.ExtentWidth || e.ViewportHeight < e.ExtentHeight);
+            // 表示サイズによる全体判定
+            var isEntire = !(e.ViewportWidth < e.ExtentWidth || e.ViewportHeight < e.ExtentHeight);
 
-            // サイズの判定が意図通り動作しないので、スクロールバーで判定する
-            var isEntire = this.HorizontalScrollBarVisibility == ScrollBarVisibility.Hidden
-                && this.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden;
+            // スクロールバーによる全体判定
+            //var isEntire = this.HorizontalScrollBarVisibility == ScrollBarVisibility.Hidden
+            //    && this.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden;
 
             Point newCenterRatio;
 
@@ -464,6 +473,50 @@ namespace ICV.Control.ScrollImageViewer.Controls
             if (baseSize.Height == 0) throw new DivideByZeroException(nameof(Height));
             return Math.Min(newSize.Width / baseSize.Width, newSize.Height / baseSize.Height);
         }
+        #endregion
+
+        #region SwitchClickZoomMag
+
+        // クリックズームの状態を切り替える(全画面⇔ズーム)
+        private void SwitchClickZoomMag(Point clickPoint)
+        {
+            if (!ZoomPayload.IsEntire)
+            {
+                // ここで倍率詰めるのは無理(コントロールサイズが変わっていないため)
+                ZoomPayload = ImageZoomPayload.Entire; // ToAll
+            }
+            else
+            {
+                ZoomPayload = ImageZoomPayload.MagX1;  // ToZoom
+
+                var scrollContentActualSize = _scrollContentPresenter.GetControlActualSize();
+                var imageViewActualSize = _mainImage.GetControlActualSize();
+
+                // ズーム表示への切り替えならスクロールバーを移動(ImageViewSizeを変更した後に実施する)
+                //if (imageViewActualSize.IsValidValue())
+                {
+                    static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
+
+                    // 親ScrollViewerから子Imageまでのサイズ
+                    var imageControlSizeOffset = new Size(
+                        Math.Max(0, scrollContentActualSize.Width - imageViewActualSize.Width) / 2d,
+                        Math.Max(0, scrollContentActualSize.Height - imageViewActualSize.Height) / 2d);
+
+                    // 子Image基準のマウス位置
+                    var mousePos = new Point(
+                        Math.Max(0, clickPoint.X - imageControlSizeOffset.Width),
+                        Math.Max(0, clickPoint.Y - imageControlSizeOffset.Height));
+
+                    // ズーム後の中心座標の割合
+                    var newPoint = new Point(
+                        clip(mousePos.X / imageViewActualSize.Width, 0, 1),
+                        clip(mousePos.Y / imageViewActualSize.Height, 0, 1));
+
+                    ScrollOffsetCenterRatioPayload = newPoint;
+                }
+            }
+        }
+
         #endregion
 
         #region CreateControls

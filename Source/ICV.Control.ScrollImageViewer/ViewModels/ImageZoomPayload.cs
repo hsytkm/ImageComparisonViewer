@@ -15,6 +15,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         public readonly double MagRatio;
 
         public static readonly ImageZoomPayload Entire = new ImageZoomPayload(true, double.NaN);
+        public static readonly ImageZoomPayload MagX1 = new ImageZoomPayload(false, 1.0);
 
         public ImageZoomPayload(bool entire, double mag)
         {
