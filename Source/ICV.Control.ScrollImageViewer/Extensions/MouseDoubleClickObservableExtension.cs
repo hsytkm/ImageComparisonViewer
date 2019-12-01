@@ -19,8 +19,10 @@ namespace ICV.Control.ScrollImageViewer.Extensions
             var zipSpanMsec = 200d;
             var moveDistanceMax = 3d;
 
-            var clickPoint = control.MouseLeftButtonDownAsObservable(handled)
-                .Select(e => e.GetPosition((IInputElement)control));
+            var clickPoint = control.MouseLeftButtonDownEventAsObservable(handled)
+                .Select(e => e.GetPosition((IInputElement)control))
+                .Publish()
+                .RefCount();
 
             // Slide P.86 https://www.slideshare.net/torisoup/unity-unirx
             // ThrottleでなくSpanがポイント(レスポンス改善)

@@ -42,12 +42,15 @@ namespace ICV.Control.ScrollImageViewer.Extensions
             if (originControl is null) originControl = control;
 
             // Down～Upまでマウス捕捉
-            var mouseDown = control.MouseLeftButtonDownAsObservable(handled)
-                .Do(_ => control.CaptureMouse()).ToUnit();
-            var mouseUp = control.MouseLeftButtonUpAsObservable(handled)
-                .Do(_ => control.ReleaseMouseCapture()).ToUnit();
+            var mouseDown = control.MouseLeftButtonDownEventAsObservable(handled)
+                .Do(_ => control.CaptureMouse())
+                .ToUnit();
 
-            return control.MouseMoveAsObservable(handled)
+            var mouseUp = control.MouseLeftButtonUpEventAsObservable(handled)
+                .Do(_ => control.ReleaseMouseCapture())
+                .ToUnit();
+
+            return control.MouseMoveEventAsObsAsObservable(handled)
                 .Select(e => e.GetPosition(originControl))
                 .Pairwise()     // クリック前からPairwiseしておく
                 .Select(x => x.NewItem - x.OldItem)

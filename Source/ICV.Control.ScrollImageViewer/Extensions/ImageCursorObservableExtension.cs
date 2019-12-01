@@ -15,7 +15,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         /// <returns></returns>
         public static IObservable<Point> MouseMoveCursorOnImageAsObservable(this Image image, bool handled = false)
         {
-            return image.MouseMoveAsObservable(handled)
+            return image.MouseMoveEventAsObsAsObservable(handled)
                 .Select(e => e.GetPosition(image))
                 .Select(point => GetCursorPointOnImageSource(
                     point, new Size(image.ActualWidth, image.ActualHeight), image.GetImageSourcePixelSize()));
@@ -28,7 +28,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         /// <param name="viewActualSize">ViewのImageコントロールのActualサイズ</param>
         /// <param name="imageSourceSize">Imageコントロールの現画像のサイズ</param>
         /// <returns></returns>
-        private static Point GetCursorPointOnImageSource(Point cursorPoint, Size viewActualSize, Size imageSourceSize)
+        private static Point GetCursorPointOnImageSource(in Point cursorPoint, in Size viewActualSize, in Size imageSourceSize)
         {
             //if (!imageViewSize.IsValidValue() || !imageSourceSize.IsValidValue()) return default;
 

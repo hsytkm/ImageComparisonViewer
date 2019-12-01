@@ -23,22 +23,31 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         {
             var pushMsec = 300d;
 
-            var mouseDown = control.MouseLeftButtonDownAsObservable(handled)
-                .Select(e => e.GetPosition((IInputElement)control));
-            var mouseUp = control.MouseLeftButtonUpAsObservable(handled)
-                .Select(e => e.GetPosition((IInputElement)control));
+            var mouseDown = control.MouseLeftButtonDownEventAsObservable(handled)
+                .Select(e => e.GetPosition((IInputElement)control))
+                .Publish()
+                .RefCount();
+
+            var mouseUp = control.MouseLeftButtonUpEventAsObservable(handled)
+                .Select(e => e.GetPosition((IInputElement)control))
+                .Publish()
+                .RefCount();
 
             var push = mouseDown
                 .Delay(TimeSpan.FromMilliseconds(pushMsec))     // 長押し判定
                 .TakeUntil(mouseUp)                             // ちょん離しを弾く
                 .Repeat()
-                .Select(point => (Push: MouseLongPush.Start, Point: point));
+                .Select(point => (Push: MouseLongPush.Start, Point: point))
+                .Publish()
+                .RefCount();
 
             // Start -> Endの順なら発火する
             var release = push.Merge(mouseUp.Select(point => (Push: MouseLongPush.End, Point: point)))
                 .Pairwise()
                 .Where(x => x.OldItem.Push == MouseLongPush.Start && x.NewItem.Push == MouseLongPush.End)
-                .Select(x => x.NewItem);
+                .Select(x => x.NewItem)
+                .Publish()
+                .RefCount();
 
             return push.Merge(release);
         }

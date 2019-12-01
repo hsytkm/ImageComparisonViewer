@@ -249,7 +249,9 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
                     // single click zoom
                     bool longPushZooming = false;
-                    var mouseLongPushState = presenter.MouseLeftLongPushAsObservable();
+                    var mouseLongPushState = presenter.MouseLeftLongPushAsObservable()
+                        .Publish()
+                        .RefCount();
 
                     mouseLongPushState
                         .Where(x => x.Push == MouseLongPushObservableExtension.MouseLongPush.Start)

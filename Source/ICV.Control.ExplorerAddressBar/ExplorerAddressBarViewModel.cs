@@ -16,10 +16,6 @@ namespace ICV.Control.ExplorerAddressBar
 {
     class ExplorerAddressBarViewModel : DisposableBindableBase
     {
-        // Modelディレクトリ選択が存在しない場合の初期ディレクトリ
-        private static readonly string _defaultDirectory =
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-
         #region Visibility
         /// <summary>
         /// DirectoryNodeを表示する(TextBoxを表示しない)
@@ -75,8 +71,8 @@ namespace ICV.Control.ExplorerAddressBar
             // directory from model
             imageDirectory
                 .ObserveProperty(x => x.DirectoryPath)
-                .Select(path => (path is null) ? _defaultDirectory : path)
-                .Subscribe(path => DirectoryNode.EmendFullPathFromModel(path))
+                .Where(path => path != null)
+                .Subscribe(path => UpdateViewsSource(path))
                 .AddTo(CompositeDisposable);
 
             // directory to model
@@ -84,23 +80,8 @@ namespace ICV.Control.ExplorerAddressBar
                 .Subscribe(path => imageDirectory.SetSelectedDictionaryPath(DirectoryNode.EmendFullPathFromViewModel(path)))
                 .AddTo(CompositeDisposable);
 
-            #region ItemsControl(DirectoryNodes)
-
             // ディレクトリPATHをModelに通知するAction(子View用)
             _sendSerectedDirectoryPathAction = path => TargetDirectory.Value = path;
-
-            // Modelのディレクトリを購読
-            var targetDirectory = imageDirectory
-                .ObserveProperty(x => x.DirectoryPath)
-                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.Default)
-                .AddTo(CompositeDisposable);
-
-            // ディレクトリViewの読込み
-            targetDirectory
-                .Subscribe(path => UpdateViewsSource(path is null ? _defaultDirectory : path))
-                .AddTo(CompositeDisposable);
-
-            #endregion
 
             // TextBox入力確定時のディレクトリ通知
             TextEnterCommand = new DelegateCommand<string>(path =>

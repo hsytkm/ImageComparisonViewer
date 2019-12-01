@@ -7,7 +7,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
 {
     static class MouseCommonObservableExtension
     {
-        //public static IObservable<MouseEventArgs> PreviewMouseLeftButtonUpAsObservable(this UIElement control, bool handled = false)
+        //public static IObservable<MouseEventArgs> PreviewMouseLeftButtonUpEventAsObsAsObservable(this UIElement control, bool handled = false)
         //    => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
         //    (
         //        handler => (sender, e) => { e.Handled = handled; handler(e); },
@@ -15,7 +15,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         //        handler => control.PreviewMouseLeftButtonUp -= handler
         //    );
 
-        public static IObservable<MouseEventArgs> MouseLeftButtonDownAsObservable(this UIElement control, bool handled = false)
+        public static IObservable<MouseEventArgs> MouseLeftButtonDownEventAsObservable(this UIElement control, bool handled = false)
             => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
             (
                 handler => (sender, e) => { e.Handled = handled; handler(e); },
@@ -23,7 +23,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
                 handler => control.MouseLeftButtonDown -= handler
             );
 
-        public static IObservable<MouseEventArgs> MouseLeftButtonUpAsObservable(this UIElement control, bool handled = false)
+        public static IObservable<MouseEventArgs> MouseLeftButtonUpEventAsObservable(this UIElement control, bool handled = false)
             => Observable.FromEvent<MouseButtonEventHandler, MouseButtonEventArgs>
             (
                 handler => (sender, e) => { e.Handled = handled; handler(e); },
@@ -31,7 +31,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
                 handler => control.MouseLeftButtonUp -= handler
             );
 
-        //public static IObservable<MouseEventArgs> MouseLeaveAsObservable(this UIElement control, bool handled = false)
+        //public static IObservable<MouseEventArgs> MouseLeaveEventAsObsAsObservable(this UIElement control, bool handled = false)
         //    => Observable.FromEvent<MouseEventHandler, MouseEventArgs>
         //    (
         //        handler => (sender, e) => { e.Handled = handled; handler(e); },
@@ -39,7 +39,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
         //        handler => control.MouseLeave -= handler
         //    );
 
-        public static IObservable<MouseEventArgs> MouseMoveAsObservable(this UIElement control, bool handled = false)
+        public static IObservable<MouseEventArgs> MouseMoveEventAsObsAsObservable(this UIElement control, bool handled = false)
             => Observable.FromEvent<MouseEventHandler, MouseEventArgs>
             (
                 handler => (sender, e) => { e.Handled = handled; handler(e); },
@@ -47,7 +47,7 @@ namespace ICV.Control.ScrollImageViewer.Extensions
                 handler => control.MouseMove -= handler
             );
 
-        //public static IObservable<MouseWheelEventArgs> PreviewMouseWheelAsObservable(this UIElement control, bool handled = false)
+        //public static IObservable<MouseWheelEventArgs> PreviewMouseWheelEventAsObsAsObservable(this UIElement control, bool handled = false)
         //    => Observable.FromEvent<MouseWheelEventHandler, MouseWheelEventArgs>
         //    (
         //        handler => (sender, e) => { e.Handled = handled; handler(e); },

@@ -49,7 +49,8 @@ namespace ImageComparisonViewer.Core.Images
         /// 画像元ディレクトリ(ViewModelで各要素のPropertyChangedを監視)
         /// </summary>
         public IList<IImageDirectory> ImageDirectries { get; } =
-            new List<IImageDirectory>(Enumerable.Range(0, DirectriesCountMax).Select(_ => new ImageDirectory(_imageContentBackyard)));
+            new List<IImageDirectory>(Enumerable.Range(0, DirectriesCountMax)
+                .Select(_ => new ImageDirectory(_imageContentBackyard)));
 
         public CompositeImageDirectory() { }
 

@@ -65,6 +65,10 @@ namespace ImageComparisonViewer.Core.Images
 
     public class ImageDirectory : BindableBase, IImageDirectory, IDisposable
     {
+        // 起動直後の対象ディレクトリ
+        private static readonly string _defaultDirectory = //@"C:\";
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
         /// <summary>ディレクトリPATH(未選択ならnull)</summary>
         public string? DirectoryPath
         {
@@ -164,6 +168,8 @@ namespace ImageComparisonViewer.Core.Images
         internal ImageDirectory(ImageContentBackyard backyard)
         {
             _imageContentBackyard = backyard;
+
+            SetSelectedDictionaryPath(_defaultDirectory);
         }
 
         // 主画像のTask管理(最終の処理のみを採用)
