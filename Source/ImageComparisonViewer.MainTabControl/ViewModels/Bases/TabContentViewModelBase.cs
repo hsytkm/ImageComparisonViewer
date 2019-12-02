@@ -1,4 +1,5 @@
-﻿using Prism;
+﻿using ImageComparisonViewer.Common.Mvvm;
+using Prism;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -7,7 +8,7 @@ using System.Diagnostics;
 
 namespace ImageComparisonViewer.MainTabControl.ViewModels.Bases
 {
-    abstract class TabContentViewModelBase : BindableBase, IActiveAware, INavigationAware
+    abstract class TabContentViewModelBase : DisposableBindableBase, IActiveAware, INavigationAware
     {
         public string Title { get; }
 

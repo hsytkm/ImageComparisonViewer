@@ -36,21 +36,21 @@ namespace ICV.Control.ScrollImageViewer.Controls
         #region ZoomPayloadProperty(TwoWay)
 
         /// <summary>画像ズーム倍率通知(TwoWay)</summary>
-        public ImageZoomPayload ZoomPayload
+        public ImageZoomMag ZoomPayload
         {
-            get => (ImageZoomPayload)GetValue(ZoomPayloadProperty);
+            get => (ImageZoomMag)GetValue(ZoomPayloadProperty);
             set => SetValue(ZoomPayloadProperty, value);
         }
         private static readonly DependencyProperty ZoomPayloadProperty =
-            DependencyProperty.Register(nameof(ZoomPayload), typeof(ImageZoomPayload), SelfType,
-                new FrameworkPropertyMetadata(default(ImageZoomPayload),
+            DependencyProperty.Register(nameof(ZoomPayload), typeof(ImageZoomMag), SelfType,
+                new FrameworkPropertyMetadata(default(ImageZoomMag),
                     FrameworkPropertyMetadataOptions.AffectsMeasure
                     | FrameworkPropertyMetadataOptions.AffectsArrange
                     | FrameworkPropertyMetadataOptions.AffectsRender
                     | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-                    (d, e) => ((ZoomableScrollViewer)d).OnZoomPayloadChanged((ImageZoomPayload)(e.NewValue))));
+                    (d, e) => ((ZoomableScrollViewer)d).OnZoomPayloadChanged((ImageZoomMag)(e.NewValue))));
 
-        private void OnZoomPayloadChanged(ImageZoomPayload imageZoom)
+        private void OnZoomPayloadChanged(ImageZoomMag imageZoom)
         {
             var image = _mainImage;
             if (!imageZoom.IsEntire)
@@ -302,7 +302,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
             if (ZoomPayload.IsEntire)
             {
                 var entireRatio = GetEntireZoomMagRatio();
-                ZoomPayload = new ImageZoomPayload(true, entireRatio);
+                ZoomPayload = new ImageZoomMag(true, entireRatio);
             }
         }
 
@@ -322,16 +322,27 @@ namespace ICV.Control.ScrollImageViewer.Controls
                 var oldImageZoom = ZoomPayload;
                 double oldZoomMagRatio = GetCurrentImageZoomMagRatio();
 
-                // ズーム適用
-                var newImageZoom = ImageZoomPayload.ZoomMagnification(oldZoomMagRatio, isZoomIn);
+                // ズーム適用後の倍率
+                var newImageZoom = ImageZoomMag.ZoomMagnification(oldZoomMagRatio, isZoomIn);
+
+                // 全体表示時の倍率を取得
+                var enrireZoomMag = GetEntireZoomMagRatio();
 
                 // 全画面表示時を跨ぐ場合は全画面表示にする
-                // ◆厳密に比較しすぎて、マウスズーム変更時に似たようなズーム位置が連続するので、もっと雑に比較したほうが良い
-                var enrireZoomMag = GetEntireZoomMagRatio();
                 if ((oldImageZoom.MagRatio < enrireZoomMag && enrireZoomMag < newImageZoom.MagRatio)
                     || (newImageZoom.MagRatio < enrireZoomMag && enrireZoomMag < oldImageZoom.MagRatio))
                 {
-                    newImageZoom = new ImageZoomPayload(true, enrireZoomMag);
+                    // 厳密に比較しすぎてズーム変更時にほぼ同じズーム位置が連続するので雑に判定
+                    // 4なら%表示の小数点第二位までチェック
+                    if (oldImageZoom.MagRatio.AreClose(enrireZoomMag, tolerancePoint: 4)
+                        || newImageZoom.MagRatio.AreClose(enrireZoomMag, tolerancePoint: 4))
+                    {
+                        // 現状が "ほぼ" 全体表示なので跨ぐことはない
+                    }
+                    else
+                    {
+                        newImageZoom = new ImageZoomMag(true, enrireZoomMag);
+                    }
                 }
                 ZoomPayload = newImageZoom;
             }
@@ -345,7 +356,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
             var sourceSize = _mainImage.GetImageSourcePixelSize();
             var magRatio = GetZoomMagRatio(actualSize, sourceSize);
-            ZoomPayload = new ImageZoomPayload(ZoomPayload.IsEntire, magRatio);
+            ZoomPayload = new ImageZoomMag(ZoomPayload.IsEntire, magRatio);
         }
 
         /// <summary>サイズ変更時にViewのスクロールバー位置を更新</summary>
@@ -410,7 +421,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
         }
 
         /// <summary>スクロールバーの表示を切り替える</summary>
-        private void UpdateScrollBarVisibility(in ImageZoomPayload zoomMag)
+        private void UpdateScrollBarVisibility(in ImageZoomMag zoomMag)
         {
             var horiVisible = ScrollBarVisibility.Hidden;
             var vertVisible = ScrollBarVisibility.Hidden;
@@ -474,7 +485,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
         }
 
         /// <summary>ズームイン中(全体orズームアウトでない)</summary>
-        private bool IsZoomingIn(in ImageZoomPayload zoom) =>
+        private bool IsZoomingIn(in ImageZoomMag zoom) =>
             !zoom.IsEntire && GetEntireZoomMagRatio() < zoom.MagRatio;
 
         /// <summary>表示中画像のズーム倍率を返す</summary>
@@ -507,11 +518,11 @@ namespace ICV.Control.ScrollImageViewer.Controls
             if (!ZoomPayload.IsEntire)
             {
                 // ここで倍率詰めるのは無理(コントロールサイズが変わっていないため)
-                ZoomPayload = ImageZoomPayload.Entire; // ToAll
+                ZoomPayload = ImageZoomMag.Entire; // ToAll
             }
             else
             {
-                ZoomPayload = ImageZoomPayload.MagX1;  // ToZoom
+                ZoomPayload = ImageZoomMag.MagX1;  // ToZoom
 
                 var scrollContentActualSize = _scrollContentPresenter.GetControlActualSize();
                 var imageViewActualSize = _mainImage.GetControlActualSize();

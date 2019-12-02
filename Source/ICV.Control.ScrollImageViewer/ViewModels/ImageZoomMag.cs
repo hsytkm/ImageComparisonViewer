@@ -2,7 +2,7 @@
 
 namespace ICV.Control.ScrollImageViewer.ViewModels
 {
-    public readonly struct ImageZoomPayload : IEquatable<ImageZoomPayload>
+    public readonly struct ImageZoomMag : IEquatable<ImageZoomMag>
     {
         private static readonly double _magRatioMin = Math.Pow(2, -6);  // 1.5%
         private static readonly double _magRatioMax = Math.Pow(2, 7);   // 12800%
@@ -14,15 +14,15 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         /// <summary>ズーム倍率(等倍=1.0)</summary>
         public readonly double MagRatio;
 
-        public static readonly ImageZoomPayload Entire = new ImageZoomPayload(true, double.NaN);
-        public static readonly ImageZoomPayload MagX1 = new ImageZoomPayload(false, 1.0);
+        public static readonly ImageZoomMag Entire = new ImageZoomMag(true, double.NaN);
+        public static readonly ImageZoomMag MagX1 = new ImageZoomMag(false, 1.0);
 
-        public ImageZoomPayload(bool entire, double mag)
+        public ImageZoomMag(bool entire, double mag)
         {
             (IsEntire, MagRatio) = (entire, mag);
         }
 
-        private static ImageZoomPayload ZoomMagnification(double currentMag, double ratio)
+        private static ImageZoomMag ZoomMagnification(double currentMag, double ratio)
         {
             static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
 
@@ -31,25 +31,25 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             double currentMagRound = Math.Pow(2, Math.Round(currentMagPowerRaw));
 
             double newMag = clip(currentMagRound * ratio, _magRatioMin, _magRatioMax);
-            return new ImageZoomPayload(false, newMag);
+            return new ImageZoomMag(false, newMag);
         }
 
-        public static ImageZoomPayload ZoomMagnification(double currentMag, bool isZoomIn)
+        public static ImageZoomMag ZoomMagnification(double currentMag, bool isZoomIn)
         {
             var step = isZoomIn ? _magStep : (1 / _magStep);
             return ZoomMagnification(currentMag, step);
         }
 
         #region IEquatable<T>
-        public bool Equals(ImageZoomPayload other)
+        public bool Equals(ImageZoomMag other)
         {
             return IsEntire == other.IsEntire && MagRatio == other.MagRatio;
         }
 
         public override bool Equals(object? other)
         {
-            if (other is ImageZoomPayload)
-                return Equals((ImageZoomPayload)other);
+            if (other is ImageZoomMag)
+                return Equals((ImageZoomMag)other);
             return false;
         }
 
@@ -58,12 +58,12 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             return HashCode.Combine(IsEntire, MagRatio);
         }
 
-        public static bool operator ==(ImageZoomPayload left, ImageZoomPayload right)
+        public static bool operator ==(ImageZoomMag left, ImageZoomMag right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ImageZoomPayload left, ImageZoomPayload right)
+        public static bool operator !=(ImageZoomMag left, ImageZoomMag right)
         {
             return !(left == right);
         }

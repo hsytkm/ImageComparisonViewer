@@ -1,4 +1,7 @@
-﻿using ImageComparisonViewer.Core.Extensions;
+﻿using ImageComparisonViewer.Common.Wpf;
+using ImageComparisonViewer.Core.Extensions;
+using ImageComparisonViewer.Core.Settings;
+using Prism.Ioc;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -21,6 +24,20 @@ namespace ImageComparisonViewer.Core.Images
         /// <param name="droppedPaths"></param>
         /// <returns>画像タブの指定(1画面=1, null=切替えなし)</returns>
         int? SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths);
+
+        /// <summary>
+        /// UIのズーム表示倍率を設定する
+        /// </summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="zoomMag"></param>
+        void SetImageZoomMagRatio(int sourceIndex, double zoomMag);
+
+        /// <summary>
+        /// UIのズーム表示倍率を設定する
+        /// </summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="centerRatio"></param>
+        void SetImageOffsetCentergRatio(int sourceIndex, ImmutablePoint centerRatio);
 
         /// <summary>
         /// 外部からの回転数通知に応じてコレクション要素をシフトする
@@ -52,7 +69,12 @@ namespace ImageComparisonViewer.Core.Images
             new List<IImageDirectory>(Enumerable.Range(0, DirectriesCountMax)
                 .Select(_ => new ImageDirectory(_imageContentBackyard)));
 
-        public CompositeImageDirectory() { }
+        private readonly UserSettings _userSettings;
+
+        public CompositeImageDirectory(IContainerExtension container)
+        {
+            _userSettings = container.Resolve<UserSettings>();
+        }
 
         /// <summary>
         /// 各画像ディレクトリが1つも読み込まれていないか判定
@@ -93,6 +115,34 @@ namespace ImageComparisonViewer.Core.Images
 
             return !isNavigate ? default(int?) : length;
         }
+
+        #region SettingInterlock
+
+        private void SetInterlock(int sourceIndex, Action<ImageDirectory> action)
+        {
+            if (sourceIndex < 0 || ImageDirectries.Count <= sourceIndex)
+                throw new ArgumentOutOfRangeException(nameof(sourceIndex));
+
+            action.Invoke((ImageDirectory)ImageDirectries[sourceIndex]);
+
+            // 連動する場合は他のディレクトリも更新
+            if (_userSettings.IsControlInterlock)
+            {
+                for (int i = 0; i < ImageDirectries.Count; ++i)
+                {
+                    if (i != sourceIndex)
+                        action.Invoke((ImageDirectory)ImageDirectries[i]);
+                }
+            }
+        }
+
+        public void SetImageZoomMagRatio(int sourceIndex, double zoomMag)
+            => SetInterlock(sourceIndex, directory => directory.ZoomMagRatio = zoomMag);
+
+        public void SetImageOffsetCentergRatio(int sourceIndex, ImmutablePoint centerRatio)
+            => SetInterlock(sourceIndex, directory => directory.OffsetCenterRatio = centerRatio);
+
+        #endregion
 
         /// <summary>
         /// 外部からの回転数通知に応じてコレクション要素をシフトする

@@ -35,6 +35,8 @@ namespace ICV.Control.ExplorerAddressBar
 
         public DirectoryPathNodeViewModel(DirectoryNode targetNode, Action<string> sendDirectoryPath)
         {
+            if (sendDirectoryPath is null) throw new ArgumentNullException(nameof(sendDirectoryPath));
+
             TargetNode = targetNode;
 
             ChildDirectories = targetNode.GetChildDirectoryNodes();

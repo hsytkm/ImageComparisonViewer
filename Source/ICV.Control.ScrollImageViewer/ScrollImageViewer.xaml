@@ -29,7 +29,7 @@
         <ctrl:ZoomableScrollViewer
             HorizontalScrollBarVisibility="Auto"
             VerticalScrollBarVisibility="Auto"
-            ZoomPayload="{Binding ImageZoomPayload.Value, Mode=TwoWay}"
+            ZoomPayload="{Binding ImageZoomMagPayload.Value, Mode=TwoWay}"
             ScrollOffsetCenterRatioPayload="{Binding ImageScrollOffsetCenterRatio.Value, Mode=TwoWay}"
             ImageCursorPoint="{Binding PointTest.Value, Mode=OneWayToSource}"
             />

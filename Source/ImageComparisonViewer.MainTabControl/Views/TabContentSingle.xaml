@@ -8,9 +8,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <Grid Background="Transparent" >
+    <Border Background="Transparent" >
 
         <ContentControl prism:RegionManager.RegionName="ImageContentRegion1_0" />
 
-    </Grid>
+    </Border>
 </UserControl>

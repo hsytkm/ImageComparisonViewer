@@ -25,14 +25,16 @@ namespace ICV.Control.ScrollImageViewer.Extensions
 
             var mouseDown = control.MouseLeftButtonDownEventAsObservable(handled)
                 .Select(e => e.GetPosition((IInputElement)control))
+                .Do(_ => control.CaptureMouse())
                 .Publish()
                 .RefCount();
 
             var mouseUp = control.MouseLeftButtonUpEventAsObservable(handled)
                 .Select(e => e.GetPosition((IInputElement)control))
+                .Do(_ => control.ReleaseMouseCapture())
                 .Publish()
                 .RefCount();
-
+            
             var push = mouseDown
                 .Delay(TimeSpan.FromMilliseconds(pushMsec))     // 長押し判定
                 .TakeUntil(mouseUp)                             // ちょん離しを弾く

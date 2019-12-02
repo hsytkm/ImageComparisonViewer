@@ -32,10 +32,9 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         public ReadOnlyReactiveProperty<bool> IsVisibleSamplingFrameOnScroll { get; }
 
         // ズーム倍率の管理(TwoWay)
-        public ReactiveProperty<ImageZoomPayload> ImageZoomPayload { get; } =
-            new ReactiveProperty<ImageZoomPayload>(mode: ReactivePropertyMode.DistinctUntilChanged,
-                //initialValue: ViewModels.ImageZoomPayload.Entire);
-                initialValue: new ImageZoomPayload(false, 1.0));
+        public ReactiveProperty<ImageZoomMag> ImageZoomMagPayload { get; } =
+            new ReactiveProperty<ImageZoomMag>(mode: ReactivePropertyMode.DistinctUntilChanged,
+                initialValue: ImageZoomMag.MagX1);
 
         // スクロールオフセット位置(TwoWay)
         public ReactiveProperty<Point> ImageScrollOffsetCenterRatio { get; } =
@@ -57,6 +56,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
+            #region ImageSource
             ImageSource = imageDirectory.ObserveProperty(x => x.SelectedImage)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
                 .AddTo(CompositeDisposable);
@@ -64,6 +64,31 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             IsLoadingImage = ImageSource.Select(x => x != null)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
+            #endregion
+
+            #region Zoom
+            imageDirectory
+                .ObserveProperty(x => x.ZoomMagRatio)
+                .Subscribe(x => ImageZoomMagPayload.Value = double.IsNaN(x)
+                                ? ImageZoomMag.Entire : new ImageZoomMag(false, x))
+                .AddTo(CompositeDisposable);
+
+            ImageZoomMagPayload
+                .Select(x => x.IsEntire ? double.NaN : x.MagRatio)
+                .Subscribe(mag => compositeDirectory.SetImageZoomMagRatio(parameter.ContentIndex, mag))
+                .AddTo(CompositeDisposable);
+            #endregion
+
+            #region Offset
+            imageDirectory
+                .ObserveProperty(x => x.OffsetCenterRatio)
+                .Subscribe(point => ImageScrollOffsetCenterRatio.Value = point)
+                .AddTo(CompositeDisposable);
+
+            ImageScrollOffsetCenterRatio
+                .Subscribe(point => compositeDirectory.SetImageOffsetCentergRatio(parameter.ContentIndex, point))
+                .AddTo(CompositeDisposable);
+            #endregion
 
             var viewSettings = container.Resolve<ViewSettings>();
 
@@ -95,11 +120,12 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
+            #region forDebug
             // View通知情報のデバッグ表示
             var indexMessage = $"VM({parameter.ContentIndex}/{parameter.ContentCount})";
 
-            ImageZoomPayload
-                .Subscribe(x => Debug.WriteLine($"{indexMessage}-ImageZoomPayload: {x.IsEntire} => {(x.MagRatio * 100.0):f2} %"))
+            ImageZoomMagPayload
+                .Subscribe(x => Debug.WriteLine($"{indexMessage}-ImageZoomPayload: {x.IsEntire} => {(x.MagRatio * 100.0):f4} %"))
                 .AddTo(CompositeDisposable);
 
             ImageScrollOffsetCenterRatio
@@ -114,13 +140,13 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
                 .Subscribe(x =>
                 {
                     // 全画面の再要求を行うと、Viewで設定した倍率をクリアしてしまうので行わない
-                    if (!ImageZoomPayload.Value.IsEntire)
-                        ImageZoomPayload.Value = new ImageZoomPayload(true, double.NaN);
+                    if (!ImageZoomMagPayload.Value.IsEntire)
+                        ImageZoomMagPayload.Value = new ImageZoomMag(true, double.NaN);
                 })
                 .AddTo(CompositeDisposable);
 
             ZoomX1Command
-                .Subscribe(x => ImageZoomPayload.Value = new ImageZoomPayload(false, 1.0))
+                .Subscribe(x => ImageZoomMagPayload.Value = new ImageZoomMag(false, 1.0))
                 .AddTo(CompositeDisposable);
 
             OffsetCenterCommand
@@ -128,6 +154,7 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
                 .AddTo(CompositeDisposable);
 
             //PointTest.Subscribe(x => Debug.WriteLine($"VM-PointTest: {x}")).AddTo(CompositeDisposable);
+            #endregion
 
         }
 

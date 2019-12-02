@@ -1,6 +1,7 @@
 ﻿using ImageComparisonViewer.Common.Prism;
 using ImageComparisonViewer.Core.Extensions;
 using ImageComparisonViewer.Core.Images;
+using ImageComparisonViewer.Core.Settings;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
@@ -42,6 +43,7 @@ namespace ImageComparisonViewer
 
             containerRegistry.RegisterSingleton<IApplicationCommands, ApplicationCommands>();
             containerRegistry.RegisterSingleton<ICompositeImageDirectory, CompositeImageDirectory>();
+            containerRegistry.RegisterSingleton<UserSettings>();
 
             LoadStartupImages(Container);
         }

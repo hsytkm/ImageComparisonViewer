@@ -25,6 +25,12 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>選択中のファイル(未選択ならnull)</summary>
         string? SelectedFilePath { get; }
 
+        /// <summary>ズーム倍率(NaNなら全体表示)</summary>
+        double ZoomMagRatio { get; }
+
+        /// <summary>表示オフセット中央割合</summary>
+        ImmutablePoint OffsetCenterRatio { get; }
+
         /// <summary>画像ファイルドロップ時の処理</summary>
         /// <param name="filePath"></param>
         void SetDroppedFilePath(string filePath);
@@ -104,6 +110,22 @@ namespace ImageComparisonViewer.Core.Images
             }
         }
         private string? _selectedFilePath = default!;
+
+        /// <summary>ズーム倍率(NaNなら全体表示)</summary>
+        public double ZoomMagRatio
+        {
+            get => _zoomMagRatio;
+            internal set => SetProperty(ref _zoomMagRatio, value);
+        }
+        private double _zoomMagRatio = double.NaN;
+
+        /// <summary>表示オフセット中央割合(中央=(0.5, 0.5))</summary>
+        public ImmutablePoint OffsetCenterRatio
+        {
+            get => _offsetCenterRatio;
+            internal set => SetProperty(ref _offsetCenterRatio, value);
+        }
+        private ImmutablePoint _offsetCenterRatio;
 
         /// <summary>画像ファイルドロップ時の処理</summary>
         /// <param name="filePath"></param>

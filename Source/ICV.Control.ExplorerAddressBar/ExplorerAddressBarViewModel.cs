@@ -61,12 +61,11 @@ namespace ICV.Control.ExplorerAddressBar
             var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
-            #region Visibility
+            // ディレクトリPATHをModelに通知するAction(子View用)
+            _sendSerectedDirectoryPathAction = path => TargetDirectory.Value = path;
 
             VisibleTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.TurnOff());
             CollapsedTextBoxCommand = new DelegateCommand(() => IsVisibleDirectoryNode.TurnOn());
-
-            #endregion
 
             // directory from model
             imageDirectory
@@ -80,8 +79,6 @@ namespace ICV.Control.ExplorerAddressBar
                 .Subscribe(path => imageDirectory.SetSelectedDictionaryPath(DirectoryNode.EmendFullPathFromViewModel(path)))
                 .AddTo(CompositeDisposable);
 
-            // ディレクトリPATHをModelに通知するAction(子View用)
-            _sendSerectedDirectoryPathAction = path => TargetDirectory.Value = path;
 
             // TextBox入力確定時のディレクトリ通知
             TextEnterCommand = new DelegateCommand<string>(path =>
