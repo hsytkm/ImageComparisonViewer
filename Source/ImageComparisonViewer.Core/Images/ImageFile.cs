@@ -14,7 +14,7 @@ namespace ImageComparisonViewer.Core.Images
     public class ImageFile : BindableBase, IDisposable
     {
         // サムネイルの最大幅
-        private const int ThumbnailWidthMax = 80;
+        private const double _thumbnailWidthMax = 80;
 
         /// <summary>
         /// 画像ファイルのフルPATH
@@ -45,7 +45,7 @@ namespace ImageComparisonViewer.Core.Images
                 if (image is null)
                 {
                     // 辞書に存在しないのでTaskで登録
-                    BitmapSource? loadThumb() => FilePath.ToBitmapSourceThumbnail(ThumbnailWidthMax);
+                    BitmapSource? loadThumb() => FilePath.ToBitmapSourceThumbnail(_thumbnailWidthMax);
                     image = await Task.Run(() => warehouse.RentValue(FilePath, loadThumb));
                 }
                 //Debug.WriteLine($"Load Thumbnail: {FilePath}");

@@ -40,7 +40,7 @@ namespace ImageComparisonViewer.Core.Images
         void SetSelectedDictionaryPath(string dirPath);
 
         /// <summary>選択中の主画像(未選択ならnull)</summary>
-        public BitmapSource? SelectedImage { get; }
+        BitmapSource? SelectedImage { get; }
 
         /// <summary>画像ディレクトリの読込み済みフラグ</summary>
         bool IsLoaded();
@@ -95,7 +95,12 @@ namespace ImageComparisonViewer.Core.Images
             if (dirPath != null)
             {
                 foreach (var path in dirPath.GetImageFilesPathInDirectory(SearchOption.TopDirectoryOnly))
+                {
                     _imageFiles.Add(new ImageFile(path, _imageContentBackyard));
+                }
+
+                // 選択ファイルを変化しないとViewの選択がnullになるので一回null入れる)
+                SelectedFilePath = null;
             }
         }
 
@@ -129,7 +134,8 @@ namespace ImageComparisonViewer.Core.Images
 
         /// <summary>画像ファイルドロップ時の処理</summary>
         /// <param name="filePath"></param>
-        public void SetDroppedFilePath(string filePath)
+        /// <param name="forceUpdateDirectory">選択ディレクトリが同じでも更新する(F5用)</param>
+        private void SetDroppedFilePath(string filePath, bool forceUpdateDirectory)
         {
             var newDirPath = filePath?.ToDirectoryPath();
             if (DirectoryPath != newDirPath)
@@ -138,8 +144,9 @@ namespace ImageComparisonViewer.Core.Images
             }
             else
             {
-                // ディレクトリに変化がない場合は明示的に再読込みを指示する
-                UpdateDirectoryPath(DirectoryPath);
+                // ディレクトリに変化がなくても明示的に再読込みを指示する
+                if (forceUpdateDirectory)
+                    UpdateDirectoryPath(DirectoryPath);
             }
 
             // ディレクトリ更新後にファイルを選択するルール
@@ -149,12 +156,18 @@ namespace ImageComparisonViewer.Core.Images
             UpdateThumbnails(_thumbnailLoadParam);
         }
 
+        /// <summary>画像ファイルドロップ時の処理</summary>
+        /// <param name="filePath"></param>
+
+        public void SetDroppedFilePath(string filePath)
+            => SetDroppedFilePath(filePath, forceUpdateDirectory: false);
+
         /// <summary>ディレクトリ選択時の処理</summary>
         /// <param name="dirPath"></param>
         public void SetSelectedDictionaryPath(string dirPath)
         {
             var path = dirPath.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
-            SetDroppedFilePath(path);
+            SetDroppedFilePath(path, forceUpdateDirectory: false);
             
             // ディレクトリ設定を後出しにしないと、画像が存在しないのでディレクトリがnullになってしまう…
             DirectoryPath = dirPath;
@@ -195,7 +208,8 @@ namespace ImageComparisonViewer.Core.Images
         }
 
         // 主画像のTask管理(最終の処理のみを採用)
-        private readonly CompositeCancellationTokenSource _mainImageCompositeCancellationTokenSource = new CompositeCancellationTokenSource();
+        private readonly CompositeCancellationTokenSource _mainImageCompositeCancellationTokenSource =
+            new CompositeCancellationTokenSource();
 
         /// <summary>主画像の読み込み</summary>
         private async ValueTask UpdateSelectedMainImageAsync()
@@ -311,7 +325,7 @@ namespace ImageComparisonViewer.Core.Images
                 path = DirectoryPath?.GetFirstImageFilePathInDirectory(SearchOption.TopDirectoryOnly);
 
             // 同じ画像をドロップされた扱いにすることで再読み込みする
-            if (path != null) SetDroppedFilePath(path);
+            if (path != null) SetDroppedFilePath(path, forceUpdateDirectory: true);
         }
 
         /// <summary>保持リソースの破棄</summary>

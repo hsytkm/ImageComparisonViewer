@@ -54,10 +54,10 @@
         <TextBlock Grid.Row="3" Text="{Binding SelectedImagePath.Value, Mode=OneWay}"/>
         <TextBlock Grid.Row="4" Text="{Binding ContentIndex, Mode=OneTime}" />
 
-        <ContentControl Grid.Row="5" x:Name="ZoomableImageControl" />
 
         <!--
-        <ContentControl Grid.Row="5" x:Name="ScrollImageViewer" />
+        <ContentControl Grid.Row="5" x:Name="ZoomableImageControl" />
         -->
+        <ContentControl Grid.Row="5" x:Name="ScrollImageViewer" />
     </Grid>
 </mvvm:DisposableUserControl>

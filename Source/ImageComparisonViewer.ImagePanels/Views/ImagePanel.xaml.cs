@@ -26,10 +26,8 @@ namespace ImageComparisonViewer.ImagePanels.Views
             var parameters = ImageViewParameterFactory.GetImageViewParameters(parameter);
             ExplolerAddressBarControl.Content = container.Resolve<ExplorerAddressBar>(parameters);
             ThumbnailListControl.Content = container.Resolve<ThumbnailList>(parameters);
-            ZoomableImageControl.Content = container.Resolve<ZoomableImage>(parameters);
-
-            // ◆実装中
-            //ScrollImageViewer.Content = container.Resolve<ScrollImageViewer>(parameters);
+            //ZoomableImageControl.Content = container.Resolve<ZoomableImage>(parameters);
+            ScrollImageViewer.Content = container.Resolve<ScrollImageViewer>(parameters);
 
             // ↓↓Regionで管理しようとしたけど、各ImagePanelで名前が重複してダメっぽかった↓↓
             //var view = container.Resolve<ThumbnailList>();
