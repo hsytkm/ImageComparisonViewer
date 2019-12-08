@@ -21,9 +21,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Button Height="20" Width="100" Content="ZoomAll" Command="{Binding ZoomAllCommand, Mode=OneTime}" />
-            <Button Height="20" Width="100" Content="ZoomX1" Command="{Binding ZoomX1Command, Mode=OneTime}" />
-            <Button Height="20" Width="100" Content="ZoomOffsetCenter" Command="{Binding OffsetCenterCommand, Mode=OneTime}" />
+            <Button Height="20" Width="60" Content="ZoomAll" Command="{Binding ZoomAllCommand, Mode=OneTime}" />
+            <Button Height="20" Width="60" Content="ZoomX1" Command="{Binding ZoomX1Command, Mode=OneTime}" />
+            <Button Height="20" Width="60" Content="ZoomOffsetCenter" Command="{Binding OffsetCenterCommand, Mode=OneTime}" />
         </StackPanel>
 
         <ctrl:ZoomableScrollViewer

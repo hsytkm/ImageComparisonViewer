@@ -44,10 +44,8 @@ namespace ICV.Control.ScrollImageViewer.Extensions
                 .RefCount();
 
             // Start -> Endの順なら発火する
-            var release = push.Merge(mouseUp.Select(point => (Push: MouseLongPush.End, Point: point)))
-                .Pairwise()
-                .Where(x => x.OldItem.Push == MouseLongPush.Start && x.NewItem.Push == MouseLongPush.End)
-                .Select(x => x.NewItem)
+            var release = push
+                .SelectMany(mouseUp.Select(point => (Push: MouseLongPush.End, Point: point)).Take(1))
                 .Publish()
                 .RefCount();
 

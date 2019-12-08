@@ -1,24 +1,19 @@
-﻿using ImageComparisonViewer.Common.Mvvm;
-using Reactive.Bindings;
+﻿using ICV.Control.ScrollImageViewer.Behaviors;
+using ICV.Control.ScrollImageViewer.Extensions;
+using ICV.Control.ScrollImageViewer.ViewModels;
+using ImageComparisonViewer.Common.Wpf;
+using Microsoft.Xaml.Behaviors;
 using Reactive.Bindings.Extensions;
-using Reactive.Bindings.Notifiers;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Xaml.Behaviors;
-using ICV.Control.ScrollImageViewer.Behaviors;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
-using ImageComparisonViewer.Common.Wpf;
-using ICV.Control.ScrollImageViewer.ViewModels;
-using ICV.Control.ScrollImageViewer.Extensions;
 
 namespace ICV.Control.ScrollImageViewer.Controls
 {
@@ -115,7 +110,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
             if (contentSize.Width == 0 || contentSize.Height == 0) return;
 
             // 好き勝手に要求された位置を範囲制限する
-            var rateRange = GetScrollOffsetRateRange(scrollViewer);
+            var rateRange = scrollViewer.GetScrollOffsetRateRange();
             var newOffset = new Point(
                 clip(offsetCenterRatio.X, rateRange.widthMin, rateRange.widthMax),
                 clip(offsetCenterRatio.Y, rateRange.heightMin, rateRange.heightMax));
@@ -123,37 +118,14 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var contentHalfSize = new Size(contentSize.Width / 2.0, contentSize.Height / 2.0);
             //if (!sviewHalf.IsValidValue()) return;
 
-            var horiOffset = Math.Max(0.0, newOffset.X * imageSize.Width - contentHalfSize.Width);
-            var vertOffset = Math.Max(0.0, newOffset.Y * imageSize.Height - contentHalfSize.Height);
+            var horiOffset = newOffset.X * imageSize.Width - contentHalfSize.Width;
+            scrollViewer.ScrollToHorizontalOffsetWithLimit(horiOffset);
 
-            scrollViewer.ScrollToHorizontalOffset(horiOffset);
-            scrollViewer.ScrollToVerticalOffset(vertOffset);
+            var vertOffset = newOffset.Y * imageSize.Height - contentHalfSize.Height;
+            scrollViewer.ScrollToVerticalOffsetWithLimit(vertOffset);
 
             // ズーム倍率管理プロパティの更新
             ScrollOffsetCenterRatioPayload = newOffset;
-        }
-
-        // スクロールバー位置の範囲(割合)を取得
-        private static (double widthMin, double widthMax, double heightMin, double heightMax)
-            GetScrollOffsetRateRange(ScrollViewer sView)
-        {
-            (double, double, double, double) nolimit = (0.0, 1.0, 0.0, 1.0);
-
-            // 全体表示ならオフセットに制限なし
-            if (sView.ExtentWidth < sView.ViewportWidth || sView.ExtentHeight < sView.ViewportHeight)
-            {
-                return nolimit;
-            }
-            //else if (sView.ExtentWidth.IsValidValue() && sView.ExtentHeight.IsValidValue())
-            else if (sView.ExtentWidth != 0 && sView.ExtentHeight != 0)
-            {
-                var widthRateMin = (sView.ViewportWidth / 2.0) / sView.ExtentWidth;
-                var widthRateMax = (sView.ExtentWidth - sView.ViewportWidth / 2.0) / sView.ExtentWidth;
-                var heightRateMin = (sView.ViewportHeight / 2.0) / sView.ExtentHeight;
-                var heightRateMax = (sView.ExtentHeight - sView.ViewportHeight / 2.0) / sView.ExtentHeight;
-                return (widthRateMin, widthRateMax, heightRateMin, heightRateMax);
-            }
-            return nolimit;
         }
 
         #endregion
@@ -212,6 +184,10 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
         public ZoomableScrollViewer()
         {
+            // Visibleは必要
+            this.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+            this.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
+
             /*
              * [] ControlのリストをGridに詰め込んで、Contentにしたい
              * [x] ViewModelから倍率と表示位置を要求する
@@ -229,7 +205,8 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
             this.Loaded += (sender, __) =>
             {
-                if (((DependencyObject)sender).TryGetChildControl<ScrollContentPresenter>(out var presenter))
+                var scrollViewer = (ScrollViewer)sender;
+                if (scrollViewer.TryGetChildControl<ScrollContentPresenter>(out var presenter))
                 {
                     presenter.Loaded += Presenter_Loaded;
                     presenter.SizeChanged += ScrollContentPresenter_SizeChanged;
@@ -271,6 +248,26 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
                     _scrollContentPresenter = presenter;
                 }
+
+                if (scrollViewer.TryGetChildControlFromName<ScrollBar>("PART_VerticalScrollBar", out var scrollBarVert))
+                {
+                    scrollBarVert.IsVisibleChanged += (_, e) =>
+                    {
+                        var isVisible = (bool)e.NewValue;
+                        var shift = (isVisible ? scrollBarVert.Width : -scrollBarVert.Width) / 2.0;
+                        this.ScrollToHorizontalOffsetShiftWithLimit(shift);
+                    };
+                }
+
+                if (scrollViewer.TryGetChildControlFromName<ScrollBar>("PART_HorizontalScrollBar", out var scrollBarHori))
+                {
+                    scrollBarHori.IsVisibleChanged += (_, e) =>
+                    {
+                        var isVisible = (bool)e.NewValue;
+                        var shift = (isVisible ? scrollBarHori.Height : -scrollBarHori.Height) / 2.0;
+                        this.ScrollToVerticalOffsetShiftWithLimit(shift);
+                    };
+                }
             };
 
             this.ScrollChanged += ScrollViewer_ScrollChanged;
@@ -293,6 +290,13 @@ namespace ICV.Control.ScrollImageViewer.Controls
             if (ZoomPayload.IsEntire)
             {
                 OnZoomPayloadChanged(ZoomPayload);
+            }
+            else
+            {
+                // 表示サイズが伸びた分だけ補正する(Tab切り替え時用)
+                var size = ((FrameworkElement)sender).GetControlActualSize();
+                this.ScrollToHorizontalOffsetShiftWithLimit(-size.Width / 2.0);
+                this.ScrollToVerticalOffsetShiftWithLimit(-size.Height / 2.0);
             }
         }
 
@@ -369,7 +373,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var centerRatio = ScrollOffsetCenterRatioPayload;
 
             // 好き勝手に要求された位置を範囲制限する
-            var rateRange = GetScrollOffsetRateRange(this);
+            var rateRange = this.GetScrollOffsetRateRange();
             var newOffset = new Point(
                 clip(centerRatio.X, rateRange.widthMin, rateRange.widthMax),
                 clip(centerRatio.Y, rateRange.heightMin, rateRange.heightMax));
@@ -377,11 +381,11 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var contentSizeHalf = new Size(contentSize.Width / 2.0, contentSize.Height / 2.0);
             //if (!contentSizeHalf.IsValidValue()) return;
 
-            var horiOffset = Math.Max(0.0, newOffset.X * imageViewSize.Width - contentSizeHalf.Width);
-            var vertOffset = Math.Max(0.0, newOffset.Y * imageViewSize.Height - contentSizeHalf.Height);
+            var horiOffset = newOffset.X * imageViewSize.Width - contentSizeHalf.Width;
+            this.ScrollToHorizontalOffsetWithLimit(horiOffset);
 
-            ScrollToHorizontalOffset(horiOffset);
-            ScrollToVerticalOffset(vertOffset);
+            var vertOffset = newOffset.Y * imageViewSize.Height - contentSizeHalf.Height;
+            this.ScrollToVerticalOffsetWithLimit(vertOffset);
         }
 
         /// <summary>スクロールバー操作時の表示位置の更新</summary>
@@ -440,7 +444,12 @@ namespace ICV.Control.ScrollImageViewer.Controls
             }
 
             this.HorizontalScrollBarVisibility = horiVisible;
+            if (horiVisible == ScrollBarVisibility.Hidden)
+                this.ScrollToHorizontalOffsetWithLimit(0);
+
             this.VerticalScrollBarVisibility = vertVisible;
+            if (vertVisible == ScrollBarVisibility.Hidden)
+                this.ScrollToVerticalOffsetWithLimit(0);
         }
 
         #region ZoomSize/Ratio

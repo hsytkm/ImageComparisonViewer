@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace ImageComparisonViewer.Common.Wpf
@@ -41,6 +42,24 @@ namespace ImageComparisonViewer.Common.Wpf
                 }
             }
 
+            child = default;
+            return false;
+        }
+
+        /// <summary>
+        /// 指定コントロールの以下の指定名のコントロールを取得
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="control"></param>
+        /// <param name="name"></param>
+        /// <param name="child"></param>
+        /// <returns></returns>
+        public static bool TryGetChildControlFromName<T>(this Control control, string name, [NotNullWhen(true)] out T? child)
+            where T : FrameworkElement
+        {
+            child = control.Template.FindName(name, control) as T;
+            if (child != null) return true;
+            
             child = default;
             return false;
         }

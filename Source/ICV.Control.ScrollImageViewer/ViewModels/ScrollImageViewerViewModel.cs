@@ -33,13 +33,11 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
 
         // ズーム倍率の管理(TwoWay)
         public ReactiveProperty<ImageZoomMag> ImageZoomMagPayload { get; } =
-            new ReactiveProperty<ImageZoomMag>(mode: ReactivePropertyMode.DistinctUntilChanged,
-                initialValue: ImageZoomMag.MagX1);
+            new ReactiveProperty<ImageZoomMag>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
         // スクロールオフセット位置(TwoWay)
         public ReactiveProperty<Point> ImageScrollOffsetCenterRatio { get; } =
-            new ReactiveProperty<Point>(mode: ReactivePropertyMode.DistinctUntilChanged,
-                initialValue: new Point(0.5, 0.5));
+            new ReactiveProperty<Point>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
         // 実座標系のサンプリング枠の位置(TwoWay)
         public ReactiveProperty<Rect> SamplingFrameRect { get; } =
@@ -57,11 +55,13 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
             #region ImageSource
-            ImageSource = imageDirectory.ObserveProperty(x => x.SelectedImage)
-                .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.None)
+            ImageSource = imageDirectory
+                .ObserveProperty(x => x.SelectedImage)
+                .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
-            IsLoadingImage = ImageSource.Select(x => x != null)
+            IsLoadingImage = ImageSource
+                .Select(x => x != null)
                 .ToReadOnlyReactiveProperty(mode: ReactivePropertyMode.DistinctUntilChanged)
                 .AddTo(CompositeDisposable);
             #endregion
@@ -82,10 +82,12 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             #region Offset
             imageDirectory
                 .ObserveProperty(x => x.OffsetCenterRatio)
+                //.Do(x => Debug.WriteLine($"{indexMessage}-FromM ({x.X:f4}, {x.Y:f4})"))
                 .Subscribe(point => ImageScrollOffsetCenterRatio.Value = point)
                 .AddTo(CompositeDisposable);
 
             ImageScrollOffsetCenterRatio
+                //.Do(x => Debug.WriteLine($"{indexMessage}-ToM: ({x.X:f4}, {x.Y:f4})"))
                 .Subscribe(point => compositeDirectory.SetImageOffsetCentergRatio(parameter.ContentIndex, point))
                 .AddTo(CompositeDisposable);
             #endregion
