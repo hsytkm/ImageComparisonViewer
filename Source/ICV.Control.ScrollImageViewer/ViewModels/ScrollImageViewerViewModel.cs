@@ -1,4 +1,5 @@
 ﻿using ImageComparisonViewer.Common.Mvvm;
+using ImageComparisonViewer.Common.Wpf;
 using ImageComparisonViewer.Core.Images;
 using Prism.Ioc;
 using Prism.Mvvm;
@@ -42,6 +43,10 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         // 実座標系のサンプリング枠の位置(TwoWay)
         public ReactiveProperty<Rect> SamplingFrameRect { get; } =
             new ReactiveProperty<Rect>(mode: ReactivePropertyMode.DistinctUntilChanged);
+
+        // 画像の表示範囲
+        public ReactiveProperty<ScrollViewerViewport> ImageViewport { get; } =
+            new ReactiveProperty<ScrollViewerViewport>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
         public ReactiveCommand ZoomAllCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ZoomX1Command { get; } = new ReactiveCommand();
@@ -92,13 +97,19 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
                 .AddTo(CompositeDisposable);
             #endregion
 
+            ImageViewport
+                .Subscribe(v => compositeDirectory.SetImageViewport(parameter.ContentIndex, v))
+                .AddTo(CompositeDisposable);
+
             var viewSettings = container.Resolve<ViewSettings>();
 
-            IsImageViewerInterlock = viewSettings.ObserveProperty(x => x.IsImageViewerInterlock)
+            IsImageViewerInterlock = viewSettings
+                .ObserveProperty(x => x.IsImageViewerInterlock)
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
-            CanVisibleReducedImage = viewSettings.ObserveProperty(x => x.CanVisibleReducedImage)
+            CanVisibleReducedImage = viewSettings
+                .ObserveProperty(x => x.CanVisibleReducedImage)
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 

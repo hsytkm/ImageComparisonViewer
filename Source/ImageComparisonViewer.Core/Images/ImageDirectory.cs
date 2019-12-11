@@ -25,6 +25,9 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>選択中のファイル(未選択ならnull)</summary>
         string? SelectedFilePath { get; }
 
+        /// <summary>画像の表示領域</summary>
+        ScrollViewerViewport ImageViewport { get; }
+
         /// <summary>ズーム倍率(NaNなら全体表示)</summary>
         double ZoomMagRatio { get; }
 
@@ -115,6 +118,14 @@ namespace ImageComparisonViewer.Core.Images
             }
         }
         private string? _selectedFilePath = default!;
+
+        /// <summary>画像の表示領域</summary>
+        public ScrollViewerViewport ImageViewport
+        {
+            get => _imageViewport;
+            internal set => SetProperty(ref _imageViewport, value);
+        }
+        private ScrollViewerViewport _imageViewport;
 
         /// <summary>ズーム倍率(NaNなら全体表示)</summary>
         public double ZoomMagRatio

@@ -182,6 +182,20 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
         #endregion
 
+        #region ImageViewportProperty(OneWayToSource)
+
+        /// <summary>画像の表示領域</summary>
+        public ScrollViewerViewport ImageViewport
+        {
+            get => (ScrollViewerViewport)GetValue(ImageViewportProperty);
+            set => SetValue(ImageViewportProperty, value);
+        }
+        private static readonly DependencyProperty ImageViewportProperty =
+            DependencyProperty.Register(nameof(ImageViewport), typeof(ScrollViewerViewport), SelfType,
+                new FrameworkPropertyMetadata(default(ScrollViewerViewport)));
+
+        #endregion
+
         public ZoomableScrollViewer()
         {
             // Visibleは必要
@@ -206,6 +220,10 @@ namespace ICV.Control.ScrollImageViewer.Controls
             this.Loaded += (sender, __) =>
             {
                 var scrollViewer = (ScrollViewer)sender;
+
+                // 表示領域の更新
+                ImageViewport = new ScrollViewerViewport(scrollViewer);
+
                 if (scrollViewer.TryGetChildControl<ScrollContentPresenter>(out var presenter))
                 {
                     presenter.Loaded += Presenter_Loaded;
@@ -422,6 +440,9 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
             // スクロールバーの表示切替
             UpdateScrollBarVisibility(ZoomPayload);
+
+            // 表示領域の更新
+            ImageViewport = new ScrollViewerViewport(e);
         }
 
         /// <summary>スクロールバーの表示を切り替える</summary>

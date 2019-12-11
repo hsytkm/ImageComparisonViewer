@@ -26,6 +26,13 @@ namespace ImageComparisonViewer.Core.Images
         int? SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths);
 
         /// <summary>
+        /// UIの表示領域を設定する
+        /// </summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="viewport"></param>
+        void SetImageViewport(int sourceIndex, ScrollViewerViewport viewport);
+
+        /// <summary>
         /// UIのズーム表示倍率を設定する
         /// </summary>
         /// <param name="sourceIndex"></param>
@@ -33,11 +40,18 @@ namespace ImageComparisonViewer.Core.Images
         void SetImageZoomMagRatio(int sourceIndex, double zoomMag);
 
         /// <summary>
-        /// UIのズーム表示倍率を設定する
+        /// UIの表示中央位置を設定する
         /// </summary>
         /// <param name="sourceIndex"></param>
         /// <param name="centerRatio"></param>
         void SetImageOffsetCentergRatio(int sourceIndex, ImmutablePoint centerRatio);
+
+        /// <summary>
+        /// UIの表示位置の移動量を設定する
+        /// </summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="shiftVector"></param>
+        void SetImageShiftRatio(int sourceIndex, ImmutableVector shiftVector);
 
         /// <summary>
         /// 外部からの回転数通知に応じてコレクション要素をシフトする
@@ -136,11 +150,24 @@ namespace ImageComparisonViewer.Core.Images
             }
         }
 
+        public void SetImageViewport(int sourceIndex, ScrollViewerViewport viewport)
+            => SetInterlock(sourceIndex, directory => directory.ImageViewport = viewport);
+
         public void SetImageZoomMagRatio(int sourceIndex, double zoomMag)
             => SetInterlock(sourceIndex, directory => directory.ZoomMagRatio = zoomMag);
 
         public void SetImageOffsetCentergRatio(int sourceIndex, ImmutablePoint centerRatio)
             => SetInterlock(sourceIndex, directory => directory.OffsetCenterRatio = centerRatio);
+
+        public void SetImageShiftRatio(int sourceIndex, ImmutableVector shiftVector)
+            => SetInterlock(sourceIndex, directory =>
+            {
+                static double clip(double v) => (v <= 0) ? 0 : ((v >= 1) ? 1 : v);
+
+                directory.OffsetCenterRatio = new ImmutablePoint(
+                    clip(directory.OffsetCenterRatio.X + shiftVector.X),
+                    clip(directory.OffsetCenterRatio.Y + shiftVector.Y));
+            });
 
         #endregion
 

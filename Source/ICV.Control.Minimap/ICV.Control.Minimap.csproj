@@ -13,19 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ICV.Control.ExplorerAddressBar\ICV.Control.ExplorerAddressBar.csproj" />
-    <ProjectReference Include="..\ICV.Control.Minimap\ICV.Control.Minimap.csproj" />
-    <ProjectReference Include="..\ICV.Control.ScrollImageViewer\ICV.Control.ScrollImageViewer.csproj" />
-    <ProjectReference Include="..\ICV.Control.ThumbnailList\ICV.Control.ThumbnailList.csproj" />
-    <ProjectReference Include="..\ICV.Control.ZoomableImage\ICV.Control.ZoomableImage.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.Common\ImageComparisonViewer.Common.csproj" />
     <ProjectReference Include="..\ImageComparisonViewer.Core\ImageComparisonViewer.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\ImagePanel.xaml">
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
 
 </Project>

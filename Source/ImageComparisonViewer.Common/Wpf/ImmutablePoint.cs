@@ -18,5 +18,8 @@ namespace ImageComparisonViewer.Common.Wpf
         public static implicit operator Point(in ImmutablePoint source)
             => new Point(source.X, source.Y);
 
+        public static ImmutablePoint operator +(in ImmutablePoint point, in ImmutableVector vector)
+            => new ImmutablePoint(point.X + vector.X, point.Y + vector.Y);
+
     }
 }
