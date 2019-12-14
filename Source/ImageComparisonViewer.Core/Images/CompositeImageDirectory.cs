@@ -40,13 +40,6 @@ namespace ImageComparisonViewer.Core.Images
         void SetImageZoomMagRatio(int sourceIndex, double zoomMag);
 
         /// <summary>
-        /// UIの表示中央位置を設定する
-        /// </summary>
-        /// <param name="sourceIndex"></param>
-        /// <param name="centerRatio"></param>
-        void SetImageOffsetCentergRatio(int sourceIndex, ImmutablePoint centerRatio);
-
-        /// <summary>
         /// UIの表示位置の移動量を設定する
         /// </summary>
         /// <param name="sourceIndex"></param>
@@ -98,7 +91,7 @@ namespace ImageComparisonViewer.Core.Images
         {
             foreach (var imageDir in ImageDirectries)
             {
-                if (imageDir.IsLoaded()) return false;
+                if (imageDir.IsLoaded) return false;
             }
             return true;
         }
@@ -155,9 +148,6 @@ namespace ImageComparisonViewer.Core.Images
 
         public void SetImageZoomMagRatio(int sourceIndex, double zoomMag)
             => SetInterlock(sourceIndex, directory => directory.ZoomMagRatio = zoomMag);
-
-        public void SetImageOffsetCentergRatio(int sourceIndex, ImmutablePoint centerRatio)
-            => SetInterlock(sourceIndex, directory => directory.OffsetCenterRatio = centerRatio);
 
         public void SetImageShiftRatio(int sourceIndex, ImmutableVector shiftVector)
             => SetInterlock(sourceIndex, directory =>

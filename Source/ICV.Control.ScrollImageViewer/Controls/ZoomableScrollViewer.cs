@@ -84,23 +84,6 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
         private void OnScrollOffsetCenterRatioPayloadChanged(Point offsetCenterRatio)
         {
-            Image_ScrollToCenter(offsetCenterRatio);
-        }
-
-        private void Image_ScrollByVectorRatio(Vector vectorRatio)
-        {
-            Image_ScrollToCenter(ScrollOffsetCenterRatioPayload + vectorRatio);
-        }
-
-        private void Image_ScrollByVectorActualSize(Vector vector)
-        {
-            var imageViewSize = _mainImage.GetControlActualSize();
-            var vecRatio = new Vector(vector.X / imageViewSize.Width, vector.Y / imageViewSize.Height);
-            Image_ScrollByVectorRatio(-vecRatio);
-        }
-
-        private void Image_ScrollToCenter(Point offsetCenterRatio)
-        {
             static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
 
             var scrollViewer = this;
@@ -123,10 +106,23 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
             var vertOffset = newOffset.Y * imageSize.Height - contentHalfSize.Height;
             scrollViewer.ScrollToVerticalOffsetWithLimit(vertOffset);
-
-            // ズーム倍率管理プロパティの更新
-            ScrollOffsetCenterRatioPayload = newOffset;
         }
+
+        #endregion
+
+        #region ScrollVectorRatioPayload(OneWayToSource)
+
+        /// <summary>スクロール移動量の割合(0~1)(OneWayToSource)</summary>
+        public Vector ScrollVectorRatioPayload
+        {
+            get => (Vector)GetValue(ScrollVectorRatioPayloadProperty);
+            set => SetValue(ScrollVectorRatioPayloadProperty, value);
+        }
+        private static readonly DependencyProperty ScrollVectorRatioPayloadProperty =
+            DependencyProperty.Register(nameof(ScrollVectorRatioPayload), typeof(Vector), SelfType);
+
+        private void SetImageOffsetVector(in Point oldPoint, in Point newPoint)
+            => ScrollVectorRatioPayload = newPoint - oldPoint;
 
         #endregion
 
@@ -233,7 +229,12 @@ namespace ICV.Control.ScrollImageViewer.Controls
                     presenter.MouseLeftDragVectorAsObservable()
                         .ObserveOnUIDispatcher()
                         .Where(_ => IsZoomingIn(ZoomPayload))   // ズーム中以外は必要ない
-                        .Subscribe(vec => Image_ScrollByVectorActualSize(vec))
+                        .Select(vec => -vec)
+                        .Subscribe(vec =>
+                        {
+                            var imageViewSize = _mainImage.GetControlActualSize();
+                            ScrollVectorRatioPayload = new Vector(vec.X / imageViewSize.Width, vec.Y / imageViewSize.Height);
+                        })
                         .AddTo(CompositeDisposable);
 
                     // double click zoom
@@ -436,7 +437,6 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
                 newCenterRatio = new Point(pointX, pointY);
             }
-            ScrollOffsetCenterRatioPayload = newCenterRatio;
 
             // スクロールバーの表示切替
             UpdateScrollBarVisibility(ZoomPayload);
@@ -577,7 +577,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
                         clip(mousePos.X / imageViewActualSize.Width, 0, 1),
                         clip(mousePos.Y / imageViewActualSize.Height, 0, 1));
 
-                    ScrollOffsetCenterRatioPayload = newPoint;
+                    SetImageOffsetVector(oldPoint: ScrollOffsetCenterRatioPayload, newPoint);
                 }
             }
         }

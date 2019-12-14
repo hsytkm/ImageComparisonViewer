@@ -29,6 +29,7 @@
         <ctrl:ZoomableScrollViewer
             ZoomPayload="{Binding ImageZoomMagPayload.Value, Mode=TwoWay}"
             ScrollOffsetCenterRatioPayload="{Binding ImageScrollOffsetCenterRatio.Value, Mode=TwoWay}"
+            ScrollVectorRatioPayload="{Binding ImageScrollVectorRatio.Value, Mode=OneWayToSource}"
             ImageCursorPoint="{Binding PointTest.Value, Mode=OneWayToSource}"
             ImageViewport="{Binding ImageViewport.Value, Mode=OneWayToSource}" />
 

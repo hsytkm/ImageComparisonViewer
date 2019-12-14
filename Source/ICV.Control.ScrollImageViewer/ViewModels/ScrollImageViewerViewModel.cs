@@ -36,9 +36,13 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         public ReactiveProperty<ImageZoomMag> ImageZoomMagPayload { get; } =
             new ReactiveProperty<ImageZoomMag>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
-        // スクロールオフセット位置(TwoWay)
+        // スクロールオフセット位置割合(TwoWay)
         public ReactiveProperty<Point> ImageScrollOffsetCenterRatio { get; } =
             new ReactiveProperty<Point>(mode: ReactivePropertyMode.DistinctUntilChanged);
+
+        // スクロール移動量割合(OneWayToSource)
+        public ReactiveProperty<Vector> ImageScrollVectorRatio { get; } =
+            new ReactiveProperty<Vector>(mode: ReactivePropertyMode.None);
 
         // 実座標系のサンプリング枠の位置(TwoWay)
         public ReactiveProperty<Rect> SamplingFrameRect { get; } =
@@ -88,14 +92,18 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
             imageDirectory
                 .ObserveProperty(x => x.OffsetCenterRatio)
                 //.Do(x => Debug.WriteLine($"{indexMessage}-FromM ({x.X:f4}, {x.Y:f4})"))
-                .Subscribe(point => ImageScrollOffsetCenterRatio.Value = point)
+                .Subscribe(p => ImageScrollOffsetCenterRatio.Value = p)
                 .AddTo(CompositeDisposable);
 
             ImageScrollOffsetCenterRatio
                 //.Do(x => Debug.WriteLine($"{indexMessage}-ToM: ({x.X:f4}, {x.Y:f4})"))
-                .Subscribe(point => compositeDirectory.SetImageOffsetCentergRatio(parameter.ContentIndex, point))
+                .Subscribe(p => imageDirectory.OffsetCenterRatio = p)
                 .AddTo(CompositeDisposable);
             #endregion
+            
+            ImageScrollVectorRatio
+                .Subscribe(v => compositeDirectory.SetImageShiftRatio(parameter.ContentIndex, v))
+                .AddTo(CompositeDisposable);
 
             ImageViewport
                 .Subscribe(v => compositeDirectory.SetImageViewport(parameter.ContentIndex, v))

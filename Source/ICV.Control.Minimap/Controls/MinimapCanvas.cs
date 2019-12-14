@@ -40,7 +40,7 @@ namespace ICV.Control.Minimap.Controls
             _miniImage.Source = bitmapSource;
 
             var visibility = (bitmapSource is null) ? Visibility.Collapsed : Visibility.Visible;
-            _thumbViewport.Visibility = visibility;
+            this.Visibility = visibility;
         }
 
         #endregion
@@ -77,8 +77,6 @@ namespace ICV.Control.Minimap.Controls
         {
             static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
 
-            var thumbViewport = _thumbViewport;
-
             var miniImageActualSize = _miniImage.GetControlActualSize();
             if (miniImageActualSize.Width == 0 || miniImageActualSize.Height == 0) return;
 
@@ -88,6 +86,8 @@ namespace ICV.Control.Minimap.Controls
             if (viewport.ExtentWidth == 0 || viewport.ExtentHeight == 0) return;
             var xfactor = miniImageActualSize.Width / viewport.ExtentWidth;
             var yfactor = miniImageActualSize.Height / viewport.ExtentHeight;
+
+            var thumbViewport = _thumbViewport;
 
             var left = viewport.HorizontalOffset * xfactor;
             left = clip(left, 0.0, miniImageActualSize.Width - thumbViewport.MinWidth);
@@ -172,6 +172,7 @@ namespace ICV.Control.Minimap.Controls
 
             this.HorizontalAlignment = HorizontalAlignment.Left;
             this.VerticalAlignment = VerticalAlignment.Top;
+            this.Visibility = Visibility.Collapsed;
             this.Children.Add(_miniImage);
             this.Children.Add(_path);
             this.Children.Add(_thumbViewport);

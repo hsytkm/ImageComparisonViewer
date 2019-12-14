@@ -32,7 +32,7 @@ namespace ImageComparisonViewer.Core.Images
         double ZoomMagRatio { get; }
 
         /// <summary>表示オフセット中央割合</summary>
-        ImmutablePoint OffsetCenterRatio { get; }
+        ImmutablePoint OffsetCenterRatio { get; set; }
 
         /// <summary>画像ファイルドロップ時の処理</summary>
         /// <param name="filePath"></param>
@@ -46,7 +46,7 @@ namespace ImageComparisonViewer.Core.Images
         BitmapSource? SelectedImage { get; }
 
         /// <summary>画像ディレクトリの読込み済みフラグ</summary>
-        bool IsLoaded();
+        bool IsLoaded { get; }
 
         /// <summary>画像ファイルたち</summary>
         ReadOnlyObservableCollection<ImageFile> ImageFiles { get; }
@@ -139,7 +139,7 @@ namespace ImageComparisonViewer.Core.Images
         public ImmutablePoint OffsetCenterRatio
         {
             get => _offsetCenterRatio;
-            internal set => SetProperty(ref _offsetCenterRatio, value);
+            set => SetProperty(ref _offsetCenterRatio, value);
         }
         private ImmutablePoint _offsetCenterRatio;
 
@@ -193,7 +193,7 @@ namespace ImageComparisonViewer.Core.Images
         private BitmapSource? _selectedImage;
 
         /// <summary>画像ディレクトリの読込み済みフラグ</summary>
-        public bool IsLoaded() => (DirectoryPath != null && SelectedFilePath != null);
+        public bool IsLoaded => (DirectoryPath != null && SelectedFilePath != null);
 
         /// <summary>画像ファイルたち</summary>
         public ReadOnlyObservableCollection<ImageFile> ImageFiles

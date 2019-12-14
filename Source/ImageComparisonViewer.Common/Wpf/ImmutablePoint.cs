@@ -21,5 +21,12 @@ namespace ImageComparisonViewer.Common.Wpf
         public static ImmutablePoint operator +(in ImmutablePoint point, in ImmutableVector vector)
             => new ImmutablePoint(point.X + vector.X, point.Y + vector.Y);
 
+        //public static bool operator ==(in ImmutablePoint point1, in ImmutablePoint point2)
+        //    => (point1.X == point2.X && point1.Y == point2.Y);
+
+        //public static bool operator !=(in ImmutablePoint point1, in ImmutablePoint point2)
+        //    => !(point1 == point2);
+
+        public override string ToString() => $"({X:f4}, {Y:f4})";
     }
 }
