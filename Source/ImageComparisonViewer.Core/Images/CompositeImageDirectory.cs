@@ -26,25 +26,32 @@ namespace ImageComparisonViewer.Core.Images
         int? SetDroppedPaths(int baseIndex, IReadOnlyList<string> droppedPaths);
 
         /// <summary>
-        /// UIの表示領域を設定する
+        /// UIの表示領域を設定する(発行元含めて全員)
         /// </summary>
         /// <param name="sourceIndex"></param>
         /// <param name="viewport"></param>
-        void SetImageViewport(int sourceIndex, ScrollViewerViewport viewport);
+        void SetImageViewportToAll(int sourceIndex, ScrollViewerViewport viewport);
 
         /// <summary>
-        /// UIのズーム表示倍率を設定する
+        /// UIのズーム表示倍率を設定する(発行元含めて全員)
         /// </summary>
         /// <param name="sourceIndex"></param>
         /// <param name="zoomMag"></param>
-        void SetImageZoomMagRatio(int sourceIndex, double zoomMag);
+        void SetImageZoomMagRatioToAll(int sourceIndex, double zoomMag);
 
         /// <summary>
-        /// UIの表示位置の移動量を設定する
+        /// UIの表示位置の移動量を設定する(発行元含めて全員)
         /// </summary>
         /// <param name="sourceIndex"></param>
         /// <param name="shiftVector"></param>
-        void SetImageShiftRatio(int sourceIndex, ImmutableVector shiftVector);
+        void SetImageShiftRatioToAll(int sourceIndex, ImmutableVector shiftVector);
+
+        /// <summary>
+        /// UIの表示位置の移動量を設定する(発行元以外)
+        /// </summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="shiftVector"></param>
+        void SetImageShiftRatioToOthers(int sourceIndex, ImmutableVector shiftVector);
 
         /// <summary>
         /// 外部からの回転数通知に応じてコレクション要素をシフトする
@@ -125,40 +132,56 @@ namespace ImageComparisonViewer.Core.Images
 
         #region SettingInterlock
 
-        private void SetInterlock(int sourceIndex, Action<ImageDirectory> action)
+        /// <summary>全画像ディレクトリに値を設定する</summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="action"></param>
+        private void SetImageDirectoryToAll(int sourceIndex, Action<ImageDirectory> action)
         {
             if (sourceIndex < 0 || ImageDirectries.Count <= sourceIndex)
                 throw new ArgumentOutOfRangeException(nameof(sourceIndex));
 
+            // 自分を設定してから他を設定する
             action.Invoke((ImageDirectory)ImageDirectries[sourceIndex]);
+            SetImageDirectoryToOthers(sourceIndex, action);
+        }
 
+        /// <summary>全画像ディレクトリに値を設定する</summary>
+        /// <param name="sourceIndex"></param>
+        /// <param name="action"></param>
+        private void SetImageDirectoryToOthers(int sourceIndex, Action<ImageDirectory> action)
+        {
             // 連動する場合は他のディレクトリも更新
-            if (_userSettings.IsControlInterlock)
+            if (!_userSettings.IsControlInterlock) return;
+
+            // 自分以外を設定する
+            for (int i = 0; i < ImageDirectries.Count; ++i)
             {
-                for (int i = 0; i < ImageDirectries.Count; ++i)
-                {
-                    if (i != sourceIndex)
-                        action.Invoke((ImageDirectory)ImageDirectries[i]);
-                }
+                if (i != sourceIndex)
+                    action.Invoke((ImageDirectory)ImageDirectries[i]);
             }
         }
 
-        public void SetImageViewport(int sourceIndex, ScrollViewerViewport viewport)
-            => SetInterlock(sourceIndex, directory => directory.ImageViewport = viewport);
+        public void SetImageViewportToAll(int sourceIndex, ScrollViewerViewport viewport)
+            => SetImageDirectoryToAll(sourceIndex, directory => directory.ImageViewport = viewport);
 
-        public void SetImageZoomMagRatio(int sourceIndex, double zoomMag)
-            => SetInterlock(sourceIndex, directory => directory.ZoomMagRatio = zoomMag);
+        public void SetImageZoomMagRatioToAll(int sourceIndex, double zoomMag)
+            => SetImageDirectoryToAll(sourceIndex, directory => directory.ZoomMagRatio = zoomMag);
 
-        public void SetImageShiftRatio(int sourceIndex, ImmutableVector shiftVector)
-            => SetInterlock(sourceIndex, directory =>
-            {
-                static double clip(double v) => (v <= 0) ? 0 : ((v >= 1) ? 1 : v);
+        private static void SetImageShiftRatioAction(ImageDirectory directory, ImmutableVector shiftVector)
+        {
+            static double clip(double v) => (v <= 0) ? 0 : ((v >= 1) ? 1 : v);
 
-                directory.OffsetCenterRatio = new ImmutablePoint(
-                    clip(directory.OffsetCenterRatio.X + shiftVector.X),
-                    clip(directory.OffsetCenterRatio.Y + shiftVector.Y));
-            });
+            directory.OffsetCenterRatio = new ImmutablePoint(
+                clip(directory.OffsetCenterRatio.X + shiftVector.X),
+                clip(directory.OffsetCenterRatio.Y + shiftVector.Y));
+        }
 
+        public void SetImageShiftRatioToAll(int sourceIndex, ImmutableVector shiftVector)
+            => SetImageDirectoryToAll(sourceIndex, directory => SetImageShiftRatioAction(directory, shiftVector));
+
+        public void SetImageShiftRatioToOthers(int sourceIndex, ImmutableVector shiftVector)
+            => SetImageDirectoryToOthers(sourceIndex, directory => SetImageShiftRatioAction(directory, shiftVector));
+        
         #endregion
 
         /// <summary>

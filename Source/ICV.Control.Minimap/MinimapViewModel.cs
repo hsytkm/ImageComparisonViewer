@@ -18,6 +18,8 @@ namespace ICV.Control.Minimap
         public ReadOnlyReactiveProperty<BitmapSource?> ImageSource { get; } = default!;
         public ReadOnlyReactiveProperty<Size> ImageSourceSize { get; } = default!;
 
+        public ReadOnlyReactiveProperty<bool> IsVisible { get; } = default!;
+
         public ReactiveProperty<Vector> ScrollVectorRatio { get; } =
             new ReactiveProperty<Vector>(mode: ReactivePropertyMode.None);
 
@@ -31,27 +33,43 @@ namespace ICV.Control.Minimap
             var compositeDirectory = container.Resolve<ICompositeImageDirectory>();
             var imageDirectory = compositeDirectory.ImageDirectries[parameter.ContentIndex];
 
-            var imageSource = imageDirectory
+            var imageSourceObservable = imageDirectory
                 .ObserveProperty(x => x.SelectedImage)
                 .Publish()
                 .RefCount();
 
-            ImageSource = imageSource
+            ImageSource = imageSourceObservable
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
-            ImageSourceSize = imageSource
+            ImageSourceSize = imageSourceObservable
                 .Select(x => (x is null) ? default : new Size(x.Width, x.Height))
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
-            ScrollVectorRatio
-                .Subscribe(v => compositeDirectory.SetImageShiftRatio(parameter.ContentIndex, v))
+            var isZoomingIn = imageDirectory
+                .ObserveProperty(x => x.IsZoomingIn)
+                //.Do(b => Debug.WriteLine($"isZoomingIn({parameter.ContentIndex}): {b}"))
+                .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 
+            // 画像が拡大表示中ならミニマップを表示
+            IsVisible = ImageSource
+                .CombineLatest(isZoomingIn, (ImageSource, IsZoomingIn) => (ImageSource, IsZoomingIn))
+                .Select(x => (x.ImageSource != null) && x.IsZoomingIn)
+                //.Do(b => Debug.WriteLine($"IsVisible({parameter.ContentIndex}): {b}"))
+                .ToReadOnlyReactiveProperty()
+                .AddTo(CompositeDisposable);
+
+            // 全ての画像ディレクトリに変更を通知する
+            ScrollVectorRatio
+                .Subscribe(v => compositeDirectory.SetImageShiftRatioToAll(parameter.ContentIndex, v))
+                .AddTo(CompositeDisposable);
+
+            // 主画像の表示範囲
             ImageViewport = imageDirectory
                 .ObserveProperty(x => x.ImageViewport)
-                //.Do(x => Debug.WriteLine($"{parameter.ContentIndex}: {x}"))
+                //.Do(x => Debug.WriteLine($"ImageViewport({parameter.ContentIndex}): {x}"))
                 .ToReadOnlyReactiveProperty()
                 .AddTo(CompositeDisposable);
 

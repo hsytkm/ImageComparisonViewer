@@ -68,6 +68,19 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
         #endregion
 
+        #region ZoomPayloadProperty(TwoWay)
+
+        /// <summary>ズームイン中フラグ(OneWayToSource)</summary>
+        public bool IsZoomingInPayload
+        {
+            get => (bool)GetValue(IsZoomingInPayloadProperty);
+            set => SetValue(IsZoomingInPayloadProperty, value);
+        }
+        private static readonly DependencyProperty IsZoomingInPayloadProperty =
+            DependencyProperty.Register(nameof(IsZoomingInPayload), typeof(bool), SelfType);
+
+        #endregion
+
         #region ScrollOffsetCenterRatioPayloadProperty(TwoWay)
 
         /// <summary>スクロールバー中央の絶対位置の割合(0~1)(TwoWay)</summary>
@@ -112,7 +125,10 @@ namespace ICV.Control.ScrollImageViewer.Controls
 
         #region ScrollVectorRatioPayload(OneWayToSource)
 
-        /// <summary>スクロール移動量の割合(0~1)(OneWayToSource)</summary>
+        /// <summary>
+        /// スクロール移動量の割合(0~1)(OneWayToSource)
+        /// Viewの移動量をModelに通知し、Modelから絶対座標を指示してもらう
+        /// </summary>
         public Vector ScrollVectorRatioPayload
         {
             get => (Vector)GetValue(ScrollVectorRatioPayloadProperty);
@@ -121,8 +137,12 @@ namespace ICV.Control.ScrollImageViewer.Controls
         private static readonly DependencyProperty ScrollVectorRatioPayloadProperty =
             DependencyProperty.Register(nameof(ScrollVectorRatioPayload), typeof(Vector), SelfType);
 
-        private void SetImageOffsetVector(in Point oldPoint, in Point newPoint)
-            => ScrollVectorRatioPayload = newPoint - oldPoint;
+        private void SetImageOffsetCenter(in Point newPoint)
+        {
+            // 自Viewは更新済みして、他Viewの更新のためViewModelに通知する
+            ScrollVectorRatioPayload = newPoint - ScrollOffsetCenterRatioPayload;
+            ScrollOffsetCenterRatioPayload = newPoint;
+        }
 
         #endregion
 
@@ -217,7 +237,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
             {
                 var scrollViewer = (ScrollViewer)sender;
 
-                // 表示領域の更新
+                // 表示領域の更新(読み込み後)
                 ImageViewport = new ScrollViewerViewport(scrollViewer);
 
                 if (scrollViewer.TryGetChildControl<ScrollContentPresenter>(out var presenter))
@@ -234,6 +254,7 @@ namespace ICV.Control.ScrollImageViewer.Controls
                         {
                             var imageViewSize = _mainImage.GetControlActualSize();
                             ScrollVectorRatioPayload = new Vector(vec.X / imageViewSize.Width, vec.Y / imageViewSize.Height);
+                            ScrollOffsetCenterRatioPayload += ScrollVectorRatioPayload;
                         })
                         .AddTo(CompositeDisposable);
 
@@ -380,6 +401,9 @@ namespace ICV.Control.ScrollImageViewer.Controls
             var sourceSize = _mainImage.GetImageSourcePixelSize();
             var magRatio = GetZoomMagRatio(actualSize, sourceSize);
             ZoomPayload = new ImageZoomMag(ZoomPayload.IsEntire, magRatio);
+
+            // ズームイン中フラグの更新
+            IsZoomingInPayload = IsZoomingIn(ZoomPayload);
         }
 
         /// <summary>サイズ変更時にViewのスクロールバー位置を更新</summary>
@@ -420,12 +444,12 @@ namespace ICV.Control.ScrollImageViewer.Controls
             //var isEntire = this.HorizontalScrollBarVisibility == ScrollBarVisibility.Hidden
             //    && this.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden;
 
-            Point newCenterRatio;
-
             // 全体表示なら中央位置を上書き
             if (isEntire)
             {
-                newCenterRatio = new Point(0.5, 0.5);
+                // 中央位置への移動時は他Viewに移動量を要求しない(座標に意味がある)
+                // 各Viewが自身で中央に移動する
+                ScrollOffsetCenterRatioPayload = new Point(0.5, 0.5);
             }
             else
             {
@@ -434,14 +458,16 @@ namespace ICV.Control.ScrollImageViewer.Controls
                     : (e.HorizontalOffset + (e.ViewportWidth / 2.0)) / imageViewActualSize.Width;
                 var pointY = (e.ViewportHeight >= imageViewActualSize.Height) ? 0.5
                     : (e.VerticalOffset + (e.ViewportHeight / 2.0)) / imageViewActualSize.Height;
+                var newCenterRatio = new Point(pointX, pointY);
 
-                newCenterRatio = new Point(pointX, pointY);
+                // ScrollBar起因のシフト
+                SetImageOffsetCenter(newCenterRatio);
             }
 
             // スクロールバーの表示切替
             UpdateScrollBarVisibility(ZoomPayload);
 
-            // 表示領域の更新
+            // 表示領域の更新(スクロールバー変化時)
             ImageViewport = new ScrollViewerViewport(e);
         }
 
@@ -577,7 +603,8 @@ namespace ICV.Control.ScrollImageViewer.Controls
                         clip(mousePos.X / imageViewActualSize.Width, 0, 1),
                         clip(mousePos.Y / imageViewActualSize.Height, 0, 1));
 
-                    SetImageOffsetVector(oldPoint: ScrollOffsetCenterRatioPayload, newPoint);
+                    // クリックズーム起因のシフト
+                    SetImageOffsetCenter(newPoint);
                 }
             }
         }

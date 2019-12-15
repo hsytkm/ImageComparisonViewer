@@ -31,6 +31,9 @@ namespace ImageComparisonViewer.Core.Images
         /// <summary>ズーム倍率(NaNなら全体表示)</summary>
         double ZoomMagRatio { get; }
 
+        /// <summary>全体表示よりもズームしてるかフラグ(Viewから設定される)</summary>
+        bool IsZoomingIn { get; set; }
+
         /// <summary>表示オフセット中央割合</summary>
         ImmutablePoint OffsetCenterRatio { get; set; }
 
@@ -134,6 +137,14 @@ namespace ImageComparisonViewer.Core.Images
             internal set => SetProperty(ref _zoomMagRatio, value);
         }
         private double _zoomMagRatio = double.NaN;
+
+        /// <summary>ズームイン中(全体表示でない)</summary>
+        public bool IsZoomingIn
+        {
+            get => _isZoomingIn;
+            set => SetProperty(ref _isZoomingIn, value);
+        }
+        public bool _isZoomingIn;
 
         /// <summary>表示オフセット中央割合(中央=(0.5, 0.5))</summary>
         public ImmutablePoint OffsetCenterRatio

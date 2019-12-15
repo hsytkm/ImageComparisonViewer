@@ -38,9 +38,6 @@ namespace ICV.Control.Minimap.Controls
         private void OnImageSourceChanged(BitmapSource bitmapSource)
         {
             _miniImage.Source = bitmapSource;
-
-            var visibility = (bitmapSource is null) ? Visibility.Collapsed : Visibility.Visible;
-            this.Visibility = visibility;
         }
 
         #endregion
@@ -69,7 +66,8 @@ namespace ICV.Control.Minimap.Controls
         private static readonly DependencyProperty ImageViewportProperty =
             DependencyProperty.Register(nameof(ImageViewport), typeof(ScrollViewerViewport), SelfType,
                 new FrameworkPropertyMetadata(default(ScrollViewerViewport),
-                    FrameworkPropertyMetadataOptions.AffectsRender,
+                    FrameworkPropertyMetadataOptions.AffectsArrange
+                    | FrameworkPropertyMetadataOptions.AffectsRender,
                     (d, e) => ((MinimapCanvas)d).OnImageViewportChanged((ScrollViewerViewport)(e.NewValue))));
 
         // 主画像のスクロール更新時にViewportを更新する
@@ -77,13 +75,13 @@ namespace ICV.Control.Minimap.Controls
         {
             static double clip(double value, double min, double max) => (value <= min) ? min : ((value >= max) ? max : value);
 
+            // ExtentWidth/Height が ScrollViewer 内の広さ
+            // ViewportWidth/Height が ScrollViewer で実際に表示されているサイズ
+            if (viewport.ExtentWidth == 0 || viewport.ExtentHeight == 0) return;
+
             var miniImageActualSize = _miniImage.GetControlActualSize();
             if (miniImageActualSize.Width == 0 || miniImageActualSize.Height == 0) return;
 
-            // ExtentWidth/Height が ScrollViewer 内の広さ
-            // ViewportWidth/Height が ScrollViewer で実際に表示されているサイズ
-
-            if (viewport.ExtentWidth == 0 || viewport.ExtentHeight == 0) return;
             var xfactor = miniImageActualSize.Width / viewport.ExtentWidth;
             var yfactor = miniImageActualSize.Height / viewport.ExtentHeight;
 
@@ -167,6 +165,10 @@ namespace ICV.Control.Minimap.Controls
                 {
                     this.Width = e.NewSize.Width;
                     this.Height = e.NewSize.Height;
+
+                    // ミニマップ表示中にタブ切り替えたらOnPropertyChanged内で
+                    // _miniImageのサイズが取れず(未初期化)枠の位置が変になる対策
+                    OnImageViewportChanged(ImageViewport);
                 })
                 .AddTo(CompositeDisposable);
 

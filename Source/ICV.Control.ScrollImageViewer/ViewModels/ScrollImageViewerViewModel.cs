@@ -36,6 +36,10 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
         public ReactiveProperty<ImageZoomMag> ImageZoomMagPayload { get; } =
             new ReactiveProperty<ImageZoomMag>(mode: ReactivePropertyMode.DistinctUntilChanged);
 
+        // ズームイン中フラグ(OneWayToSource)
+        public ReactiveProperty<bool> IsImageZoomingIn { get; } =
+            new ReactiveProperty<bool>(mode: ReactivePropertyMode.DistinctUntilChanged);
+
         // スクロールオフセット位置割合(TwoWay)
         public ReactiveProperty<Point> ImageScrollOffsetCenterRatio { get; } =
             new ReactiveProperty<Point>(mode: ReactivePropertyMode.DistinctUntilChanged);
@@ -84,7 +88,12 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
 
             ImageZoomMagPayload
                 .Select(x => x.IsEntire ? double.NaN : x.MagRatio)
-                .Subscribe(mag => compositeDirectory.SetImageZoomMagRatio(parameter.ContentIndex, mag))
+                .Subscribe(mag => compositeDirectory.SetImageZoomMagRatioToAll(parameter.ContentIndex, mag))
+                .AddTo(CompositeDisposable);
+
+            IsImageZoomingIn
+                //.Do(b => Debug.WriteLine($"IsImageZoomingIn({parameter.ContentIndex}): {b}"))
+                .Subscribe(b => imageDirectory.IsZoomingIn = b)
                 .AddTo(CompositeDisposable);
             #endregion
 
@@ -100,13 +109,14 @@ namespace ICV.Control.ScrollImageViewer.ViewModels
                 .Subscribe(p => imageDirectory.OffsetCenterRatio = p)
                 .AddTo(CompositeDisposable);
             #endregion
-            
+
+            // 自分以外の画像ディレクトリに変更を通知する(自身は適用済み)
             ImageScrollVectorRatio
-                .Subscribe(v => compositeDirectory.SetImageShiftRatio(parameter.ContentIndex, v))
+                .Subscribe(v => compositeDirectory.SetImageShiftRatioToOthers(parameter.ContentIndex, v))
                 .AddTo(CompositeDisposable);
 
             ImageViewport
-                .Subscribe(v => compositeDirectory.SetImageViewport(parameter.ContentIndex, v))
+                .Subscribe(v => compositeDirectory.SetImageViewportToAll(parameter.ContentIndex, v))
                 .AddTo(CompositeDisposable);
 
             var viewSettings = container.Resolve<ViewSettings>();

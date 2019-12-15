@@ -15,11 +15,18 @@
     d:DesignHeight="450" d:DesignWidth="800"
     Height="20" >
 
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
     <!--
         Margin="5,5,0,0"
     -->
-    <vc:MinimapCanvas ImageSource="{Binding ImageSource.Value, Mode=OneWay}"
-                      ScrollVectorRatioRequest="{Binding ScrollVectorRatio.Value, Mode=OneWayToSource}"
-                      ImageViewport="{Binding ImageViewport.Value, Mode=OneWay}" />
+    <vc:MinimapCanvas 
+        Visibility="{Binding IsVisible.Value, Mode=OneWay,
+                             Converter={StaticResource BoolToVisibilityConverter}}"
+        ImageSource="{Binding ImageSource.Value, Mode=OneWay}"
+        ScrollVectorRatioRequest="{Binding ScrollVectorRatio.Value, Mode=OneWayToSource}"
+        ImageViewport="{Binding ImageViewport.Value, Mode=OneWay}" />
 
 </mvvm:DisposableUserControl>
